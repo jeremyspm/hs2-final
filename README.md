@@ -27,6 +27,18 @@ own words (Assessment Overview) "based on the starred *Case studies in your Case
   answers). Their figures are **hot-linked** from the sibling sim (`../hs2-test2/img/…`, same origin on GitHub Pages) —
   the build checks every one exists on disk. Nothing of theirs is copied.
 
+**The triage — "🧭 Decide for me"** (top of home): one button, 15 at a time, least-seen and misses first. It deals **her 84 exam
+questions** first (the 44 written case questions, her formative test, her revision deck) and only once every one has been
+seen once adds the **401 module questions on the case topics**. `content/case-topics.js` names, per case, the module rows a
+starred question or her model answer is about (read by hand); those rows are tier 1 of the checklist ("On a case topic"),
+off-case rows with 30+ marks tier 2, the rest tier 3 ("Only if there is time"). Why: her exam is built on the cases, and every
+slide of her exam revision deck sits on a case topic.
+
+**Her MODULE 1 HELPLINE** (`content/helpline-m1.js`, from his save of 21 Sep): her blood-pressure question lists and direct-renal
+answer, her ventilation table and factors, her CO2 transport, her lymph pointer — under the four Module 1 rows they answer and
+44 questions read one by one (pneumothorax, gas laws, the bell jar and CO x PR left off), including case 3's baroreflex and
+case 4's breathing questions. Gated both ways.
+
 **The mock exam** (`dealFull` in `template.html`): 32 questions, 130-min clock; closed questions dealt across Modules 1–3 in
 proportion to her banks, then written case questions added one case at a time (least-sat case first) until the written
 share of the MARKS reaches 37% — measured 38–41% over repeated deals. **Learn / Sit the 10 cases** deals her formative items

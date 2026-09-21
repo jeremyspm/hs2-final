@@ -392,9 +392,9 @@ function dealPick(){
 const FTIER = {
   0:{n:'The exam is built on these — her words', c:'var(--ok)',
      w:'Her Assessment Overview: the exam “will be based on the starred *Case studies in your Case Study Booklet A”, and her booklet page names ten; below them sits the exam revision deck she made for it. Each row deals that case’s written questions against HER model answer, her formative-test questions on it, and the module questions it leans on; a starred question she has not answered yet is listed, not dealt. When her EXAM CASE STUDY HELPLINE opens (Mon 19 Oct), whatever she names there joins this band.'},
-  1:{n:'Do these first',    c:'var(--danger)', w:'The biggest blocks of marks across her Module 1, 2 and 3 quizzes — the closed part of the paper (about 63%) covers weeks 1–12.'},
-  2:{n:'Then these',        c:'var(--warn)',   w:'Real marks, but they will not decide the paper on their own.'},
-  3:{n:"Know it, don't camp", c:'var(--muted-fg)', w:'Thin in her bank. Read it once so it cannot blindside you, then leave it.'},
+  1:{n:'On a case topic', c:'var(--danger)', w:'Module rows one of her ten cases stands on — a starred question or her model answer is about it (each row says which case). Every question on her exam revision deck sits on one of these, so the closed part of the paper most likely comes from here too.'},
+  2:{n:'Off the cases, but big in her quizzes', c:'var(--warn)', w:'No case needs these, but her module quizzes drilled them hard (30+ marks). Worth a pass once tier 1 is solid.'},
+  3:{n:'Only if there is time', c:'var(--muted-fg)', w:'Off the cases and thin in her quizzes. They were weekly practice for the module tests; the exam is 32 questions on ten cases.'},
 };
 const FLAGN = {D:'her diagrams row', P:'her processes row', R:'her reasoning row', T:'her terminology row', H:'named on her Module 3 help board', S:'starred exam case', X:'she made it for the exam'};
 
@@ -421,6 +421,7 @@ function focusCard(){
     if(f.rev) chips.push(`<span class="fchip rev">🗓 revision ${esc(f.rev)}</span>`);
     if(f.kh)  chips.push(`<span class="fchip kh">🎮 ${f.kh} in her Kahoots</span>`);
     if(f.saq) chips.push(`<span class="fchip saq">✍️ ${f.saq} written / dropdown</span>`);
+    if(f.cases&&f.cases.length) chips.push(`<span class="fchip her">📎 feeds case ${f.cases.map(c=>c.slice(1)).join(', ')}</span>`);
     return `<div class="frow${on?' on':''}" style="--tc:${FTIER[f.tier].c}" data-fid="${f.id}">
       <input type="checkbox" class="fchk" ${on?'checked':''} aria-label="I can do this: ${esc(f.t)}">
       <details class="fbody"><summary>
@@ -464,7 +465,7 @@ function herAnswer(id){
   const body = h.parts.map(p=>`<div class="hlh">${esc(p.h)}</div>${esc(p.t)}`).join(String.fromCharCode(10));
   return `<details class="hlans"><summary>✅ Her own worked answer — open it</summary>
     <div class="hlbody">${body}
-<span class="refsrc">Verbatim from her MODULE 2 HELPLINE: LET US REFLECT (answers) board. The words she put in CAPITALS are the ones carrying the marks. <a href="${esc(h.url)}" target="_blank" rel="noopener">Open it on Canvas</a> for her figures.</span></div></details>`;
+<span class="refsrc">Verbatim from her ${h.from?esc(h.from)+' board':'MODULE 2 HELPLINE: LET US REFLECT (answers) board. The words she put in CAPITALS are the ones carrying the marks'}. <a href="${esc(h.url)}" target="_blank" rel="noopener">Open it on Canvas</a> for her figures.</span></div></details>`;
 }
 
 function bindFocus(){
@@ -482,6 +483,31 @@ function bindFocus(){
 }
 
 /* ── home ──────────────────────────────────────────────────────────── */
+/* ── decide for me ────────────────────────────────────────────────────
+   The whole triage in one button. The exam is 32 questions on her ten starred cases; the 1,300 module questions were weekly
+   practice. So: her own exam questions first (A), least-seen and misses first; once every one has been seen, the module
+   questions on the case topics (B) join. Nothing to choose, nothing to plan. */
+const CORE_A = () => DATA.questions.filter(q=>DATA.core.a.includes(q.id));
+const CORE_B = () => DATA.questions.filter(q=>DATA.core.b.includes(q.id));
+function dealCore(n=15){
+  const A = CORE_A(), allSeen = A.every(q=>S.seen[q.id]);
+  return pickN(allSeen ? A.concat(CORE_B()) : A, n, new Set());
+}
+function coreCard(){
+  const A = CORE_A(), B = CORE_B();
+  const seenA = A.filter(q=>S.seen[q.id]).length, missA = A.filter(q=>S.miss[q.id]).length;
+  const seenB = B.filter(q=>S.seen[q.id]).length;
+  const pA = Math.round(100*seenA/Math.max(1,A.length)), pB = Math.round(100*seenB/Math.max(1,B.length));
+  return `<div class="card door" style="border-left:4px solid var(--ok)">
+    <h2>🧭 Decide for me</h2>
+    <p>You do <b>not</b> have to do ${DATA.stats.n} questions. The exam is 32 questions on her ten starred cases. <b>${A.length}</b> questions here are hers, written for it — the cases, her formative test, her revision deck. That is the job. Behind them sit <b>${B.length}</b> module questions on the same topics, for once the ${A.length} are done. Everything else is optional.</p>
+    <button class="btn primary wide" data-go="core" data-learn="1">▶ Today’s 15 — ${seenA<A.length?'from her exam questions':'her exam questions + the case topics'}</button>
+    <div class="hist" style="margin-top:8px">Her exam questions: ${seenA} of ${A.length} seen${missA?` · ${missA} in your misses pile (they come back first)`:''}</div>
+    <div class="fbar"><i style="width:${pA}%"></i></div>
+    <div class="hist" style="margin-top:6px">Case-topic questions: ${seenB} of ${B.length} seen${seenA<A.length?' · they join once all '+A.length+' have been seen once':''}</div>
+    <div class="fbar"><i style="width:${pB}%"></i></div>
+  </div>`;
+}
 function home(){
   $('#footbar').classList.remove('on');
   const last = S.scores[S.scores.length-1];
@@ -490,6 +516,7 @@ function home(){
   const nCase = CASEQS().length;
   document.getElementById('view').innerHTML = `
   ${sparkCard()}
+  ${coreCard()}
   ${focusCard()}
   <div class="card door" style="border-left:4px solid var(--ok)">
     <h2>📖 Learn as you go</h2>
@@ -624,6 +651,7 @@ function start(mode,learn=false){
     else{deck=dealMini();label='mini mock'}}
   else if(mode==='full'){deck=dealFull();label='full mock exam';timed=true}
   else if(mode==='cases'){deck=CASEQS();label='the 10 cases'}
+  else if(mode==='core'){deck=dealCore(15);label='today from the exam core'}
   else if(mode==='miss'){deck=dealMisses(learn?CAP():12);label=learn?'my misses':'redo misses'}
   else if(mode==='pick'){deck=dealPick();const k=S.pick.length;
     label=k===1?(DATA.quizzes.find(z=>z.id===S.pick[0])||{}).name||'1 quiz':`${k} quizzes · ${deck.length} Q`}
@@ -1070,7 +1098,7 @@ function aiQuestionPrompt(q,withFig){
     if(r.t)L.push(`${r.k==='patton'?'The textbook says':r.k==='course'?'A file posted in my course (not by my lecturer) says':'My lecturer’s notes say'} (verbatim): “${r.t}” — ${r.src}`);
     else if(r.k==='slide')L.push(withFig?`My lecturer’s slide on this is pasted with this message — ${r.src}. Her wording on it is what earns the marks.`:`My lecturer’s slide on this: ${r.src} (an image, I can’t paste it).`);
   }
-  if(hasHer(q)){const h=DATA.helpline[q.hl];L.push('','Her own worked answer for this topic, verbatim (her CAPITALS are the mark-earning words):',h.parts.map(p=>p.h+'\n'+p.t).join('\n'));}
+  if(hasHer(q)){const h=DATA.helpline[q.hl];L.push('',h.from?`Her own worked answer for this topic, verbatim from her ${h.from} board:`:'Her own worked answer for this topic, verbatim (her CAPITALS are the mark-earning words):',h.parts.map(p=>p.h+'\n'+p.t).join('\n'));}
   L.push('',aiSteps(you?'In one line, say what misconception my answer suggests.':'',`in the shape she uses (${AI_SHAPE[q.type]||'multiple choice'})`,'Stay inside this question and her notes. Don’t teach past them.',!!withFig&&aiFigures(q).length>0));
   return L.join('\n');
 }
@@ -1081,7 +1109,7 @@ function aiTopicPrompt(f){
   if(f.cap)L.push(`Where it ends — do NOT go past this: “${f.cap}”`);
   const h=(DATA.helpline||{})[f.id];
   if(h){let t=h.parts.map(p=>p.h+'\n'+p.t).join('\n');if(t.length>3000)t=t.slice(0,3000)+' …(trimmed)';
-    L.push('','Her own worked answer for this topic, verbatim (her CAPITALS are the mark-earning words):',t);}
+    L.push('',h.from?`Her own worked answer for this topic, verbatim from her ${h.from} board:`:'Her own worked answer for this topic, verbatim (her CAPITALS are the mark-earning words):',t);}
   L.push('',aiSteps('','in the shapes she uses (see “how she asks it” above)','Stay inside her level. Don’t teach past the “where it ends” line.'));
   return L.join('\n');
 }

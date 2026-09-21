@@ -20,6 +20,8 @@ import { OVERRIDES } from './content/overrides.js';
 import { AUTHORED_STEMS } from './content/authored-stems.js';
 import { CASES } from './content/cases.js';
 import { REVDECK } from './content/revision-deck.js';
+import { HELPLINE_M1 } from './content/helpline-m1.js';
+import { CASE_TOPICS } from './content/case-topics.js';
 import { HELPLINE } from './content/helpline.js';
 import { QTOPIC } from './content/qtopic.js';
 import { QROW } from './content/qrow.js';
@@ -465,13 +467,42 @@ FOCUS_OUT.push(rowOut({ id: 'rev-exam', sys: 'mixed', mod: 'exam', tier: 0, flag
 for (const [mod, dir] of SIMS) for (const f of SIMDATA[mod].focus || []) {
   if (mod === 'm1' && f.id === 'exam-cases') continue;      /* Module 1's own "exam cases 2, 3, 4" row: the three case rows above replace it */
   const r = rowOut({ ...f, mod }, f.qs || []);
-  r.tier = r.pts >= 30 ? 1 : r.pts >= 12 ? 2 : 3;          /* a module row's tier-0 (her words about ITS test) is not a word about the exam */
+  /* THE TRIAGE (content/case-topics.js): a row one of her cases stands on is tier 1; off the cases, big rows (30+ marks) are
+     tier 2 and the rest tier 3. A module row's own tier-0 (her words about ITS test) is not a word about the exam. */
+  r.cases = Object.entries(CASE_TOPICS).filter(([, t]) => t.rows.includes(mod + ':' + f.id)).map(([c]) => c);
+  r.tier = r.cases.length ? 1 : r.pts >= 30 ? 2 : 3;
   if (f.tier === 0) r.was0 = dir;
   FOCUS_OUT.push(r);
 }
 { const ids = new Set(); for (const f of FOCUS_OUT) { if (ids.has(f.id)) fails2.push('checklist row id twice: ' + f.id); ids.add(f.id); } }
-/* her worked helpline answers travel with their sim (only Module 2 has any) */
-const HELP = Object.assign({}, ...SIMS.map(([m]) => SIMDATA[m].helpline || {}));
+for (const [c, t] of Object.entries(CASE_TOPICS)) {
+  if (!CASES.some(x => x.id === c)) fails2.push(`case-topics: ${c} is not a case`);
+  for (const r of t.rows) if (!impRows[r]) fails2.push(`case-topics ${c}: ${r} is not a module checklist row`);
+}
+/* the exam core: A = the questions she wrote FOR this exam (the cases, her formative test, her revision deck); B = every
+   module question on a row a case stands on. The home page deals from A until every A question has been seen once. */
+const coreA = questions.filter(q => /^case-/.test(q.quiz) || q.quiz === '211092' || q.quiz === REVDECK.quiz).map(q => q.id);
+const inA = new Set(coreA);
+const coreB = [...new Set(FOCUS_OUT.filter(f => f.tier === 1).flatMap(f => f.qs || []))].filter(id => !inA.has(id));
+console.log(`exam core: ${coreA.length} of her exam questions, then ${coreB.length} module questions on the case topics (of ${questions.length})`);
+/* her MODULE 1 HELPLINE (content/helpline-m1.js): each section under the Module 1 row it answers, and under the questions
+   read by hand as answered by it (`pin`) plus the case / revision-deck questions named by stem (`stems`). Gated both ways. */
+let nHlM1 = 0;
+for (const [rid, sec] of Object.entries(HELPLINE_M1)) {
+  const row = FOCUS_OUT.find(f => f.id === rid && f.mod === 'm1');
+  if (!row) { fails2.push(`helpline-m1: ${rid} is not a Module 1 checklist row`); continue; }
+  row.hl = sec.hl; row.hlUrl = sec.url;
+  const put = (q, why) => { if (q.hl) fails2.push(`helpline-m1 ${rid}: ${q.id} already sits on helpline ${q.hl} (${why})`); else { q.hl = rid; nHlM1++; } };
+  for (const id of sec.pin) { const q = byIdAll.get(id); if (!q) fails2.push(`helpline-m1 ${rid}: pinned question ${id} is not in the bank`); else put(q, 'pin'); }
+  for (const [quiz, k] of sec.stems) {
+    const hits = questions.filter(q => q.quiz === quiz && norm(q.q).includes(k));
+    if (hits.length !== 1) fails2.push(`helpline-m1 ${rid}: "${k}" matches ${hits.length} questions in ${quiz}`); else put(hits[0], k);
+  }
+}
+/* her worked helpline answers: Module 2's travel with its sim; Module 1's come from content/helpline-m1.js */
+const HELP = Object.assign({}, ...SIMS.map(([m]) => SIMDATA[m].helpline || {}),
+  Object.fromEntries(Object.entries(HELPLINE_M1).map(([k, v]) => [k, { url: v.url, from: v.from, parts: v.parts }])));
+console.log(`her Module 1 helpline: ${Object.keys(HELPLINE_M1).length} sections, under ${nHlM1} questions`);
 for (const q of questions) if (q.hl && !HELP[q.hl]) fails2.push(`question ${q.id} points at helpline section ${q.hl}, which no sim ships`);
 const CHAINS_ALL = [...CHAINS, ...SIMS.flatMap(([m]) => SIMDATA[m].chains || [])];
 if (fails2.length) { console.error('BUILD FAILED:\n  ' + fails2.join('\n  ')); process.exit(1); }
@@ -500,6 +531,7 @@ const DATA = {
     byMod: Object.fromEntries(['m1', 'm2', 'm3', 'cases', 'exam'].map(m => [m, questions.filter(q => q.mod === m).length])) },
   quizzes: quizzes.sort((a, b) => a.mod.localeCompare(b.mod) || a.sys.localeCompare(b.sys) || a.name.localeCompare(b.name)),
   questions, chains: CHAINS_ALL, case7: null, focus: FOCUS_OUT, helpline: HELP, held: [...held, ...caseHeld],
+  core: { a: coreA, b: coreB },
 };
 const tpl = fs.readFileSync(path.join(HERE, 'template.html'), 'utf8');
 /* An unbalanced <details> fails silently: a stray </details> closed the focus checklist right after its intro, so
