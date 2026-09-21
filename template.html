@@ -309,8 +309,8 @@ const esc = s => String(s??'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>
 const shuffle = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]} return a };
 const SYS = {cvs:'Cardiovascular', resp:'Respiratory', lymph:'Lymphatic', ms:'Musculoskeletal', ns:'Nervous', endo:'Endocrine',
   repro:'Reproduction', gen:'Genetics', senses:'Special senses, light & sound', mixed:'Mixed', cases:'Exam cases'};
-const MODN = {m1:'Module 1 · heart, lungs, lymph', m2:'Module 2 · bones, nerves, hormones', m3:'Module 3 · repro, genetics, senses', cases:'The exam cases'};
-const MODS = {m1:'Module 1', m2:'Module 2', m3:'Module 3', cases:'Cases'};
+const MODN = {m1:'Module 1 · heart, lungs, lymph', m2:'Module 2 · bones, nerves, hormones', m3:'Module 3 · repro, genetics, senses', cases:'The exam cases', exam:'Her exam revision deck'};
+const MODS = {m1:'Module 1', m2:'Module 2', m3:'Module 3', cases:'Cases', exam:'Her revision deck'};
 /* an imported question's figure lives in its own sim ("../hs2-test2/img/…"): a name with a '/' in it is already a path */
 const imgU = f => f.includes('/') ? f : 'img/'+f;
 const slideU = f => f.includes('/') ? f : 'img/slides/'+f;
@@ -391,12 +391,12 @@ function dealPick(){
    claim rather than a shrug. Ticks are per-browser (localStorage). */
 const FTIER = {
   0:{n:'The exam is built on these — her words', c:'var(--ok)',
-     w:'Her Assessment Overview: the exam “will be based on the starred *Case studies in your Case Study Booklet A”, and her booklet page names ten. Each row deals that case’s written questions against HER model answer, her formative-test questions on it, and the module questions it leans on; a starred question she has not answered yet is listed, not dealt. When her EXAM CASE STUDY HELPLINE opens (Mon 19 Oct), whatever she names there joins this band.'},
+     w:'Her Assessment Overview: the exam “will be based on the starred *Case studies in your Case Study Booklet A”, and her booklet page names ten; below them sits the exam revision deck she made for it. Each row deals that case’s written questions against HER model answer, her formative-test questions on it, and the module questions it leans on; a starred question she has not answered yet is listed, not dealt. When her EXAM CASE STUDY HELPLINE opens (Mon 19 Oct), whatever she names there joins this band.'},
   1:{n:'Do these first',    c:'var(--danger)', w:'The biggest blocks of marks across her Module 1, 2 and 3 quizzes — the closed part of the paper (about 63%) covers weeks 1–12.'},
   2:{n:'Then these',        c:'var(--warn)',   w:'Real marks, but they will not decide the paper on their own.'},
   3:{n:"Know it, don't camp", c:'var(--muted-fg)', w:'Thin in her bank. Read it once so it cannot blindside you, then leave it.'},
 };
-const FLAGN = {D:'her diagrams row', P:'her processes row', R:'her reasoning row', T:'her terminology row', H:'named on her Module 3 help board', S:'starred exam case'};
+const FLAGN = {D:'her diagrams row', P:'her processes row', R:'her reasoning row', T:'her terminology row', H:'named on her Module 3 help board', S:'starred exam case', X:'she made it for the exam'};
 
 function focusStats(){
   const F = DATA.focus, done = F.filter(f=>S.mastery[f.id]);
@@ -524,7 +524,7 @@ function home(){
     <p>Her quizzes, unlocked. <b>Tick any number of them</b> — or a whole system — and the bar at the bottom runs them as one: <b>Learn</b> with the answer, slide and video under every question, or <b>Sit</b> as a test and see them at the end. A row's own Learn / Sit takes that quiz alone. No attempt limits, marked instantly.</p>
     <div class="chips"><span>Tick</span>
       <button class="chip" data-pk="all">All ${DATA.quizzes.length}</button>
-      <button class="chip" data-pk="cases">Cases</button><button class="chip" data-pk="m1">Module 1</button><button class="chip" data-pk="m2">Module 2</button><button class="chip" data-pk="m3">Module 3</button>
+      <button class="chip" data-pk="cases">Cases</button><button class="chip" data-pk="exam">Revision deck</button><button class="chip" data-pk="m1">Module 1</button><button class="chip" data-pk="m2">Module 2</button><button class="chip" data-pk="m3">Module 3</button>
     </div>
     <div class="sysrow">
       <button class="btn ghost" data-go="cases">Sit the 10 cases · ${nCase}</button>

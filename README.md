@@ -6,7 +6,7 @@ own words (Assessment Overview) "based on the starred *Case studies in your Case
 
 ## What is in it (built 2026-09-21)
 
-**1,337 questions from 94 quizzes.**
+**1,370 questions from 95 quizzes.**
 - **The ten starred cases** (`content/cases.js`): 2 lymph-node removal · 3 asthma · 4 panic attacks · 6 diabetes · 8 joints &
   arthritis · 9 neurotransmitters · 10 stroke · 13 fertility · 14 RG colour blindness · 15 genetic diseases. Scenario and
   starred questions verbatim from her *Case Study Workbook 2026 S2*; **44 written questions marked against HER model
@@ -15,6 +15,10 @@ own words (Assessment Overview) "based on the starred *Case studies in your Case
   case's model answer). One line is the tool's and says so (the "damage →" half of case 10). **14 held** starred questions
   (most of 13, all of 14 and 15): her answers sit in the colour-blindness quiz 211016 and the case-15 board 413346, both
   hidden on Canvas today — each case row lists its held questions.
+- **Her exam revision deck** (`content/revision-deck.js`, "Exam Revison ppt for Hs2 Final", linked from her Module 3 Completion
+  page): her 30 exam-style slides → **33 questions** (her T/F slide splits into four). Every key was read off her RED answer
+  slide on the render; each question carries that answer slide under it. Its own tier-0 checklist row, with her charades
+  terms (slides 2–24). Slides ship as `img/slides/` via `slides-todo.json` + `python compress-slides.py`.
 - **Her CASE STUDY FORMATIVE TEST MODULE 1-2** (211092, 7 Q, 20 marks) — the one quiz that belongs to the exam, not a module:
   captured 21 Sep into `_inbox/HS2 Final Capture`, parsed to `hs2-anki/final/questions.json`, run through the same stem /
   key / image pipeline as every sim. Each item sits on its case's row.
@@ -37,6 +41,7 @@ says where it used to sit). Module 1's own "exam cases 2, 3, 4" row is replaced 
     python host-figs.py      # the workbook's own figures (content/hosted-figs.json) → img/wb26-*.png
     node bind-images.mjs     # only when a capture is added to _inbox/HS2 Final Capture
     node build.mjs           # re-run whenever hs2-paper-m1, hs2-test2 or hs2-test3 is rebuilt
+    python compress-slides.py   # her revision-deck slides → img/slides/ (after build)
     node resplice.mjs        # chrome-only template changes
 
 Gates (each provoked once on 21 Sep and seen to fail): a case figure missing · a `pull` row that is not a module row · a
@@ -48,11 +53,8 @@ Preview locally by serving the estate ROOT (the figures live in the sibling sims
 
 ## Not done yet (in order)
 
-1. **Her exam revision deck** ("Exam Revison ppt for Hs2 Final.pptx", ~30 exam-style questions, rendered to
-   `_inbox/HS2 Final Capture/slides/`): her MCQ answers are shown by highlight on the answer slide, so each needs reading off
-   the render before it can ship as a quiz.
-2. **When they open:** the M2 combined case board (Wed 30 Sep 08:00), the case 4 board (Fri 2 Oct), the M1-2-3 exam-case
+1. **When they open:** the M2 combined case board (Wed 30 Sep 08:00), the case 4 board (Fri 2 Oct), the M1-2-3 exam-case
    board (Sun 4 Oct 08:00), her **EXAM CASE STUDY HELPLINE** (Mon 19 Oct 00:00 — "most important resource for exam prep";
    whatever she names joins the top band), the colour-blindness quiz 211016 (case 14's answer) and board 413346 (case 15's).
-3. Case 13's five unanswered starred questions, if she posts answers; the M1 helpline's worked answers (BP control,
+2. Case 13's five unanswered starred questions, if she posts answers; the M1 helpline's worked answers (BP control,
    ventilation, CO2 transport) under the case 3 / 4 questions.

@@ -19,6 +19,7 @@ import { structuredStems, plainText } from './stem-html.mjs';
 import { OVERRIDES } from './content/overrides.js';
 import { AUTHORED_STEMS } from './content/authored-stems.js';
 import { CASES } from './content/cases.js';
+import { REVDECK } from './content/revision-deck.js';
 import { HELPLINE } from './content/helpline.js';
 import { QTOPIC } from './content/qtopic.js';
 import { QROW } from './content/qrow.js';
@@ -398,6 +399,35 @@ for (const c of CASES) {
   if (caseQs[c.id].length) quizzes.push({ id: qz, name: c.name, sys: c.sys, mod: 'cases', n: caseQs[c.id].length });
 }
 
+/* ── 4. her exam revision deck (content/revision-deck.js): her 30 exam-style slides, as a quiz. Every key was read off her
+   red answer slide; the answer slide itself rides under each question as "her slide" (shipped via slides-todo.json). ── */
+const slideJpg = n => `${REVDECK.slug}-${n}.jpg`;
+const revIds = [];
+for (const it of REVDECK.items) {
+  for (const n of [it.q, it.a]) {
+    const png = path.join(CAP, 'slides', REVDECK.slug, `slide-${n}.png`);
+    if (!fs.existsSync(png)) { fails2.push(`revision deck slide ${n} is not rendered (${png})`); continue; }
+    usedSlides.add(JSON.stringify([png, slideJpg(n)]));
+  }
+  const q = { id: qid(REVDECK.quiz, it.q + '|' + it.stem, it.type === 'essay' ? it.steps : it.key), quiz: REVDECK.quiz, sys: it.sys, mod: it.mod, type: it.type,
+    pts: it.type === 'essay' ? (it.steps || []).length : 1, q: it.stem, qh: '<p>' + escH(it.stem) + '</p>', qt: it.stem,
+    imgs: it.fig ? ['img/slides/' + slideJpg(it.q)] : [], refs: [{ k: 'slide', src: `Her exam revision deck · slide ${it.a}, her answer in red`, slide: slideJpg(it.a) }] };
+  if (it.type === 'essay') {
+    if (!it.steps || !it.steps.length) fails2.push(`revision deck slide ${it.q}: a written question with no answer lines`);
+    q.saq = { steps: it.steps, src: `Her answer · her exam revision deck, slide ${it.a}` };
+  } else if (it.type === 'tf') {
+    q.opts = ['True', 'False']; q.key = it.key;
+    if (it.key.length !== 1 || !q.opts.includes(it.key[0])) fails2.push(`revision deck slide ${it.q}: a true/false key that is neither`);
+  } else {
+    q.opts = it.opts; q.key = it.key;
+    if (!it.key.length || !it.key.every(k => it.opts.includes(k)) || (it.type === 'mcq' && it.key.length !== 1)) fails2.push(`revision deck slide ${it.q}: key not among its options`);
+  }
+  if (questions.some(x => x.id === q.id)) fails2.push(`revision deck slide ${it.q}: the same question twice`);
+  questions.push(q); revIds.push(q.id);
+}
+quizzes.push({ id: REVDECK.quiz, name: REVDECK.name, sys: 'mixed', mod: 'exam', n: revIds.length });
+fs.writeFileSync(path.join(HERE, 'slides-todo.json'), JSON.stringify([...usedSlides].map(s => JSON.parse(s)), null, 1));
+
 /* ── the exam checklist: the ten cases on top (HER words), then every module row, re-tiered on its own marks ── */
 const byIdAll = new Map(questions.map(q => [q.id, q]));
 const impRows = {};
@@ -427,6 +457,11 @@ for (const c of CASES) {
   FOCUS_OUT.push(rowOut({ id: 'case-' + c.id, sys: c.sys, mod: c.mod, tier: 0, flag: 'S', crit: `Case Study Booklet A · case ${c.n}, starred`, t: c.name,
     done: c.done, ask: c.ask, cap: c.cap, held: (c.held || []).map(h => h.q), pull: c.pull || [] }, ids));
 }
+FOCUS_OUT.push(rowOut({ id: 'rev-exam', sys: 'mixed', mod: 'exam', tier: 0, flag: 'X', crit: 'Her “Exam Revision ppt for Hs2 Final”, linked from her Module 3 Completion page',
+  t: 'Her exam revision deck — the questions she chose for the final',
+  done: `Answer all ${revIds.length} cold, then check each against her red answer slide. Her charades slides (2–24) are the terms she wants you able to act out: ${REVDECK.charades.join(', ')} — say what each one means.`,
+  ask: 'MCQ, true/false, fill-the-gaps and short explanations: brain areas on her lettered figure, asthma and airway resistance, the bicarbonate buffer, insulin and the islets, baroreceptors and blood pressure, two pedigrees, RG colour blindness, the cycle graph.',
+  cap: 'Her 30 slides, answered the way she answers them.' }, revIds));
 for (const [mod, dir] of SIMS) for (const f of SIMDATA[mod].focus || []) {
   if (mod === 'm1' && f.id === 'exam-cases') continue;      /* Module 1's own "exam cases 2, 3, 4" row: the three case rows above replace it */
   const r = rowOut({ ...f, mod }, f.qs || []);
@@ -442,7 +477,8 @@ const CHAINS_ALL = [...CHAINS, ...SIMS.flatMap(([m]) => SIMDATA[m].chains || [])
 if (fails2.length) { console.error('BUILD FAILED:\n  ' + fails2.join('\n  ')); process.exit(1); }
 console.log(`imported ${nImported} questions from the three module sims (${SIMS.map(([m, d]) => d + ' ' + SIMDATA[m].questions.length).join(' · ')}); figures hot-linked, all on disk`);
 console.log(`cases: ${CASES.map(c => c.id + ' ' + (caseQs[c.id] || []).length + (c.held && c.held.length ? '+' + c.held.length + ' held' : '')).join(' · ')}`);
-console.log(`checklist: ${FOCUS_OUT.length} rows — ${FOCUS_OUT.filter(f => f.tier === 0).length} case rows on top`);
+console.log(`revision deck: ${revIds.length} questions from ${new Set(REVDECK.items.map(it => it.q)).size} of her question slides`);
+console.log(`checklist: ${FOCUS_OUT.length} rows — ${FOCUS_OUT.filter(f => f.tier === 0).length} on top (10 cases + her revision deck)`);
 
 /* ── emit ──────────────────────────────────────────────────────────── */
 /* video reach is a stat, not a sentence: the template reads these so the home
@@ -461,7 +497,7 @@ const DATA = {
     pattonOnly: withRefs.filter(q => q.refs.every(r => r.k === 'patton')).length,
     partQ: questions.filter(q => q.prefs && q.prefs.length).length, partRefs: questions.reduce((a, q) => a + (q.prefs || []).length, 0),
     withHl: questions.filter(q => q.hl).length,
-    byMod: Object.fromEntries(['m1', 'm2', 'm3', 'cases'].map(m => [m, questions.filter(q => q.mod === m).length])) },
+    byMod: Object.fromEntries(['m1', 'm2', 'm3', 'cases', 'exam'].map(m => [m, questions.filter(q => q.mod === m).length])) },
   quizzes: quizzes.sort((a, b) => a.mod.localeCompare(b.mod) || a.sys.localeCompare(b.sys) || a.name.localeCompare(b.name)),
   questions, chains: CHAINS_ALL, case7: null, focus: FOCUS_OUT, helpline: HELP, held: [...held, ...caseHeld],
 };
