@@ -1,0 +1,1234 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HS2 · Paper Sim — Final exam</title>
+<meta name="robots" content="noindex,nofollow">
+<style>
+/* ── estate tokens (house.css contract, dark default) ─────────────── */
+:root{
+  --bg:hsl(225 33% 5%); --fg:hsl(225 31% 95%); --card:hsl(224 44% 10%);
+  --primary:hsl(218 91% 64%); --onprimary:hsl(225 33% 5%);
+  --muted:hsl(220 38% 13%); --muted-fg:hsl(218 19% 67%);
+  --accent:hsl(219 40% 18%); --danger:hsl(0 84% 60%); --ok:hsl(158 64% 42%);
+  --warn:hsl(38 92% 55%); --border:hsl(222 27% 19%); --radius:.625rem;
+  --dur:200ms; --ease:cubic-bezier(.4,0,.2,1);
+}
+:root[data-theme=light]{
+  --bg:hsl(214 47% 97%); --fg:hsl(222 47% 11%); --card:hsl(0 0% 100%);
+  --onprimary:#fff; --muted:hsl(215 40% 93%); --muted-fg:hsl(220 12% 40%);
+  --accent:hsl(216 45% 91%); --border:hsl(215 33% 89%); --warn:hsl(38 92% 40%);
+}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--fg);
+  font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  -webkit-text-size-adjust:100%}
+header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;padding:10px 14px}
+header h1{font-size:1rem;margin:0;flex:1;font-weight:700}
+header .d{color:var(--muted-fg);font-size:.8rem;white-space:nowrap}
+/* phone: title over countdown on the left, buttons full height on the right (was one flex row: the title got squeezed to a word per line) */
+@media(max-width:560px){
+  header{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-columns:auto;gap:0 8px;padding:8px 12px}
+  header h1{grid-area:1/1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  header .d{grid-area:2/1;white-space:normal;font-size:.76rem;line-height:1.3}
+  header .btn{grid-row:1/span 2;padding:8px 10px;min-width:40px}
+}
+main{max-width:720px;margin:0 auto;padding:14px 14px 90px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px;margin:0 0 12px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;
+  border:1px solid var(--border);background:var(--muted);color:var(--fg);
+  border-radius:var(--radius);padding:10px 14px;font:inherit;font-weight:600;
+  transition:background var(--dur) var(--ease)}
+.btn.primary{background:var(--primary);border-color:var(--primary);color:var(--onprimary)}
+.btn.ghost{background:transparent}
+.btn.wide{width:100%;margin-top:8px}
+a.btn{text-decoration:none}
+.btn:disabled{opacity:.45;cursor:default}
+.door h2{margin:.1rem 0 .3rem;font-size:1.02rem}
+.door p{margin:.2rem 0 .6rem;color:var(--muted-fg);font-size:.88rem}
+.qlist{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+/* a quiz row: tag + name, then count + Learn + Sit as one group that drops to a
+   second line at phone width instead of squeezing the name into four lines */
+.qrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;border:1px solid var(--border);
+  border-radius:var(--radius);padding:8px 10px;background:var(--muted)}
+.qrow b{flex:1 1 150px;font-size:.86rem;font-weight:600}
+.qrow .m{color:var(--muted-fg);font-size:.76rem;white-space:nowrap}
+.qrow .acts{margin-left:auto;display:flex;gap:6px;align-items:center}
+.sysrow{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 2px}
+/* quiz selection: tick any rows (or a whole system) and the bottom bar runs them as one */
+.qrow{cursor:pointer}
+.qrow.on{border-color:var(--primary);box-shadow:inset 0 0 0 1px var(--primary)}
+.qrow>input.pk{flex:0 0 auto;width:18px;height:18px;margin:0;accent-color:var(--primary);cursor:pointer}
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0 4px;font-size:.8rem;color:var(--muted-fg)}
+.chip{border:1px solid var(--border);border-radius:99px;padding:4px 11px;background:transparent;color:var(--fg);
+  cursor:pointer;font:inherit;font-size:.8rem;font-weight:600;line-height:1.3}
+.chip.on{background:var(--primary);border-color:var(--primary);color:var(--onprimary)}
+.footbar .btn.x{flex:0 0 auto}
+/* ── focus checklist ─────────────────────────────────────────────────── */
+.fhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px;margin:2px 0 8px}
+.fbar{height:6px;border-radius:99px;background:var(--accent);overflow:hidden;flex:1 1 140px;min-width:120px}
+.fbar i{display:block;height:100%;background:var(--ok);transition:width .25s}
+.ftier{font-weight:700;font-size:.82rem;margin:14px 0 6px;display:flex;align-items:center;gap:8px}
+.ftier b{font-weight:700}
+.ftier .fnum{font-weight:400;color:var(--muted-fg)}
+.frow{display:flex;gap:9px;align-items:flex-start;padding:8px 10px;margin-bottom:6px;
+  border:1px solid var(--border);border-radius:var(--radius);background:var(--muted);
+  border-left:3px solid var(--tc,var(--border))}
+.frow.on{opacity:.62}
+.frow.on .ft{text-decoration:line-through}
+.frow>input.fchk{flex:0 0 auto;width:18px;height:18px;margin-top:2px;accent-color:var(--ok);cursor:pointer}
+.fbody{flex:1 1 auto;min-width:0}
+.fbody>summary{cursor:pointer;list-style:none;display:block}
+.fbody>summary::-webkit-details-marker{display:none}
+.ft{font-weight:650;font-size:.92rem;display:block}
+.fmeta{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.fchip{font-size:.68rem;padding:1px 7px;border-radius:99px;background:var(--accent);color:var(--muted-fg);white-space:nowrap}
+.fchip.her{background:hsl(38 92% 55% / .18);color:var(--warn)}
+.fchip.tape{background:hsl(0 84% 60% / .16);color:var(--danger)}
+.fchip.saq{background:hsl(218 91% 64% / .16);color:var(--primary)}
+.fchip.sys{background:transparent;border:1px solid var(--border)}
+.fchip.hl{background:hsl(158 64% 42% / .2);color:var(--ok);font-weight:650}
+.fchip.rev{background:hsl(158 64% 42% / .12);color:var(--ok)}
+.fchip.kh{background:hsl(280 60% 60% / .16);color:hsl(280 70% 72%)}
+.hlans{margin-top:8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);overflow:hidden}
+.hlans>summary{cursor:pointer;padding:7px 10px;font-weight:650;font-size:.84rem;color:var(--ok);list-style:none}
+.hlans>summary::-webkit-details-marker{display:none}
+.hlans .hlbody{padding:0 10px 10px;font-size:.83rem;line-height:1.55;white-space:pre-wrap}
+.hlans .hlh{font-weight:700;margin:8px 0 4px;font-size:.8rem;letter-spacing:.02em}
+.fdet{font-size:.85rem;line-height:1.5;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+.fdet p{margin:0 0 7px}
+.fdet .fcap{color:var(--muted-fg)}
+.fwhy{font-size:.8rem;line-height:1.5;color:var(--muted-fg);margin:0 0 4px}
+@media(max-width:400px){ .ft{font-size:.88rem} .fdet{font-size:.82rem} }
+.tag{font-size:.72rem;padding:2px 8px;border-radius:99px;background:var(--accent);color:var(--muted-fg)}
+.tag.repro{color:hsl(335 85% 72%)}.tag.gen{color:hsl(268 80% 74%)}.tag.senses{color:hsl(38 92% 62%)}
+.tag.cvs{color:hsl(0 84% 70%)}.tag.resp{color:hsl(199 89% 64%)}.tag.lymph{color:hsl(140 55% 58%)}
+.tag.ms{color:hsl(28 90% 62%)}.tag.ns{color:hsl(268 80% 74%)}.tag.endo{color:hsl(158 64% 52%)}
+.qmod{margin:14px 0 4px;font-size:.78rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted-fg)}
+.tag.mixed{color:var(--muted-fg)}
+/* sitting */
+.qhead{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.qhead .n{font-weight:700}
+.qhead .timer{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--muted-fg)}
+.qhead .timer.low{color:var(--danger);font-weight:700}
+.stem{white-space:pre-wrap;margin-bottom:10px}
+.stem img,.qimg{max-width:100%;border-radius:8px;background:#fff;display:block;margin:8px 0}
+/* structured stem: her paragraphs, lists and table rows survive; a Canvas layout
+   table becomes stacked cells at phone width and side-by-side from 560px */
+.stem.rich{white-space:normal;line-height:1.5}
+.stem.rich p{margin:.4em 0}
+.stem.rich ul,.stem.rich ol{margin:.3em 0;padding-left:1.35em}
+.stem.rich li{margin:.15em 0}
+.stem.rich li>p{margin:.1em 0}
+.stem.rich div{margin:.15em 0}
+.stem.rich .tbl{display:flex;flex-direction:column;gap:8px;margin:10px 0}
+.stem.rich .tr{display:flex;flex-wrap:wrap;gap:8px 14px;border:1px solid var(--border);border-radius:8px;padding:8px 10px;background:var(--muted)}
+.stem.rich .td{flex:1 1 220px;min-width:0}
+.stem.rich .td>p:first-child{margin-top:0}
+.stem.rich .td img{margin:0 0 4px;max-height:280px;width:auto}
+.stem.rich img{max-height:520px;width:auto}
+.inl{display:inline-block;width:auto;max-width:100%;padding:5px 8px;margin:2px 0;vertical-align:baseline;
+  font-size:.95em;border:1px solid var(--primary);background:var(--card);color:var(--fg);border-radius:6px}
+input.inl{min-width:7ch}
+.inl:focus{outline:2px solid var(--primary);outline-offset:1px}
+.opt{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--border);
+  border-radius:var(--radius);padding:10px;margin:6px 0;cursor:pointer;background:var(--muted)}
+.opt input{margin-top:3px;flex:none}
+.opt.sel{border-color:var(--primary);background:var(--accent)}
+/* learn mode: a checked question locks and colours itself in place */
+.opt.k{border-color:var(--ok);box-shadow:inset 0 0 0 1px var(--ok)}
+.opt.x{border-color:var(--danger);box-shadow:inset 0 0 0 1px var(--danger)}
+.opt.lock{cursor:default}
+.lres{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:10px 0 0}
+.lres .hint{font-size:.76rem;color:var(--muted-fg)}
+.lres .qr-pane{flex-basis:100%;padding:6px 0 0}
+.mk .verdict{font-weight:700;margin:0 0 4px}
+.mk.right .verdict{color:var(--ok)} .mk.wrong .verdict{color:var(--danger)} .mk.saq{border-color:var(--primary)}
+.pip.ok{background:var(--ok);border-color:var(--ok)} .pip.bad{background:var(--danger);border-color:var(--danger)}
+.qrow .btn{padding:6px 10px;font-size:.8rem}
+.qrow .btn.learn{border-color:var(--primary);color:var(--primary)}
+.blankrow{display:flex;flex-direction:column;gap:4px;margin:8px 0}
+.blankrow label{font-size:.82rem;color:var(--muted-fg)}
+select,input[type=text],textarea{font:inherit;color:var(--fg);background:var(--muted);
+  border:1px solid var(--border);border-radius:8px;padding:9px;width:100%}
+textarea{min-height:120px}
+.pips{display:flex;gap:3px;flex-wrap:wrap;margin:10px 0 2px}
+.pip{width:14px;height:6px;border-radius:3px;background:var(--muted);border:1px solid var(--border)}
+.pip.done{background:var(--primary);border-color:var(--primary)}
+.pip.cur{outline:2px solid var(--primary);outline-offset:1px}
+/* marking */
+.mk{border-left:4px solid var(--border);padding-left:10px;margin:14px 0}
+.mk.right{border-color:var(--ok)}.mk.wrong{border-color:var(--danger)}
+.mk .you{color:var(--muted-fg);font-size:.9rem}
+.mk .keyline{color:var(--ok);font-weight:600}
+.mk .marks{font-size:.8rem;color:var(--muted-fg)}
+.steps label{display:flex;gap:8px;align-items:flex-start;margin:6px 0;cursor:pointer}
+.refq{font-size:.85rem;color:var(--muted-fg);margin:8px 0 2px;padding:8px 10px;background:var(--muted);border-radius:8px}
+.refq.slide{padding:6px}
+.refq.patton{border-left:3px solid var(--primary)}
+.refq i{color:var(--fg)}
+.slideimg{max-width:100%;background:#fff;border-radius:6px;display:block;margin:0 0 4px}
+.keyrows{margin:6px 0}
+.krow{font-size:.85rem;padding:3px 0;border-bottom:1px dashed var(--border)}
+.krow b{color:var(--ok);font-weight:600}
+.krow.kok{opacity:.55}
+.kyou{color:var(--danger);font-size:.78rem}
+.kref{font-size:.84rem;color:var(--muted-fg);margin:4px 0 6px 14px;padding:6px 10px;background:var(--muted);border-radius:8px;line-height:1.45}
+.kref i{color:var(--fg)}
+.kref .refsrc{display:inline}
+.refsrc{font-size:.74rem;color:var(--muted-fg);opacity:.8}
+.vidrow{font-size:.86rem;margin:6px 0}
+.vidrow a{font-weight:600}
+.askai{padding:3px 10px;font-size:.76rem;margin-top:6px}
+.learnrow{padding:7px 12px;font-size:.84rem;margin-top:6px}
+.aiwrap{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;margin:8px 0 4px}
+.aitext{flex-basis:100%;width:100%;min-height:150px;font-size:.78rem;margin-top:6px}
+.aisplit{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;margin-top:6px}
+.aisplit .askai{margin-top:0}
+.vclip{margin:.5rem 0}
+.vframe{position:relative;aspect-ratio:16/9;width:100%;max-width:460px;background:#000;border-radius:8px;overflow:hidden;cursor:pointer}
+.vframe img,.vframe iframe{width:100%;height:100%;display:block;border:0;object-fit:cover}
+.vplay{position:absolute;inset:0;margin:auto;width:54px;height:54px;border-radius:50%;background:rgba(20,20,28,.72);color:#fff;border:2px solid #fff;font-size:1.3rem;cursor:pointer;line-height:1}
+.vbadge{position:absolute;left:6px;bottom:6px;background:rgba(0,0,0,.8);color:#fff;font-size:.72rem;padding:2px 6px;border-radius:4px;pointer-events:none}
+.vmeta{font-size:.82rem;margin-top:5px;display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center}
+.vch{font-weight:600}
+.vfull{padding:2px 8px;font-size:.74rem}
+.rev-ctl{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:6px 0 10px;font-size:.85rem}
+.rev-ctl .wo{display:flex;gap:6px;align-items:center;cursor:pointer;user-select:none}
+.systally{display:flex;flex-wrap:wrap}
+.systally .tag{display:inline-block;background:var(--muted);padding:2px 9px;border-radius:11px;margin:2px 5px 2px 0;font-size:.74rem}
+.systally .tag.ok{color:var(--ok)}
+.qr{border:1px solid var(--muted);border-left-width:4px;border-radius:9px;margin:6px 0;background:var(--card)}
+.qr.right{border-left-color:var(--ok)} .qr.partial{border-left-color:var(--warn)} .qr.wrong{border-left-color:var(--danger)} .qr.saq{border-left-color:var(--primary)}
+.qr-head{display:flex;gap:10px;align-items:flex-start;padding:9px 11px 7px}
+.qr-mk{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;padding:2px 8px;border-radius:6px;font-size:.82rem;background:var(--muted)}
+.qr.right .qr-mk{background:var(--ok);color:var(--onprimary)} .qr.partial .qr-mk{background:var(--warn);color:var(--onprimary)} .qr.wrong .qr-mk{background:var(--danger);color:#fff}
+.qr-stem{font-size:.9rem;line-height:1.35;flex:1}
+.qr-acts{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:0 11px 9px}
+.qa{padding:3px 11px;font-size:.77rem;border:1px solid var(--muted);border-radius:14px;background:transparent;color:inherit;cursor:pointer}
+.qa:hover{border-color:var(--primary)} .qa.on{background:var(--primary);color:var(--onprimary);border-color:var(--primary)}
+.qr-pane{padding:2px 11px 11px}
+.qr .src{font-size:.72rem;color:var(--primary);margin-right:auto;opacity:.85}
+.qr .you{font-size:.8rem;padding:2px 11px 4px;opacity:.85}
+.qr .steps{padding:2px 11px 6px}
+.score-hero{font-size:2.2rem;font-weight:800;text-align:center;margin:.3rem 0 0}
+.score-sub{text-align:center;color:var(--muted-fg);margin:0 0 10px}
+/* chart */
+.spark{width:100%;height:84px;display:block}
+.hist{font-size:.82rem;color:var(--muted-fg)}
+.hist td{padding:2px 8px 2px 0}
+/* chain warmup */
+.chain{display:flex;flex-direction:column;gap:2px;margin:8px 0}
+.bead{background:var(--accent);border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:.9rem}
+.bead.blank{border-style:dashed;color:var(--warn);text-align:center}
+.verb{color:var(--muted-fg);font-size:.78rem;padding:0 12px}
+.note{border:1px solid var(--border);border-left:4px solid var(--warn);border-radius:8px;
+  padding:8px 10px;font-size:.84rem;color:var(--muted-fg);margin:10px 0}
+.src{font-size:.75rem;color:var(--muted-fg);margin-top:6px}
+dialog{background:var(--card);color:var(--fg);border:1px solid var(--border);
+  border-radius:var(--radius);max-width:640px;width:calc(100% - 32px);padding:18px}
+dialog::backdrop{background:rgb(0 0 0 / .6)}
+h3{margin:14px 0 4px;font-size:.95rem}
+.footbar{position:fixed;bottom:0;left:0;right:0;background:var(--bg);
+  border-top:1px solid var(--border);padding:10px 14px;display:none;gap:8px;z-index:5}
+.footbar.on{display:flex}
+.footbar .btn{flex:1}
+a{color:var(--primary)}
+</style>
+</head>
+<body>
+<header>
+  <h1>HS2 · Paper Sim</h1>
+  <span class="d" id="countdown"></span>
+  <a class="btn ghost" href="#watch" title="The three module video playlists">▶</a>
+  <button class="btn ghost" id="themeBtn" title="theme">◐</button>
+  <button class="btn ghost" id="helpBtn" title="what is this?">?</button>
+</header>
+<main id="view"></main>
+<div class="footbar" id="footbar"></div>
+<dialog id="help"></dialog>
+
+<script>
+const DATA = /*@BANK@*/;
+/* references: q.refs = [{k:'slide'|'her'|'patton', src, slide|t, ...}] in authority order —
+   her slide, her prose, Patton. A bank built with the older single q.ref still renders. */
+for(const q of DATA.questions){ if(!q.refs) q.refs = q.ref ? [{k:q.ref.slide?'slide':'her', ...q.ref}] : []; }
+const REF = {slide:{ic:'📖',lbl:'Her slide'}, her:{ic:'✍',lbl:'Her notes'}, course:{ic:'📄',lbl:'Course file'}, patton:{ic:'📕',lbl:'Patton'}};
+/* ── state ─────────────────────────────────────────────────────────── */
+/* Its own prefix: every tool on jeremyspm.github.io shares ONE localStorage (it is per origin, not per path), so the final keeps
+   its scores, misses, ticks and resume slot apart from the three module sims it imports its questions from. */
+const PFX = 'hs2f.';
+const LS = k => { try { return JSON.parse(localStorage.getItem(PFX+k)) } catch(e){ return null } };
+const SV = (k,v) => { try { localStorage.setItem(PFX+k, JSON.stringify(v)) } catch(e){} };
+let S = {
+  scores: LS('scores')||[],   // {t, mode, got, tot, label}
+  miss:   LS('miss')  ||{},   // qid -> wrong count
+  seen:   LS('seen')  ||{},   // qid -> sittings
+  mastery:LS('mastery')||{}, // focus topic id -> 1 when he can do it
+  n:      LS('n')||12,       // how many a Learn deal hands out: 12 | 25 | 50 | 100 | 'all'
+  pick:   LS('pick')||[],    // quiz ids ticked under Pick my rep, in tick order
+};
+if(![12,25,50,100,'all'].includes(S.n)) S.n = 12;
+S.pick = (Array.isArray(S.pick)?S.pick:[]).filter(id=>DATA.quizzes.some(z=>z.id===id));
+/* The sitting date is PER VIEWER. He has an extension and sits 25 Sep; the cohort's
+   window closes Mon 21 Sep, so a single hard-coded date would mislead whoever it did
+   not belong to. Default is his (it is his tool); anyone else taps the countdown and
+   sets their own, kept in their own browser. */
+const COHORT_CLOSE = '2026-11-05';      // the HS2 exam: Thu 5 Nov 2026, 12:30, on campus (official timetable; her Canvas page still says 5/06)
+const DEFAULT_SITTING = '2026-11-05';
+const sittingISO = () => LS('testday') || DEFAULT_SITTING;
+const TESTDAY = () => new Date(sittingISO() + 'T12:00:00+12:00');
+const daysLeft = () => Math.max(0, Math.ceil((TESTDAY() - Date.now())/864e5));
+const sittingLabel = () => new Date(sittingISO() + 'T12:00:00+12:00')
+  .toLocaleDateString('en-NZ', { day: 'numeric', month: 'short' });
+function askSitting(){
+  const cur = sittingISO();
+  const v = prompt('When do you sit the HS2 exam?  (YYYY-MM-DD)\n\nThe cohort sits it on '
+    + COHORT_CLOSE + '. Set your own date if you have a different slot.', cur);
+  if(!v) return;
+  const t = v.trim();
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(t) || isNaN(new Date(t + 'T12:00:00+12:00'))){
+    alert('Use the form YYYY-MM-DD, e.g. 2026-11-05.'); return;
+  }
+  SV('testday', t); paintCountdown();
+  if(document.querySelector('#fhead')) home();
+}
+function paintCountdown(){
+  const el = $('#countdown'); if(!el) return;
+  el.textContent = `${daysLeft()}d to your sitting · ${sittingLabel()}`;
+  el.title = 'Your sitting is ' + sittingISO() + '. The cohort sits the exam on ' + COHORT_CLOSE
+           + '. Click to change yours — it is saved in this browser only.';
+  el.style.cursor = 'pointer';
+  el.onclick = askSitting;
+}
+const $ = s => document.querySelector(s);
+const esc = s => String(s??'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const shuffle = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]} return a };
+const SYS = {cvs:'Cardiovascular', resp:'Respiratory', lymph:'Lymphatic', ms:'Musculoskeletal', ns:'Nervous', endo:'Endocrine',
+  repro:'Reproduction', gen:'Genetics', senses:'Special senses, light & sound', mixed:'Mixed', cases:'Exam cases'};
+const MODN = {m1:'Module 1 · heart, lungs, lymph', m2:'Module 2 · bones, nerves, hormones', m3:'Module 3 · repro, genetics, senses', cases:'The exam cases'};
+const MODS = {m1:'Module 1', m2:'Module 2', m3:'Module 3', cases:'Cases'};
+/* an imported question's figure lives in its own sim ("../hs2-test2/img/…"): a name with a '/' in it is already a path */
+const imgU = f => f.includes('/') ? f : 'img/'+f;
+const slideU = f => f.includes('/') ? f : 'img/slides/'+f;
+
+/* ── dealing ───────────────────────────────────────────────────────── */
+const CLOSED = DATA.questions.filter(q=>!q.saq);
+function pickN(pool, n, excl){
+  const fresh = pool.filter(q=>!excl.has(q.id));
+  /* Least-seen first: rank = times dealt, so nothing repeats an (n+1)th time
+     until the whole pool has been dealt n times. Misses jump the queue (-2),
+     Math.random() only breaks ties among equally-seen questions. */
+  const rank = q => (S.miss[q.id]?-2:0) + (S.seen[q.id]||0) + Math.random();
+  return fresh.sort((a,b)=>rank(a)-rank(b)).slice(0,n);
+}
+function dealStratified(n){
+  const out=[], excl=new Set();
+  /* shares are DERIVED from the bank — her revealed question distribution —
+     never typed. Announced emphasis does not get a vote. */
+  const share = {};
+  for(const q of CLOSED) share[q.mod]=(share[q.mod]||0)+1/CLOSED.length;
+  for(const m of ['m1','m2','m3','cases']){
+    const want=Math.round(n*(share[m]||0));
+    for(const q of pickN(CLOSED.filter(x=>x.mod===m), want, excl)){ out.push(q); excl.add(q.id); }
+  }
+  while(out.length<n){
+    const q=pickN(CLOSED, 1, excl)[0]; if(!q)break; out.push(q); excl.add(q.id);
+  }
+  return shuffle(out).slice(0,n);
+}
+/* How many a Learn deal hands out is HIS call (the chips on the Learn door), saved in this
+   browser. 'all' is the whole pool, least-seen first — so a run that stops halfway and is
+   dealt again leads with the questions it never reached. A mock test keeps its own size. */
+const NOPTS = [12,25,50,100,'all'];
+const CAP = () => S.n==='all' ? Infinity : S.n;
+const howMany = pool => Math.min(CAP(), pool);
+function dealMini(n=12){ return dealStratified(n) }
+function dealSys(s,n){ return shuffle(pickN(CLOSED.filter(q=>q.mod===s), n, new Set())) }
+/* the ten cases in booklet order: her formative questions on a case first, then its written questions */
+const CASEQS = () => DATA.focus.filter(f=>f.tier===0).flatMap(f=>(f.qs||[]).map(id=>DATA.questions.find(q=>q.id===id)).filter(q=>q&&q.mod==='cases'));
+function dealFull(){
+  /* THE EXAM'S OWN SHAPE (her Assessment Overview): 32 questions, 130 min, 37% of the MARKS written, and the written ones
+     come from the starred cases. Her closed quiz items often carry several marks (a 4-pair matching = 4), so eight written
+     questions can be anywhere from a quarter to half the marks: written questions are added one case at a time — least-sat
+     case first, least-seen question of it — and closed ones dropped, until the written share reaches 37% with 32 questions. */
+  const closed = dealStratified(32);
+  const byCase = {};
+  for(const q of DATA.questions) if(q.mod==='cases'&&q.saq) (byCase[q.quiz]=byCase[q.quiz]||[]).push(q);
+  const load = c => byCase[c].reduce((a,q)=>a+(S.seen[q.id]||0),0) + Math.random();
+  const order = Object.keys(byCase).map(c=>[c,load(c)]).sort((a,b)=>a[1]-b[1]).map(x=>x[0]);
+  const queue = order.map(c=>pickN(byCase[c], byCase[c].length, new Set()));      /* each case's questions, least-seen first */
+  const written = [];
+  const marks = a => a.reduce((t,q)=>t+(q.pts||1),0);
+  for(let r=0; written.length<16; r++){
+    const next = queue[r % queue.length].shift(); if(!next){ if(queue.every(x=>!x.length)) break; continue; }
+    written.push(next);
+    const w = marks(written), c = marks(closed.slice(0, 32-written.length));
+    if(w/(w+c)>=0.37) break;      /* stop at the exam's share; the least-sat rotation carries the other cases into the next sitting */
+  }
+  return closed.slice(0, 32-written.length).concat(written);
+}
+/* the misses pile, worst first: once four or more have been missed twice, only those */
+function missPool(){
+  let ids = Object.keys(S.miss).filter(id=>S.miss[id]>=2);
+  if(ids.length<4) ids = Object.keys(S.miss);
+  return CLOSED.filter(q=>ids.includes(q.id));
+}
+function dealMisses(n=12){ return shuffle(missPool()).slice(0,n) }
+/* the ticked quizzes, whole (written questions included), in the order the list shows
+   them — one run, no cap: you chose the quizzes, you get their questions */
+function dealPick(){
+  const on = new Set(S.pick);
+  return DATA.quizzes.filter(z=>on.has(z.id)).flatMap(z=>DATA.questions.filter(q=>q.quiz===z.id));
+}
+
+/* ── focus checklist ───────────────────────────────────────────────────
+   Her focus post names topics in one or two words. DATA.focus says how far
+   each one goes and how heavily her own bank drills it, so a tick is a real
+   claim rather than a shrug. Ticks are per-browser (localStorage). */
+const FTIER = {
+  0:{n:'The exam is built on these — her words', c:'var(--ok)',
+     w:'Her Assessment Overview: the exam “will be based on the starred *Case studies in your Case Study Booklet A”, and her booklet page names ten. Each row deals that case’s written questions against HER model answer, her formative-test questions on it, and the module questions it leans on; a starred question she has not answered yet is listed, not dealt. When her EXAM CASE STUDY HELPLINE opens (Mon 19 Oct), whatever she names there joins this band.'},
+  1:{n:'Do these first',    c:'var(--danger)', w:'The biggest blocks of marks across her Module 1, 2 and 3 quizzes — the closed part of the paper (about 63%) covers weeks 1–12.'},
+  2:{n:'Then these',        c:'var(--warn)',   w:'Real marks, but they will not decide the paper on their own.'},
+  3:{n:"Know it, don't camp", c:'var(--muted-fg)', w:'Thin in her bank. Read it once so it cannot blindside you, then leave it.'},
+};
+const FLAGN = {D:'her diagrams row', P:'her processes row', R:'her reasoning row', T:'her terminology row', H:'named on her Module 3 help board', S:'starred exam case'};
+
+function focusStats(){
+  const F = DATA.focus, done = F.filter(f=>S.mastery[f.id]);
+  return { n:F.length, d:done.length,
+           pts:F.reduce((a,b)=>a+b.pts,0), dpts:done.reduce((a,b)=>a+b.pts,0) };
+}
+function focusHead(){
+  const st = focusStats(), pc = st.pts ? Math.round(st.dpts/st.pts*100) : 0;
+  return `<b>${st.d} of ${st.n} topics</b>
+    <span class="fbar"><i style="width:${pc}%"></i></span>
+    <span class="hist">${st.dpts} of ${st.pts} marks of her bank covered</span>`;
+}
+function focusCard(){
+  if(!DATA.focus.length) return '';
+  const rows = t => DATA.focus.filter(f=>f.tier===t).map(f=>{
+    const on = !!S.mastery[f.id], chips = [];
+    (f.flag||'').split(' ').filter(Boolean).forEach(x=>{
+      if(x==='tape') chips.push('<span class="fchip tape">🎤 she said it in class</span>');
+      else if(FLAGN[x]) chips.push(`<span class="fchip her">📌 ${FLAGN[x]}</span>`);
+    });
+    if(f.hl)  chips.push('<span class="fchip hl">🆘 on her helpline</span>');
+    if(f.rev) chips.push(`<span class="fchip rev">🗓 revision ${esc(f.rev)}</span>`);
+    if(f.kh)  chips.push(`<span class="fchip kh">🎮 ${f.kh} in her Kahoots</span>`);
+    if(f.saq) chips.push(`<span class="fchip saq">✍️ ${f.saq} written / dropdown</span>`);
+    return `<div class="frow${on?' on':''}" style="--tc:${FTIER[f.tier].c}" data-fid="${f.id}">
+      <input type="checkbox" class="fchk" ${on?'checked':''} aria-label="I can do this: ${esc(f.t)}">
+      <details class="fbody"><summary>
+        <span class="ft">${esc(f.t)}</span>
+        <span class="fmeta"><span class="fchip sys">${MODS[f.mod]||''} · ${SYS[f.sys]}</span><span class="fchip">${f.n} questions</span><span class="fchip">${f.pts} marks</span><span class="fchip">${f.qz} quizzes</span>${chips.join('')}</span>
+      </summary>
+      <div class="fdet">
+        <p><b>Done when you can:</b> ${esc(f.done)}</p>
+        <p><b>How she asks it:</b> ${esc(f.ask)}</p>
+        ${f.said ? `<p><b>Her words, HELP WITH MODULE 3 TOPICS board:</b> “${esc(f.said)}”</p>` : ''}
+        ${f.held&&f.held.length ? `<p><b>Starred, not dealt yet</b> — her answer is not readable yet:${f.held.map(h=>'<br>• '+esc(h)).join('')}</p>` : ''}
+        ${f.was0 ? `<p class="fcap">In ${esc(f.was0)} this row sat on top (her words about THAT module’s test); here it ranks on marks like every module row.</p>` : ''}
+        ${f.hl ? `<p><b>Her helpline section:</b> “${esc(f.hl)}” — she posts <a href="${esc(f.hlUrl)}" target="_blank" rel="noopener">her own worked answers</a> for it.</p>` : ''}
+        ${f.cap ? `<p class="fcap"><b>Where it ends:</b> ${esc(f.cap)}</p>` : ''}
+        ${herAnswer(f.id)}
+        ${f.qs&&f.qs.length?`<div class="aiwrap"><button class="btn primary learnrow" data-learnf="${f.id}">📖 Learn her ${f.qs.length} question${f.qs.length>1?'s':''} on this</button><span class="refsrc">only her questions on this topic, marked one at a time with her answer, slide and video in place — one-tap questions first, written ones last</span></div>`:''}
+        <div class="aiwrap"><button class="btn ghost askai" data-askf="${f.id}">${AI_LBL}</button><span class="refsrc">copies a prompt for Gemini (or any AI) — her level, her wording and her “where it ends” line go with it</span></div>
+        <div class="refsrc">Focus Points doc: ${esc(f.crit)}</div>
+      </div></details></div>`;
+  }).join('');
+  const tier = t => `<div class="ftier" style="color:${FTIER[t].c}">${FTIER[t].n}
+      <span class="fnum">· ${DATA.focus.filter(f=>f.tier===t).length} topics</span></div>
+    <div class="fwhy">${FTIER[t].w}</div>${rows(t)}`;
+  return `<div class="card" style="border-left:4px solid var(--warn)">
+    <details>
+      <summary style="cursor:pointer;font-weight:700">🎯 What to learn, and how far · <span id="fsum">${focusStats().d}/${focusStats().n}</span></summary>
+      <div style="margin-top:10px">
+        <div class="fhead" id="fhead">${focusHead()}</div>
+        <p class="fwhy">The ten rows on top are HER ten starred cases — the exam is built on them. Below them, every row of the three module checklists (each one of her own numbered criteria), ranked again on its marks in her quizzes. <b>Questions</b> and <b>marks</b> are counted by the build, never by a person. <b>done / how she asks it / where it stops</b> are this tool’s reading; the questions, her model answers and her case scenarios are hers. The best available read on her emphasis, not a leaked paper.</p>
+        ${tier(0)}${tier(1)}${tier(2)}${tier(3)}
+        <div class="refsrc" style="margin-top:10px">Sources: her Assessment Overview and CASE STUDY BOOKLET A page · Case Study Workbook 2026 S2 (scenarios, starred questions, figures) · her 2024 case model-answer decks, her NS1 deck and NS2 learning page, her Fertility quiz · her Case Study Formative Test Modules 1–2 · her Continuous Tests and Exam Focus Points criteria doc and the three module sims’ checklists. Ticks are saved in this browser only.</div>
+      </div>
+    </details>
+  </div>`;
+}
+/* her own worked answer for this topic, verbatim from the helpline answers board.
+   Her CAPITALISED terms are the mark-earning words — left exactly as she wrote them. */
+function herAnswer(id){
+  const h = (DATA.helpline||{})[id];
+  if(!h) return '';
+  const body = h.parts.map(p=>`<div class="hlh">${esc(p.h)}</div>${esc(p.t)}`).join(String.fromCharCode(10));
+  return `<details class="hlans"><summary>✅ Her own worked answer — open it</summary>
+    <div class="hlbody">${body}
+<span class="refsrc">Verbatim from her MODULE 2 HELPLINE: LET US REFLECT (answers) board. The words she put in CAPITALS are the ones carrying the marks. <a href="${esc(h.url)}" target="_blank" rel="noopener">Open it on Canvas</a> for her figures.</span></div></details>`;
+}
+
+function bindFocus(){
+  document.querySelectorAll('.frow').forEach(r=>{
+    const cb = r.querySelector('.fchk');
+    if(!cb) return;
+    cb.onchange = () => {
+      if(cb.checked) S.mastery[r.dataset.fid] = 1; else delete S.mastery[r.dataset.fid];
+      SV('mastery', S.mastery);
+      r.classList.toggle('on', cb.checked);
+      const h = $('#fhead'); if(h) h.innerHTML = focusHead();
+      const sm = $('#fsum'); if(sm){ const st=focusStats(); sm.textContent = st.d+'/'+st.n }
+    };
+  });
+}
+
+/* ── home ──────────────────────────────────────────────────────────── */
+function home(){
+  $('#footbar').classList.remove('on');
+  const last = S.scores[S.scores.length-1];
+  const mp = missPool().length, res = LS('resume');
+  const nLbl = s => { const pool=CLOSED.filter(q=>q.mod===s).length, n=howMany(pool); return n===pool?`all ${n}`:n };
+  const nCase = CASEQS().length;
+  document.getElementById('view').innerHTML = `
+  ${sparkCard()}
+  ${focusCard()}
+  <div class="card door" style="border-left:4px solid var(--ok)">
+    <h2>📖 Learn as you go</h2>
+    <p>Not a test. Every question marks itself the moment you press <b>Check</b>, and the answer, her slide and the matched video open right under it before you move on — you can open the slide or video <i>before</i> you answer, too. Press Check with nothing picked and it just shows you. Nothing here goes on the score chart; a wrong or skipped one still joins your misses pile. Start here when the quizzes feel like deep water.</p>
+    ${res&&res.ids&&res.ids.length?`<button class="btn primary wide" id="resumeB">▶ Pick up where you left off · Q${Math.min((res.i|0)+1,res.ids.length)} of ${res.ids.length} · ${esc(res.label)}</button>`:''}
+    <div class="chips"><span>How many at a time</span>${NOPTS.map(n=>`<button class="chip${String(S.n)===String(n)?' on':''}" data-n="${n}">${n==='all'?'All '+CLOSED.length:n}</button>`).join('')}</div>
+    <button class="btn ${res&&res.ids&&res.ids.length?'':'primary '}wide" data-go="mini" data-learn="1">${S.n==='all'?`Learn the whole bank · ${CLOSED.length} questions, least-seen first`:`Learn through ${howMany(CLOSED.length)} · dealt from the whole bank`}</button>
+    <div class="sysrow">
+      <button class="btn ghost" data-go="cases" data-learn="1">Learn the 10 cases · ${nCase}</button>
+      <button class="btn ghost" data-sys="m1" data-learn="1">Learn Module 1 · ${nLbl('m1')}</button>
+      <button class="btn ghost" data-sys="m2" data-learn="1">Learn Module 2 · ${nLbl('m2')}</button>
+      <button class="btn ghost" data-sys="m3" data-learn="1">Learn Module 3 · ${nLbl('m3')}</button>
+      <button class="btn ghost" data-go="miss" data-learn="1" ${mp?'':'disabled'}>Learn my misses${mp?` · ${howMany(mp)}${howMany(mp)<mp?' of '+mp:''}`:''}</button>
+    </div>
+    <p style="margin:8px 0 0">The count applies to every dealt set here and to the Module 1 / 2 / 3 sets under Pick my rep (the 10 cases always come whole, in booklet order); a mock test keeps its own size. Want particular quizzes, as many as you like? Tick them under <b>Pick my rep</b> below. A Learn run saves itself as you go — stop partway and this page offers to pick it up.</p>
+  </div>
+  <div class="card door" id="watch" style="border-left:4px solid var(--primary)">
+    <h2>📺 Watch first — the three video shelves</h2>
+    <p>${DATA.stats.withVideo} of the ${DATA.stats.n} questions carry a Dr Matt &amp; Dr Mike video (or a named gap-filler) matched from the video’s own captions and read by hand, opening where the point is taught — in a mock only after a wrong answer, in Learn mode from the start. The whole shelves, by topic:</p>
+    <a class="btn wide" href="https://jeremyspm.github.io/hs2-m1-videos.html" target="_blank" rel="noopener">Module 1 playlist ↗</a>
+    <a class="btn wide" href="https://jeremyspm.github.io/hs2-videos.html" target="_blank" rel="noopener">Module 2 playlist ↗</a>
+    <a class="btn wide" href="https://jeremyspm.github.io/hs2-m3-videos.html" target="_blank" rel="noopener">Module 3 playlist ↗</a>
+  <div class="card door">
+    <h2>🎯 Deal me a mock test</h2>
+    <p>Practice only — dealt from her quizzes and her case answers. The real exam is on campus: Thu 5 Nov, 12:30, 130 min, 32 questions, 37% written, built on the starred cases.</p>
+    <button class="btn primary wide" data-go="mini">Sit a mini mock test · 12 questions, ~15 min</button>
+    <button class="btn wide" data-go="full">Sit the full mock exam · 32 Q, 37% of the marks written from the cases, 130 min — the exam’s shape</button>
+    <button class="btn wide" data-go="miss" ${Object.keys(S.miss).length? '':'disabled'}>Redo my misses${Object.keys(S.miss).length?` · ${Object.keys(S.miss).length} in the pile`:''}</button>
+  </div>
+  <div class="card door">
+    <h2>🗂 Pick my rep</h2>
+    <p>Her quizzes, unlocked. <b>Tick any number of them</b> — or a whole system — and the bar at the bottom runs them as one: <b>Learn</b> with the answer, slide and video under every question, or <b>Sit</b> as a test and see them at the end. A row's own Learn / Sit takes that quiz alone. No attempt limits, marked instantly.</p>
+    <div class="chips"><span>Tick</span>
+      <button class="chip" data-pk="all">All ${DATA.quizzes.length}</button>
+      <button class="chip" data-pk="cases">Cases</button><button class="chip" data-pk="m1">Module 1</button><button class="chip" data-pk="m2">Module 2</button><button class="chip" data-pk="m3">Module 3</button>
+    </div>
+    <div class="sysrow">
+      <button class="btn ghost" data-go="cases">Sit the 10 cases · ${nCase}</button>
+      <button class="btn ghost" data-sys="m1">Sit Module 1 · ${nLbl('m1')}</button>
+      <button class="btn ghost" data-sys="m2">Sit Module 2 · ${nLbl('m2')}</button>
+      <button class="btn ghost" data-sys="m3">Sit Module 3 · ${nLbl('m3')}</button>
+    </div>
+    <div class="qlist">${DATA.quizzes.map((z,i,a)=>`${i===0||a[i-1].mod!==z.mod?`<div class="qmod">${esc(MODN[z.mod]||z.mod)}</div>`:''}
+      <div class="qrow${S.pick.includes(z.id)?' on':''}" data-z="${z.id}"><input type="checkbox" class="pk" ${S.pick.includes(z.id)?'checked':''} aria-label="tick ${esc(z.name)}"><span class="tag ${z.sys}">${z.sys}</span><b>${esc(z.name)}</b>
+      <span class="acts"><span class="m">${z.n} Q</span><button class="btn ghost learn" data-quiz="${z.id}" data-learn="1">Learn</button><button class="btn ghost" data-quiz="${z.id}">Sit</button></span></div>`).join('')}
+    </div>
+  </div>`;
+  bindFocus();
+  document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>start(b.dataset.go,!!b.dataset.learn));
+  document.querySelectorAll('[data-quiz]').forEach(b=>b.onclick=()=>start('quiz:'+b.dataset.quiz,!!b.dataset.learn));
+  document.querySelectorAll('[data-sys]').forEach(b=>b.onclick=()=>start('sys:'+b.dataset.sys,!!b.dataset.learn));
+  document.querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>{S.n=b.dataset.n==='all'?'all':+b.dataset.n;SV('n',S.n);const y=window.scrollY;home();window.scrollTo(0,y)});
+  const rb=$('#resumeB'); if(rb) rb.onclick=resumeLearn;
+  /* a tap anywhere on a quiz row ticks it — except on its own Learn / Sit buttons */
+  document.querySelectorAll('.qrow').forEach(r=>r.onclick=e=>{
+    if(e.target.closest('button'))return;
+    const cb=r.querySelector('.pk'); if(e.target!==cb)cb.checked=!cb.checked;
+    setPick(r.dataset.z,cb.checked)});
+  document.querySelectorAll('[data-pk]').forEach(b=>b.onclick=()=>{
+    const zs=DATA.quizzes.filter(z=>b.dataset.pk==='all'||z.mod===b.dataset.pk).map(z=>z.id);
+    const all=zs.every(id=>S.pick.includes(id));
+    zs.forEach(id=>setPick(id,!all,true)); paintPick()});
+  paintPick();
+}
+function setPick(id,on,quiet){
+  const has=S.pick.includes(id);
+  if(on&&!has)S.pick.push(id); else if(!on&&has)S.pick=S.pick.filter(x=>x!==id);
+  if(!quiet)paintPick();
+}
+/* the ticked rows light up, a system chip lights when every quiz of it is ticked, and the
+   bottom bar carries the run — Learn or Sit every ticked quiz as one deck, or clear the ticks */
+function paintPick(){
+  SV('pick',S.pick);
+  document.querySelectorAll('.qrow').forEach(r=>{const on=S.pick.includes(r.dataset.z);r.classList.toggle('on',on);r.querySelector('.pk').checked=on});
+  document.querySelectorAll('[data-pk]').forEach(b=>{const zs=DATA.quizzes.filter(z=>b.dataset.pk==='all'||z.mod===b.dataset.pk);b.classList.toggle('on',zs.length>0&&zs.every(z=>S.pick.includes(z.id)))});
+  const fb=$('#footbar'), k=S.pick.length, m=dealPick().length;
+  if(!k||!$('.qlist')){fb.classList.remove('on');return}
+  fb.classList.add('on');
+  fb.innerHTML=`<button class="btn primary" id="pkLearn">Learn ${k===1?'this quiz':k+' quizzes'} · ${m} Q</button><button class="btn" id="pkSit">Sit · ${m} Q</button><button class="btn ghost x" id="pkClear" title="clear the ticks" aria-label="clear the ticks">✕</button>`;
+  $('#pkLearn').onclick=()=>start('pick',true);
+  $('#pkSit').onclick=()=>start('pick',false);
+  $('#pkClear').onclick=()=>{S.pick=[];paintPick()};
+}
+function sparkCard(){
+  if(!S.scores.length) return `<div class="card"><b>No sittings yet.</b>
+    <p class="hist" style="margin:.4rem 0 0">Your first mock test is the baseline — the whole game is the climb from there. ${daysLeft()} days to go.</p></div>`;
+  const pts=S.scores.slice(-30).map(s=>s.got/s.tot);
+  const W=600,H=70,P=6;
+  const x=i=>P+i*(W-2*P)/Math.max(1,pts.length-1), y=v=>H-P-v*(H-2*P);
+  const path=pts.map((v,i)=>(i?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1)).join(' ');
+  const last=S.scores[S.scores.length-1], pct=Math.round(100*last.got/last.tot);
+  const best=Math.max(...S.scores.map(s=>s.got/s.tot));
+  return `<div class="card">
+    <div style="display:flex;align-items:baseline;gap:10px">
+      <b style="font-size:1.3rem">${last.got}/${last.tot}</b>
+      <span class="hist">${pct}% · ${esc(last.label)}</span>
+      <span class="hist" style="margin-left:auto">best ${Math.round(best*100)}% · ${S.scores.length} sat</span>
+    </div>
+    <svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="score history">
+      <line x1="${P}" y1="${y(.5)}" x2="${W-P}" y2="${y(.5)}" stroke="var(--border)" stroke-dasharray="4 4"/>
+      <path d="${path}" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="${x(pts.length-1)}" cy="${y(pts[pts.length-1])}" r="4" fill="var(--primary)"/>
+    </svg>
+    <div class="hist">dashed line = 50%. <button class="btn ghost" id="shareBtn" style="padding:2px 10px;font-size:.78rem">Copy score line</button></div>
+  </div>`;
+}
+
+/* ── sitting ───────────────────────────────────────────────────────── */
+let SIT=null;
+/* `learn` sits the same deck in Learn mode: marked per question, resources in place,
+   never timed, never on the score chart (see the learn-mode block below) */
+/* a Learn run is saved as it goes (deck ids + every mark), so a phone that drops the tab
+   halfway through 200 questions loses nothing: home offers to pick it up. A mock is one go. */
+function saveRun(){
+  if(!SIT||!SIT.learn)return;
+  SV('resume',{ids:SIT.deck.map(q=>q.id),i:SIT.i,ans:SIT.ans,chk:SIT.chk,peek:SIT.peek,label:SIT.label,mode:SIT.mode,t0:SIT.t0});
+}
+function resumeLearn(){
+  const r=LS('resume');
+  const byId=new Map(DATA.questions.map(q=>[q.id,q]));
+  const deck=r&&Array.isArray(r.ids)?r.ids.map(id=>byId.get(id)).filter(Boolean):[];
+  if(!deck.length){SV('resume',null);home();return}
+  SIT={deck,label:r.label||'picked up',mode:r.mode||'mini',i:Math.min(Math.max(r.i|0,0),deck.length-1),ans:r.ans||{},t0:r.t0||Date.now(),timed:false,end:null,learn:true,chk:r.chk||{},peek:r.peek||{}};
+  renderQ();window.scrollTo(0,0);
+}
+function start(mode,learn=false){
+  let deck,label,timed=false;
+  if(learn){const r=LS('resume');
+    if(r&&r.ids&&r.ids.length&&!confirm(`You have a Learn run waiting (Q${Math.min((r.i|0)+1,r.ids.length)} of ${r.ids.length} · ${r.label}). Drop it and start this one?`))return}
+  if(mode==='mini'){
+    if(learn){deck=dealMini(howMany(CLOSED.length));label=deck.length===CLOSED.length?'the whole bank':`${deck.length} from the bank`}
+    else{deck=dealMini();label='mini mock'}}
+  else if(mode==='full'){deck=dealFull();label='full mock exam';timed=true}
+  else if(mode==='cases'){deck=CASEQS();label='the 10 cases'}
+  else if(mode==='miss'){deck=dealMisses(learn?CAP():12);label=learn?'my misses':'redo misses'}
+  else if(mode==='pick'){deck=dealPick();const k=S.pick.length;
+    label=k===1?(DATA.quizzes.find(z=>z.id===S.pick[0])||{}).name||'1 quiz':`${k} quizzes · ${deck.length} Q`}
+  else if(mode.startsWith('quiz:')){const z=DATA.quizzes.find(x=>x.id===mode.slice(5));
+    deck=DATA.questions.filter(q=>q.quiz===z.id);label=z.name}
+  else if(mode.startsWith('topic:')){const f=DATA.focus.find(x=>x.id===mode.slice(6));
+    /* a focus row's own questions (content/qrow.js, read by hand), in the row's order */
+    const byId=new Map(DATA.questions.map(q=>[q.id,q]));
+    deck=((f&&f.qs)||[]).map(id=>byId.get(id)).filter(Boolean);label=f?f.t:'topic'}
+  else if(mode.startsWith('sys:')){const s=mode.slice(4), pool=CLOSED.filter(q=>q.mod===s).length;
+    deck=dealSys(s,howMany(pool));label=`${deck.length===pool?'all ':''}${deck.length} · ${MODS[s]||s}`}
+  if(!deck||!deck.length){alert('Nothing to deal here yet.');return}
+  if(learn){timed=false;SV('resume',null)}
+  SIT={deck,label,mode,i:0,ans:{},t0:Date.now(),timed,end:timed?Date.now()+130*60*1000:null,learn,chk:{},peek:{}};
+  if(mode==='mini'&&DATA.chains.length){warmup();return}
+  renderQ();
+}
+function warmup(){
+  const ch=DATA.chains[Math.random()*DATA.chains.length|0];
+  const beads=ch.beads.filter(b=>b.t);
+  const bi=1+Math.random()*(beads.length-1)|0;
+  const answer=beads[bi].t;
+  const others=shuffle(DATA.chains.filter(c=>c!==ch).flatMap(c=>c.beads.filter(b=>b.t).map(b=>b.t))).slice(0,3);
+  const opts=shuffle([answer,...others]);
+  $('#view').innerHTML=`<div class="card">
+    <b>30-second warm-up · ${esc(ch.name)}</b>
+    <div class="chain">${ch.beads.map(b=> b.t
+      ? `<div class="bead ${b.t===answer?'blank':''}">${b.t===answer?'?':esc(b.t)}</div>`
+      : `<div class="verb">${esc(b.v)} ↓</div>`).join('')}</div>
+    ${opts.map(o=>`<label class="opt"><input type="radio" name="wu"><span>${esc(o)}</span></label>`).join('')}
+    <div class="src">${esc(ch.src)} — a scaffold built from her decks, not her material.</div>
+    <button class="btn primary wide" id="wuGo">${SIT.learn?'Check → start learning':'Check → start the mock test'}</button>
+    <button class="btn ghost wide" id="wuSkip">Skip warm-up</button></div>`;
+  document.querySelectorAll('.opt').forEach(o=>o.onclick=()=>{document.querySelectorAll('.opt').forEach(x=>x.classList.remove('sel'));o.classList.add('sel');o.querySelector('input').checked=true});
+  $('#wuGo').onclick=()=>{const sel=document.querySelector('.opt.sel span');
+    if(sel){sel.closest('.opt').style.borderColor = sel.textContent===answer?'var(--ok)':'var(--danger)';
+      setTimeout(renderQ, sel.textContent===answer?450:1400);
+      if(sel.textContent!==answer){const right=[...document.querySelectorAll('.opt span')].find(s=>s.textContent===answer);right.closest('.opt').style.borderColor='var(--ok)';}
+    } else renderQ()};
+  $('#wuSkip').onclick=renderQ;
+}
+let timerIv=null;
+function renderQ(){
+  clearInterval(timerIv);
+  const q=SIT.deck[SIT.i];
+  const fb=$('#footbar');fb.classList.add('on');
+  const last=SIT.i===SIT.deck.length-1, chk=SIT.learn?SIT.chk[q.id]:null;
+  if(SIT.learn){
+    /* learn mode: Check marks THIS question in place; Next only appears once it is marked */
+    fb.innerHTML=`<button class="btn" id="prevB" ${SIT.i? '':'disabled'}>← Back</button>`+
+      (chk?`<button class="btn primary" id="nextB">${last?'Finish':'Next →'}</button>`
+          :`<button class="btn primary" id="chkB">Check ✓</button>`);
+    $('#prevB').onclick=()=>{if(chk)saveLearnSaq();else saveAns();SIT.i--;renderQ()};
+    if(chk)$('#nextB').onclick=()=>{saveLearnSaq();last?learnDone():(SIT.i++,renderQ())};
+    else $('#chkB').onclick=learnCheck;
+    saveRun();
+  } else {
+    fb.innerHTML=`<button class="btn" id="prevB" ${SIT.i? '':'disabled'}>← Back</button>
+      <button class="btn primary" id="nextB">${last?'Finish & mark':'Next →'}</button>`;
+    $('#prevB').onclick=()=>{saveAns();SIT.i--;renderQ()};
+    $('#nextB').onclick=()=>{saveAns();last?mark():(SIT.i++,renderQ())};
+  }
+  setTimeout(()=>{const x=$('#exitB');if(x)x.onclick=()=>{if(confirm(SIT.learn?'Stop here? Everything you checked is already in your misses pile, and home will offer to pick this run up again.':'Abandon this mock test? Nothing is saved.')){clearInterval(timerIv);home();window.scrollTo(0,0)}}},0);
+  const a=SIT.ans[q.id];
+  const imgTag=f=>`<img class="qimg" src="${imgU(f)}" alt="question figure" loading="lazy">`;
+  /* the blank widget, inline where Canvas put it: her dropdown stays a dropdown
+     (choices shuffled per sitting), her typed blank stays typed */
+  const widget=(b,i)=> q.bk==='dd'
+    ? `<select class="inl" data-i="${i}" aria-label="blank ${i+1}"><option value="">— choose —</option>${shuffleStable(q.id+i,b.options).map(o=>`<option ${a&&a.pick&&a.pick[i]===o?'selected':''}>${esc(o)}</option>`).join('')}</select>`
+    : `<input type="text" class="inl" data-i="${i}" style="width:${Math.min(26,Math.max(7,Math.max(...b.options.map(o=>o.length))+3))}ch" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="type…" aria-label="blank ${i+1}" value="${a&&a.pick?esc(a.pick[i]||''):''}">`;
+  /* structured stem: her paragraphs, lists and table rows, with [[IMG:…]] and
+     [[BLANK:k]] markers resolved in place. Images the stem did not place still show
+     below it, so no figure is ever lost. */
+  const placed=new Set();
+  let stemHTML=q.qh
+    ? q.qh.replace(/\[\[IMG:([^\]]+)\]\]/g,(m,f)=>{placed.add(f);return imgTag(f)})
+          .replace(/\[\[BLANK:(\d+)\]\]/g,(m,k)=>q.type==='cloze'&&q.blanks[+k]?widget(q.blanks[+k],+k):'____')
+    : esc(q.q);
+  const imgs=(q.imgs||[]).filter(f=>!placed.has(f)).map(imgTag).join('');
+  const inlineBlanks=q.type==='cloze'&&q.qh&&/\[\[BLANK:\d+\]\]/.test(q.qh);
+  let body='';
+  if(q.type==='mcq'||q.type==='tf'||q.type==='multi'){
+    const multi=q.type==='multi';
+    body=q.opts.map((o,i)=>`<label class="opt ${a&&a.sel&&a.sel.includes(i)?'sel':''}">
+      <input type="${multi?'checkbox':'radio'}" name="q" value="${i}" ${a&&a.sel&&a.sel.includes(i)?'checked':''}>
+      <span>${esc(optLabel(q,o))}</span></label>`).join('');
+    if(multi)body=`<div class="note">Tick every answer that applies — it may be just one.</div>`+body;
+  } else if(q.type==='match'){
+    const bank=shuffleStable(q.id,[...new Set(q.pairs.map(p=>p.right))]); // a right-hand item used twice is still ONE option
+    body=q.pairs.map((p,i)=>`<div class="blankrow"><label>${esc(p.left)}</label>
+      <select data-i="${i}"><option value="">— choose —</option>
+      ${bank.map(r=>`<option ${a&&a.pick&&a.pick[i]===r?'selected':''}>${esc(r)}</option>`).join('')}</select></div>`).join('');
+  } else if(q.type==='cloze'){
+    body=inlineBlanks
+      ? `<div class="note">${q.bk==='dd'?'Pick from each dropdown in the text.':'Type into each blank in the text — spelling counts, capitals don’t.'}</div>`
+      : q.blanks.map((b,i)=>`<div class="blankrow"><label>${esc(blankLabel(b,i))}${q.bk==='dd'?'':' (type it)'}</label>${widget(b,i)}</div>`).join('');
+  } else if(q.type==='essay'){
+    body=`${q.scenario?`<div class="note">${esc(q.scenario)}</div>`:''}
+      <div class="note">Written question · ${q.pts} marks — write ${q.pts} numbered points, one causal step each. You mark yourself against the model at the end.</div>
+      <textarea data-essay placeholder="1. …&#10;2. …">${a&&a.text?esc(a.text):''}</textarea>`;
+  }
+  /* learn mode: once checked, a wrong/skipped/written question already has its slide and
+     video open inside the mark block, so the chips row is only shown while they are not */
+  const open=chk&&learnOpen(q,chk);
+  $('#view').innerHTML=`<div class="card">
+    <div class="qhead"><span class="n">Q${SIT.i+1}/${SIT.deck.length}</span>
+      <span class="tag ${q.sys}">${q.sys}</span><span class="tag">${q.pts} mk</span>${SIT.learn?'<span class="tag" style="color:var(--ok)">learn</span>':''}
+      <span class="timer" id="timer"></span>
+      <button class="btn ghost" id="exitB" title="${SIT.learn?'stop learning':'abandon mock test'}" style="padding:2px 10px">✕</button></div>
+    ${inlineBlanks?body:''}<div class="stem${q.qh?' rich':''}">${stemHTML}</div>${imgs}${inlineBlanks?'':body}
+    ${chk?learnMkHTML(q,chk):''}${SIT.learn&&!open?learnChipsHTML(q):''}
+    <div class="pips">${SIT.deck.map((_,i)=>{const id=SIT.deck[i].id,c=SIT.learn&&SIT.chk[id];
+      const cls=c?(c.r?(c.r.got>=c.r.tot&&SIT.ans[id]?'ok':'bad'):'done'):(SIT.ans[id]?'done':'');
+      return `<span class="pip ${cls} ${i===SIT.i?'cur':''}"></span>`}).join('')}</div>
+  </div>`;
+  if(chk)paintChecked(q);
+  /* the label's own activation checks the box; we only mirror it on change. The old
+     handler also flipped it by hand, and the two flips cancelled: tapping the WORDS of a
+     "tick every answer that applies" option never ticked it (only the box itself did). */
+  else document.querySelectorAll('.opt').forEach(o=>{const inp=o.querySelector('input');
+    inp.onchange=()=>{if(inp.type==='radio')document.querySelectorAll('.opt').forEach(x=>x.classList.remove('sel'));o.classList.toggle('sel',inp.checked)}});
+  if(SIT.timed){const t=$('#timer');const tick=()=>{const s=Math.max(0,(SIT.end-Date.now())/1000|0);
+    t.textContent=`${s/60|0}:${String(s%60).padStart(2,'0')}`;t.classList.toggle('low',s<300);
+    if(s<=0){clearInterval(timerIv);saveAns();mark()}};tick();timerIv=setInterval(tick,1000)}
+}
+function shuffleStable(seed,arr){
+  let h=0;for(const c of String(seed))h=(h*31+c.charCodeAt(0))>>>0;
+  return arr.map((v,i)=>({v,k:(h=(h*1103515245+12345)>>>0)})).sort((a,b)=>a.k-b.k).map(x=>x.v);
+}
+function saveAns(){
+  const q=SIT.deck[SIT.i];
+  if(q.type==='essay'){const t=document.querySelector('[data-essay]');if(t&&t.value.trim())SIT.ans[q.id]={text:t.value};return}
+  if(q.type==='match'||q.type==='cloze'){
+    const pick={};let any=false;
+    document.querySelectorAll('[data-i]').forEach(el=>{if(el.value){pick[el.dataset.i]=el.value;any=true}});
+    if(any)SIT.ans[q.id]={pick};return}
+  const sel=[...document.querySelectorAll('.opt input:checked')].map(i=>+i.value);
+  if(sel.length)SIT.ans[q.id]={sel};
+}
+/* ── learn mode ────────────────────────────────────────────────────────
+   The same deck and the same marking, but per question: Check marks it in place and
+   the answer, her slide and the matched video sit right under it — the results
+   accordion brought forward to the moment you still care. Slide and video can be
+   opened BEFORE answering; that counts as a peek, and a right answer after a peek
+   does not clear a miss. Check with nothing picked = "show me" = a miss. Learn
+   sittings feed the misses pile and the least-seen dealer, never the score chart. */
+function learnChipsHTML(q){
+  const chips=[];
+  if(q.vid)chips.push(`<button class="qa" data-act="vid">▶ Video · from ${mmss(Number.isInteger(q.vid.at)?q.vid.at:0)}</button>`);
+  for(const r of q.refs)chips.push(`<button class="qa" data-act="${r.k}">${REF[r.k].ic} ${REF[r.k].lbl}${r.k==='patton'?' p. '+r.pp:''}</button>`);
+  if(hasHer(q))chips.push('<button class="qa" data-act="hl">✅ Her worked answer</button>');
+  const hint=chips.length?(SIT.chk[q.id]?'':'<span class="hint">open before or after you answer</span>')
+    :(DATA.questions.some(x=>x.vid||(x.refs&&x.refs.length))
+      ?'<span class="hint">nothing of hers or Patton’s states this one outright — the answer shows on Check</span>'
+      :'<span class="hint">her slides and the videos have not been matched to this module yet — the answer shows on Check</span>');
+  return `<div class="lres" data-qid="${q.id}">${chips.join('')}${hint}<div class="qr-pane" hidden></div></div>`;
+}
+/* resources open by themselves for: written questions, skipped ones, anything not fully right */
+const learnOpen=(q,chk)=>!chk.r||!SIT.ans[q.id]||chk.r.got<chk.r.tot;
+function learnCheck(){
+  saveAns();
+  const q=SIT.deck[SIT.i], a=SIT.ans[q.id];
+  const r=markQ(q,a), peeked=!!SIT.peek[q.id];
+  SIT.chk[q.id]={r,peeked,ticks:[]};
+  S.seen[q.id]=(S.seen[q.id]||0)+1;
+  if(r){ if(!a||r.got<r.tot)S.miss[q.id]=(S.miss[q.id]||0)+1; else if(!peeked&&S.miss[q.id])delete S.miss[q.id]; }
+  SV('miss',S.miss);SV('seen',S.seen);
+  renderQ();
+  const m=document.querySelector('.mk');if(m)window.scrollTo({top:m.getBoundingClientRect().top+window.scrollY-64,behavior:'smooth'});
+}
+function saveLearnSaq(){
+  const q=SIT.deck[SIT.i],chk=SIT.chk[q.id];
+  if(!chk||q.type!=='essay')return;
+  chk.ticks=[...document.querySelectorAll('[data-lsaq]')].map((c,i)=>c.checked?i:-1).filter(i=>i>=0);
+}
+function learnMkHTML(q,chk){
+  const a=SIT.ans[q.id],r=chk.r;
+  let verdict,cls;
+  if(!r){verdict='✍ Tick each model step you actually wrote';cls='saq'}
+  else if(!a){verdict='Skipped — read this one';cls='wrong'}
+  else if(r.got>=r.tot){verdict=chk.peeked?'✓ Right (after a peek)':'✓ Right';cls='right'}
+  else if(r.got>0){verdict=`Partly right · ${+r.got.toFixed(1)}/${r.tot}`;cls='wrong'}
+  else{verdict='✗ Not quite';cls='wrong'}
+  const body=!r
+    ? `${a&&a.text?'':'<div class="you">— nothing written — read the model, then say it out loud</div>'}<div class="steps">${q.saq.steps.map((s,i)=>`<label><input type="checkbox" data-lsaq ${chk.ticks.includes(i)?'checked':''}> <span>${esc(s)}</span></label>${partRefHTML(q,i)}`).join('')}</div><div class="refsrc">${esc(q.saq.src)}</div>`
+    : keyHTML(q,a);
+  const res=learnOpen(q,chk)?(hasHer(q)?herAnswer(q.hl):'')+refsHTML(q)+(q.vid?vidClipHTML(q.vid)+(q.vid.alt?vidRowHTML(q.vid.alt,'also · '):''):''):'';
+  return `<div class="mk ${cls}"><div class="verdict">${verdict}</div>${body}${res}${r?`<button class="btn ghost askai" data-ask="${q.id}">${AI_LBL}</button>`:''}</div>`;
+}
+/* lock the widgets and colour them: the key green, a wrong pick red, per part for matching and blanks */
+function paintChecked(q){
+  const a=SIT.ans[q.id]||{};
+  if(q.type==='mcq'||q.type==='tf'||q.type==='multi'){
+    document.querySelectorAll('.opt').forEach(o=>{const inp=o.querySelector('input'),opt=q.opts[+inp.value];
+      inp.disabled=true;o.classList.add('lock');
+      if(q.key.includes(opt))o.classList.add('k');else if(inp.checked)o.classList.add('x')});
+  } else if(q.type==='match'||q.type==='cloze'){
+    document.querySelectorAll('[data-i]').forEach(el=>{const i=+el.dataset.i,v=(a.pick||{})[i];el.disabled=true;
+      const ok=q.type==='match'?v===q.pairs[i].right:blankOK(q,q.blanks[i],v);
+      el.style.borderColor=ok?'var(--ok)':'var(--danger)'});
+  } else if(q.type==='essay'){const t=document.querySelector('[data-essay]');if(t)t.readOnly=true}
+}
+function learnDone(){
+  saveLearnSaq();
+  SV('resume',null); // the run is finished; nothing to pick up
+  $('#footbar').classList.remove('on');
+  const rows=SIT.deck.map(q=>({q,chk:SIT.chk[q.id]}));
+  const closed=rows.filter(x=>x.chk&&x.chk.r);
+  const first=closed.filter(x=>SIT.ans[x.q.id]&&x.chk.r.got>=x.chk.r.tot&&!x.chk.peeked);
+  const peek=closed.filter(x=>SIT.ans[x.q.id]&&x.chk.r.got>=x.chk.r.tot&&x.chk.peeked);
+  const missed=closed.filter(x=>!SIT.ans[x.q.id]||x.chk.r.got<x.chk.r.tot);
+  const saqs=rows.filter(x=>x.chk&&!x.chk.r);
+  const skipped=rows.filter(x=>!x.chk).length;
+  const btn=(k,lbl)=>`<button class="qa" data-act="${k}">${lbl}</button>`;
+  const row=(q,cls,mk)=>`<div class="qr ${cls}" data-qid="${q.id}">
+      <div class="qr-head"><span class="qr-mk">${mk}</span><span class="qr-stem">${esc(flatStem(q)).slice(0,140)}</span></div>
+      <div class="qr-acts">${q.type==='essay'?'':btn('ans','✓ Answer')}${q.vid?btn('vid','▶ Video'):''}${refBtns(q,btn)}${hasHer(q)?btn('hl','✅ Her answer'):''}</div><div class="qr-pane" hidden></div></div>`;
+  $('#view').innerHTML=`<div class="card">
+    <div class="score-hero">${closed.length?`${first.length} / ${closed.length}`:`✍ ${saqs.length} written`}</div>
+    <div class="score-sub">${closed.length?'right first go':'self-marked'} · learn mode · ${esc(SIT.label)} · ${Math.round((Date.now()-SIT.t0)/60000)} min</div>
+    <div class="systally" style="justify-content:center;margin-bottom:10px">
+      ${peek.length?`<span class="tag">${peek.length} right after a peek</span>`:''}
+      ${missed.length?`<span class="tag">${missed.length} to revisit</span>`:'<span class="tag ok">nothing missed ✓</span>'}
+      ${saqs.length?`<span class="tag">${saqs.length} written, self-marked</span>`:''}
+      ${skipped?`<span class="tag">${skipped} not checked</span>`:''}
+    </div>
+    <div class="note">Learn mode never goes on the score chart — that line is for mock tests sat without help. ${missed.length?`The ${missed.length} you missed or skipped ${missed.length===1?'is':'are'} in your misses pile now (“Learn my misses” / “Redo my misses”); `:''}a right answer after a peek leaves the pile as it was.</div>
+    ${missed.map(({q,chk})=>row(q,chk.r.got>0&&SIT.ans[q.id]?'partial':'wrong',SIT.ans[q.id]?`${+chk.r.got.toFixed(1)}/${chk.r.tot}`:'skip')).join('')}
+    ${peek.map(({q})=>row(q,'partial','peek')).join('')}
+    ${saqs.map(({q,chk})=>row(q,'saq',`✍ ${+(chk.ticks.length*q.pts/q.saq.steps.length).toFixed(1)}/${q.pts}`)).join('')}
+    <button class="btn primary wide" id="doneB">Back to home</button></div>`;
+  $('#doneB').onclick=()=>{SV('miss',S.miss);SV('seen',S.seen);home();window.scrollTo(0,0)};
+  SV('miss',S.miss);SV('seen',S.seen);
+  window.scrollTo(0,0);
+}
+/* ── marking ───────────────────────────────────────────────────────── */
+function markQ(q,a){
+  if(q.type==='essay')return null; // self-marked
+  if(!a)return{got:0,tot:q.pts,detail:'no answer'};
+  if(q.type==='mcq'||q.type==='tf'||q.type==='multi'){
+    const chosen=(a.sel||[]).map(i=>q.opts[i]);
+    const right=chosen.length===q.key.length&&q.key.every(k=>chosen.includes(k));
+    return{got:right?q.pts:0,tot:q.pts,you:chosen.map(o=>optLabel(q,o)).join(' · ')}}
+  if(q.type==='match'){
+    let got=0;q.pairs.forEach((p,i)=>{if((a.pick||{})[i]===p.right)got++});
+    return{got:got*q.pts/q.pairs.length,tot:q.pts,you:q.pairs.map((p,i)=>(a.pick||{})[i]||'—').join(' · ')}}
+  if(q.type==='cloze'){
+    let got=0;
+    q.blanks.forEach((b,i)=>{if(blankOK(q,b,(a.pick||{})[i]))got++});
+    return{got:got*q.pts/q.blanks.length,tot:q.pts,you:q.blanks.map((b,i)=>(a.pick||{})[i]||'—').join(' · ')}}
+}
+/* dropdown: only her marked option is right. Typed: every accepted spelling is. */
+function blankOK(q,b,v){
+  /* phones type curly quotes; a trailing full stop is not a wrong answer */
+  const nrm=s=>String(s||'').toLowerCase().replace(/[’‘`´]/g,"'").replace(/[“”]/g,'"').replace(/\s+/g,' ').trim().replace(/[.]+$/,'');
+  const x=nrm(v);if(!x)return false;
+  const also=(b.also||[]).some(o=>nrm(o)===x);
+  return q.bk==='dd' ? (x===nrm(b.correct)||also) : (b.options.some(o=>nrm(o)===x)||also);
+}
+function blankLabel(b,i){return b.ctx?`${b.ctx} ___`:(b.label&&!/^Answer \d+:?$/.test(b.label)?b.label.replace(/:$/,''):`Blank ${i+1}`)}
+function mark(){
+  clearInterval(timerIv);$('#footbar').classList.remove('on');
+  let got=0,tot=0;const rows=[];
+  for(const q of SIT.deck){
+    const r=markQ(q,SIT.ans[q.id]);
+    S.seen[q.id]=(S.seen[q.id]||0)+1;
+    if(r){got+=r.got;tot+=r.tot;
+      if(r.got<r.tot)S.miss[q.id]=(S.miss[q.id]||0)+1;
+      else if(S.miss[q.id])delete S.miss[q.id];
+      rows.push({q,r})}
+    else rows.push({q,r:null,saq:true});
+  }
+  SIT.auto={got,tot};
+  const saqs=rows.filter(x=>x.saq);
+  $('#view').innerHTML=`<div class="card">
+    <div class="score-hero" id="hero"></div><div class="score-sub" id="heroSub"></div>
+    ${saqs.length?`<div class="note">Tick each model step your written answer actually hit — the score updates as you go. Model answers are the tool’s, not Hannetjie’s.</div>`:''}
+    <div class="rev-ctl"><label class="wo"><input type="checkbox" id="wrongOnly" ${rows.some(x=>x.saq||(x.r&&x.r.got<x.r.tot))?'checked':''}> Wrong only</label><span class="systally" id="systally"></span></div>
+    ${rows.map(({q,r,saq},i)=>{
+      const btn=(k,lbl)=>`<button class="qa" data-act="${k}">${lbl}</button>`;
+      if(saq){const a=SIT.ans[q.id];
+        return `<div class="qr saq" data-qid="${q.id}" data-sys="${q.sys}" data-wrong="1">
+        <div class="qr-head"><span class="qr-mk mk-p" id="mk${i}">✍ /${q.pts}</span><span class="qr-stem">${esc(flatStem(q)).slice(0,140)}</span></div>
+        ${a&&a.text?`<div class="you">You wrote: ${esc(a.text.slice(0,240)).replace(/\n/g,' ')}${a.text.length>240?'…':''}</div>`:'<div class="you">— no answer written —</div>'}
+        <div class="steps">${q.saq.steps.map((s,si)=>`<label><input type="checkbox" data-saq="${i}" data-pt="${q.pts/q.saq.steps.length}"> <span>${esc(s)}</span></label>${partRefHTML(q,si)}`).join('')}</div>
+        <div class="qr-acts"><span class="src">${esc(q.saq.src)}</span>${q.vid?btn('vid','▶ Video'):''}${refBtns(q,btn)}${hasHer(q)?btn('hl','✅ Her answer'):''}</div><div class="qr-pane" hidden></div></div>`}
+      const pct=r.got/r.tot, cls=pct>=1?'right':pct>0?'partial':'wrong';
+      return `<div class="qr ${cls}" data-qid="${q.id}" data-sys="${q.sys}" data-wrong="${pct<1?1:0}">
+        <div class="qr-head"><span class="qr-mk">${(+r.got.toFixed(1))}/${r.tot}</span><span class="qr-stem">${esc(flatStem(q)).slice(0,140)}</span></div>
+        <div class="qr-acts">${btn('ans','✓ Answer')}${q.vid?btn('vid','▶ Video'):''}${refBtns(q,btn)}${hasHer(q)?btn('hl','✅ Her answer'):''}</div>
+        <div class="qr-pane" hidden></div></div>`}).join('')}
+    ${weakSpotsHTML(rows)}
+    <button class="btn primary wide" id="doneB">Save score & finish</button></div>`;
+  const upd=()=>{
+    let s=0;document.querySelectorAll('[data-saq]:checked').forEach(c=>s+=+c.dataset.pt);
+    const saqTot=saqs.reduce((n,{q})=>n+q.pts,0);
+    const g=got+s,t=tot+saqTot;
+    $('#hero').textContent=`${+g.toFixed(1)} / ${t}`;
+    $('#heroSub').textContent=`${Math.round(100*g/t)}% · ${SIT.label} · ${Math.round((Date.now()-SIT.t0)/60000)} min`;
+    SIT.final={got:+g.toFixed(1),tot:t}};
+  document.querySelectorAll('[data-saq]').forEach(c=>c.onchange=upd);upd();
+  const wo=$('#wrongOnly'); if(wo){const f=()=>document.querySelectorAll('.qr').forEach(r=>{r.hidden=wo.checked&&r.dataset.wrong==='0'});wo.onchange=f;f();}
+  {const ms={};rows.forEach(({q,r,saq})=>{if(!saq&&r&&r.got<r.tot)ms[q.sys]=(ms[q.sys]||0)+1});
+   const t=$('#systally');if(t)t.innerHTML=Object.entries(ms).sort((a,b)=>b[1]-a[1]).map(([s,n])=>`<span class="tag">${SYS[s]||s} · ${n} missed</span>`).join('')||'<span class="tag ok">clean sweep ✓</span>';}
+  $('#doneB').onclick=()=>{
+    S.scores.push({t:Date.now(),mode:SIT.mode,label:SIT.label,got:SIT.final.got,tot:SIT.final.tot});
+    SV('scores',S.scores);SV('miss',S.miss);SV('seen',S.seen);home();window.scrollTo(0,0)};
+  SV('miss',S.miss);SV('seen',S.seen);
+  window.scrollTo(0,0);
+}
+/* the explain row: her material first, then the right-sized video, then Ask AI.
+   In a mock sitting only on wrong answers, never before the end; Learn mode brings
+   the same row forward to the question itself. */
+/* the review is an accordion: each question collapses to a mark + one-line stem, and
+   the answer / video / slide open ON DEMAND below the row — never all at once. */
+/* one reference, by kind: her slide is the rendered image (or, for a deck never rendered,
+   the slide's own words); her prose and Patton are the sentence(s) the judge quoted,
+   verbatim, with the source named. Every reference in the bank was judged to STATE the
+   keyed fact and carries a quote re-found in the source at build time — same standard as
+   the videos. Where Patton and Hannetjie disagree, she wins: her references sit above his. */
+function refHTML(r){
+  if(r.k==='slide'&&r.slide)return `<div class="refq slide"><a href="${slideU(r.slide)}" target="_blank" rel="noopener"><img class="slideimg" src="${slideU(r.slide)}" alt="her slide" loading="lazy"></a><span class="refsrc">📖 ${esc(r.src)} — tap to open full size</span></div>`;
+  if(r.k==='patton')return `<div class="refq patton">📕 <i>“${esc(r.t)}”</i><span class="refsrc"> — ${esc(r.src)}${r.fig?` · Figure ${esc(r.fig)}${r.assigned?' (a figure she set in her learning page)':''}`:''}</span></div>`;
+  return `<div class="refq">${REF[r.k].ic} <i>“${esc(r.t)}”</i><span class="refsrc"> — ${esc(r.src)}</span></div>`;
+}
+function refsHTML(q){ return q.refs.length?q.refs.map(refHTML).join(''):''; }
+/* her worked helpline answer under a question: only where the bank tagged the question to a
+   topic that has one (q.hl, content/qtopic.js) and the sim ships that section */
+function hasHer(q){ return !!(q.hl&&typeof herAnswer==='function'&&(DATA.helpline||{})[q.hl]); }
+function refBtns(q,btn){ return q.refs.map(r=>btn(r.k,`${REF[r.k].ic} ${REF[r.k].lbl}`)).join(''); }
+function paneHTML(q,act){
+  if(act==='vid')return q.vid?vidClipHTML(q.vid)+(q.vid.alt?vidRowHTML(q.vid.alt,'also · '):''):'';
+  if(act==='hl')return hasHer(q)?herAnswer(q.hl):'';
+  if(REF[act]){const r=q.refs.find(x=>x.k===act);return r?refHTML(r):''}
+  return keyHTML(q,SIT.ans[q.id])+`<button class="btn ghost askai" data-ask="${q.id}">${AI_LBL}</button>`;
+}
+/* a video link opens at the moment its captions say the tested point is taught —
+   `at` is where the verifying quote was found, not a guess */
+const mmss=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+const CHAN={nn:'Ninja Nerd',iha:'Institute of Human Anatomy',az:'AnatomyZone',ah:'Armando Hasudungan'};
+/* after a wrong answer the matched video is embedded and CUED to the ~2-min stretch
+   that teaches the point; it stops at `end`. A button reloads it as the full video so
+   you never have to leave for the playlist page. */
+function vidClipHTML(v){
+  const at=Number.isInteger(v.at)?v.at:0, end=Number.isInteger(v.end)&&v.end>at?v.end:at+120;
+  const who=CHAN[v.ch]||'Dr Matt &amp; Dr Mike', cm=Math.max(1,Math.round((end-at)/60));
+  return `<div class="vclip" data-id="${v.id}" data-at="${at}" data-end="${end}">
+    <div class="vframe"><img class="vposter" loading="lazy" src="https://i.ytimg.com/vi/${v.id}/mqdefault.jpg" alt=""><button class="vplay" aria-label="Play the clip">▶</button><span class="vbadge">▶ ${mmss(at)}–${mmss(end)} · ~${cm} min</span></div>
+    <div class="vmeta"><span class="vch">${who}</span><a href="https://www.youtube.com/watch?v=${v.id}&t=${at}s" target="_blank" rel="noopener">${esc(v.t)}</a><span class="refsrc">${esc(v.d)}</span><button class="btn ghost vfull">▶ Watch the full video</button></div>
+  </div>`;
+}
+/* youtube-nocookie, NOT www.youtube.com: with uBlock Origin + BlockTube both on (his Firefox),
+   BlockTube's embed-only XHR hook breaks and a www.youtube.com/embed player stays black for good.
+   BlockTube doesn't run on youtube-nocookie. Keep it that way. */
+function loadVid(c,at,end){
+  const src='https://www.youtube-nocookie.com/embed/'+c.dataset.id+'?start='+at+(end?'&end='+end:'')+'&rel=0&modestbranding=1&autoplay=1';
+  c.querySelector('.vframe').innerHTML='<iframe src="'+src+'" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>';
+}
+function vidRowHTML(v,who){
+  who=who??(({nn:'Ninja Nerd',iha:'Institute of Human Anatomy',az:'AnatomyZone',ah:'Armando Hasudungan'}[v.ch]||'Dr Matt &amp; Dr Mike')+' · ');
+  const at=Number.isInteger(v.at)?v.at:0;
+  return `<div class="vidrow">▶ <a href="https://www.youtube.com/watch?v=${v.id}${at?`&t=${at}s`:''}" target="_blank" rel="noopener">${esc(v.t)}</a> <span class="refsrc">${who}${esc(v.d)}${at?` · from ${mmss(at)}`:''}</span></div>`;
+}
+function weakSpotsHTML(rows){
+  const missed=rows.filter(x=>!x.saq&&x.r&&x.r.got<x.r.tot).map(x=>x.q);
+  if(missed.length<3)return '';
+  const vids=new Map();
+  for(const q of missed) if(q.vid){ if(!vids.has(q.vid.id)) vids.set(q.vid.id,q.vid); if(q.vid.alt&&!vids.has(q.vid.alt.id)) vids.set(q.vid.alt.id,q.vid.alt); }
+  if(!vids.size)return '';
+  const bySys={};for(const q of missed)bySys[q.sys]=(bySys[q.sys]||0)+1;
+  const worst=Object.entries(bySys).sort((a,b)=>b[1]-a[1])[0];
+  return `<div class="note" style="border-left-color:var(--primary)">
+    <b>Weak spots this mock test</b> — ${missed.length} missed, most in ${SYS[worst[0]]||worst[0]}.
+    Watch these before your next sitting:
+    ${[...vids.values()].slice(0,4).map(v=>vidRowHTML(v)).join('')}
+    <div class="refsrc">Each video was matched to its question from the video's own captions and checked twice, and the link opens where that point is taught. Where a video and Hannetjie disagree, she wins.
+    <a href="#watch" onclick="home()">The three playlists ↗</a></div></div>`;
+}
+/* readable key rendering: matching and cloze get one ROW per part, wrong parts
+   annotated with what you picked — never a run-on paragraph */
+function keyHTML(q,a){
+  if(q.type==='match')return `<div class="keyrows">${q.pairs.map((p,i)=>{
+    const yours=(a&&a.pick||{})[i];const wrong=yours&&yours!==p.right;
+    return `<div class="krow ${yours===p.right?'kok':''}">${esc(p.left)} <b>→ ${esc(p.right)}</b>${wrong?` <span class="kyou">you: ${esc(yours)}</span>`:yours?'':' <span class="kyou">unanswered</span>'}</div>${yours===p.right?'':partRefHTML(q,i)}`}).join('')}</div>`;
+  if(q.type==='cloze')return `<div class="keyrows">${q.blanks.map((b,i)=>{
+    const yours=(a&&a.pick||{})[i];
+    const right=blankOK(q,b,yours);
+    const alt=q.bk==='fib'&&b.options.length>1?` <span class="refsrc">(also accepted: ${esc(b.options.filter(o=>o!==b.correct).join(', '))})</span>`:'';
+    return `<div class="krow ${right?'kok':''}">${esc(blankLabel(b,i))} <b>→ ${esc(b.correct)}</b>${alt}${yours&&!right?` <span class="kyou">you: ${esc(yours)}</span>`:yours?'':' <span class="kyou">unanswered</span>'}</div>${right?'':partRefHTML(q,i)}`}).join('')}</div>`;
+  return `<div class="keyline">Key: ${esc(keyText(q))}</div>`;
+}
+/* the one line that states this part (q.prefs, judged + quote-gated per pair / blank / step);
+   shown under a part the student got wrong or left blank, never under a right one */
+function partRefHTML(q,i){
+  const r=(q.prefs||[]).find(x=>x.i===i+1); if(!r)return '';
+  return `<div class="kref">${REF[r.k].ic} <i>“${esc(r.t)}”</i> <span class="refsrc">— ${esc(r.src)}</span></div>`;
+}
+function keyText(q){
+  if(q.type==='match')return q.pairs.map(p=>`${p.left} → ${p.right}`).join(' · ');
+  if(q.type==='cloze')return q.blanks.map(b=>b.correct).join(' · ');
+  return (q.key||[]).map(o=>optLabel(q,o)).join(' · ');
+}
+/* bare-letter options carry their text from the stem's lettered list (build-time) */
+function optLabel(q,o){return q.ol&&q.ol[o]?`${o}. ${q.ol[o]}`:o}
+/* the flat stem carries Canvas's literal "[ Select ]" where each dropdown sat */
+const flatStem=q=>q.qt||String(q.q||'').replace(/\[ Select \]/g,'____');
+/* ── ask an AI ────────────────────────────────────────────────────────
+   Two buttons compose a prompt and copy it; this page sends nothing anywhere —
+   you paste it into Gemini (or any AI chat) yourself. The shape is the one that
+   gets a frozen brain moving: SHOW it first (a text sketch, a real image if the AI
+   can), explain it like I'm stupid (one everyday analogy, mapped back to the real
+   terms), in HER words, stop until he says "ready", then a five-question blind quiz
+   with instant feedback, easiest first. The prompt carries her key, her notes and her "how far
+   it goes" line so the AI teaches to her paper and stops where she stops —
+   without that an AI happily teaches the Krebs cycle for a test that only asks
+   you to rank three energy routes. An AI's quiz checks the analogy landed; only
+   her questions here check that it would earn marks. */
+const AI_CTX='I’m a first-year nursing student sitting the Health Science 2 final exam (Modules 1–3: heart, lungs and lymph; bones, nerves and hormones; reproduction, genetics and the special senses), built on case studies.';
+const AI_LBL='🤖 Explain like I’m stupid + quiz me';
+const AI_SHAPE={mcq:'multiple choice',tf:'true or false',multi:'tick every answer that applies',match:'matching',cloze:'fill the blanks / dropdowns',essay:'a written answer marked one mark per step'};
+/* 2026-09-19, his verdict on the first shape: “how do I learn this with no visual input, it’s quizzing me
+   on shit I don’t even have a functioning anything of.” So the order is now SEE it → explain it → say it back →
+   and only on “ready”, the quiz, easiest question first. `fig` = a picture went with the paste. */
+const aiSteps=(extra,shape,stop,fig)=>{
+  const S=[
+    (fig?'SHOW me first. A picture is pasted with this message: start there and tell me exactly where to look on it. Then':'SHOW me first. Before any explanation,')+' draw it as a simple labelled sketch made of text — boxes and arrows for a process, a front / side / top layout for where things sit in the body — so I can SEE what is where, or what leads to what. If you can show or generate a real image, add ONE simple one with few labels, and check every label is right. Then give me one exact phrase to type into Google Images for a proper labelled diagram.',
+    'Explain it like I’m stupid, pointing at the sketch: one everyday analogy, then map every part of the analogy back to the real term.',
+    'Use my lecturer’s exact terms from above. Those words earn the marks; the analogy is scaffolding.'];
+  if(extra)S.push(extra);
+  S.push('Then STOP. Do NOT quiz me in the same message. Ask me to say it back in my own words, or to type “ready”. If what I say back is wrong, fix that one piece — on the sketch — before going on.',
+    `Only when I say ready: a 5-question blind quiz, ONE question at a time, instant feedback after each answer, ${shape}. Start with the easiest question you can write and build up. If I miss one, re-explain that piece before the next question.`);
+  return 'I am starting from ZERO on this. Build it up for me; don’t test me on it cold.\nDo this, in order:\n'+S.map((x,i)=>`${i+1}. ${x}`).join('\n')+'\n'+stop;
+};
+function aiQuestionPrompt(q,withFig){
+  const a=SIT.ans[q.id];
+  const you=a?(a.text||((a.sel||[]).map(i=>optLabel(q,q.opts[i])).join(', ')||Object.values(a.pick||{}).join(', '))):'';
+  const L=[AI_CTX+' This is one of my lecturer’s own practice questions. I want to understand it, not memorise the answer.','',`Question: ${flatStem(q)}`];
+  if(q.opts&&q.opts.length)L.push(`Options: ${q.opts.map(o=>optLabel(q,o)).join(' | ')}`);
+  if(q.saq)L.push('Her model answer, one mark per step: '+q.saq.steps.map((s,i)=>`(${i+1}) ${s}`).join(' '));
+  else L.push(`Correct answer: ${keyText(q)}`);
+  L.push(`My answer: ${you||'(none — I didn’t know)'}`);
+  if(q.imgs&&q.imgs.length)L.push(withFig?'The question’s figure is pasted with this message. Read it before answering — the question is about it.':'This question has a diagram I can’t paste. Don’t guess what it shows; work from the text.');
+  for(const r of q.refs||[]){
+    if(r.t)L.push(`${r.k==='patton'?'The textbook says':r.k==='course'?'A file posted in my course (not by my lecturer) says':'My lecturer’s notes say'} (verbatim): “${r.t}” — ${r.src}`);
+    else if(r.k==='slide')L.push(withFig?`My lecturer’s slide on this is pasted with this message — ${r.src}. Her wording on it is what earns the marks.`:`My lecturer’s slide on this: ${r.src} (an image, I can’t paste it).`);
+  }
+  if(hasHer(q)){const h=DATA.helpline[q.hl];L.push('','Her own worked answer for this topic, verbatim (her CAPITALS are the mark-earning words):',h.parts.map(p=>p.h+'\n'+p.t).join('\n'));}
+  L.push('',aiSteps(you?'In one line, say what misconception my answer suggests.':'',`in the shape she uses (${AI_SHAPE[q.type]||'multiple choice'})`,'Stay inside this question and her notes. Don’t teach past them.',!!withFig&&aiFigures(q).length>0));
+  return L.join('\n');
+}
+/* topic-first: the focus row's own `done` / `ask` / `cap` become the AI's brief,
+   plus her worked helpline answer where she posted one */
+function aiTopicPrompt(f){
+  const L=[AI_CTX+` Topic: ${f.t} (${SYS[f.sys]||f.sys}).`,'','My lecturer set the level. Here is exactly what I have to be able to DO, in her words:',`“${f.done}”`,`How she asks it in tests: “${f.ask}”`];
+  if(f.cap)L.push(`Where it ends — do NOT go past this: “${f.cap}”`);
+  const h=(DATA.helpline||{})[f.id];
+  if(h){let t=h.parts.map(p=>p.h+'\n'+p.t).join('\n');if(t.length>3000)t=t.slice(0,3000)+' …(trimmed)';
+    L.push('','Her own worked answer for this topic, verbatim (her CAPITALS are the mark-earning words):',t);}
+  L.push('',aiSteps('','in the shapes she uses (see “how she asks it” above)','Stay inside her level. Don’t teach past the “where it ends” line.'));
+  return L.join('\n');
+}
+/* the question's own figures — or, when it has none, her slide (the build guarantees a
+   question never carries both) — drawn onto ONE white png, each with its label, so a single
+   paste lands every picture the AI needs. Same-origin images, so the canvas stays clean. */
+function aiFigures(q){
+  const f=[];
+  for(const n of q.imgs||[])f.push({src:imgU(n),label:q.imgs.length>1?'Question figure '+(f.length+1):'Question figure'});
+  for(const r of q.refs||[])if(r.k==='slide'&&r.slide)f.push({src:slideU(r.slide),label:'My lecturer’s slide — '+r.src});
+  return f;
+}
+function aiFigureBlob(q){
+  const srcs=aiFigures(q); if(!srcs.length)return Promise.resolve(null);
+  return Promise.all(srcs.map(s=>new Promise(res=>{const im=new Image();im.onload=()=>res({im,label:s.label});im.onerror=()=>res(null);im.src=s.src}))).then(all=>{
+    const ok=all.filter(Boolean); if(!ok.length)return null;
+    const PAD=16,LH=30,W=Math.min(1200,Math.max(...ok.map(x=>x.im.naturalWidth||900)));
+    const rows=ok.map(x=>{const w=x.im.naturalWidth||900,h=x.im.naturalHeight||Math.round(w*0.7),s=Math.min(1,W/w);return {im:x.im,label:x.label,w:Math.round(w*s),h:Math.round(h*s)}});
+    const c=document.createElement('canvas');c.width=W+PAD*2;c.height=rows.reduce((a,r)=>a+LH+r.h+PAD,PAD);
+    const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);
+    let y=PAD;for(const r of rows){g.fillStyle='#222';g.font='bold 17px system-ui,Segoe UI,sans-serif';g.fillText(r.label,PAD,y+20);y+=LH;g.drawImage(r.im,PAD+Math.round((W-r.w)/2),y,r.w,r.h);y+=r.h+PAD}
+    return new Promise(res=>c.toBlob(res,'image/png'));
+  });
+}
+/* copy: text + png in ONE clipboard item where the browser allows it (Chrome, Edge, Safari,
+   Android Chrome), built inside the tap so Safari's gesture rule holds — the png is a promise
+   because the figures are still being drawn. Anything else falls back to text only, and the
+   text then says the picture could not come along. After a combined copy two small buttons
+   let you re-copy just the text or just the figure, for an AI that keeps only one of them. */
+function copyPrompt(btn,textFor,figP){
+  const text=typeof textFor==='function'?textFor:()=>textFor;
+  const done=(ok,fig)=>{btn.textContent=ok?(fig?'Copied ✓ prompt + figure — paste into Gemini (or any AI)':'Copied ✓ now paste it into Gemini (or any AI)'):'Copy blocked — select the text below and copy it';
+    const nx=btn.nextElementSibling;
+    if(!ok&&!(nx&&nx.classList.contains('aitext'))){const ta=document.createElement('textarea');ta.className='aitext';ta.readOnly=true;ta.value=text(false);btn.after(ta);ta.focus();ta.select()}
+    if(fig&&!(nx&&nx.classList.contains('aisplit'))){const d=document.createElement('div');d.className='aisplit refsrc';d._btn=btn;
+      d.innerHTML='Only one of them landed? <button class="btn ghost askai" data-aitext="1">📋 text only</button> <button class="btn ghost askai" data-aifig="1">🖼 figure only</button>';btn.after(d)}
+    setTimeout(()=>btn.textContent=AI_LBL,4000)};
+  const textOnly=()=>(navigator.clipboard?navigator.clipboard.writeText(text(false)):Promise.reject())
+    .then(()=>done(true,false))
+    .catch(()=>{const ta=document.createElement('textarea');ta.value=text(false);ta.style.position='fixed';ta.style.opacity='0';
+      document.body.appendChild(ta);ta.select();let ok=false;try{ok=document.execCommand('copy')}catch(_){}
+      ta.remove();done(ok,false)});
+  if(figP&&navigator.clipboard&&navigator.clipboard.write&&window.ClipboardItem){
+    let item=null;
+    try{item=new ClipboardItem({'text/plain':new Blob([text(true)],{type:'text/plain'}),'image/png':figP.then(b=>{if(!b)throw new Error('no figure');return b})})}catch(_){}
+    if(item){navigator.clipboard.write([item]).then(()=>{btn._aiFig=figP;btn._aiText=text(true);done(true,true)}).catch(textOnly);return}
+  }
+  textOnly();
+}
+function aiSplitCopy(s){
+  const b=s.closest('.aisplit')._btn, was=s.textContent, flash=t=>{s.textContent=t;setTimeout(()=>s.textContent=was,2500)};
+  const p=s.dataset.aitext?navigator.clipboard.writeText(b._aiText):navigator.clipboard.write([new ClipboardItem({'image/png':b._aiFig})]);
+  p.then(()=>flash('Copied ✓')).catch(()=>flash('Copy blocked'));
+}
+/* ── chrome ────────────────────────────────────────────────────────── */
+paintCountdown();
+$('#themeBtn').onclick=()=>{const r=document.documentElement;
+  const to=r.dataset.theme==='light'?'':'light';
+  to?r.dataset.theme='light':delete r.dataset.theme;SV('theme',to)};
+if(LS('theme')==='light')document.documentElement.dataset.theme='light';
+$('#helpBtn').onclick=()=>{$('#help').innerHTML=`
+  <h2 style="margin-top:0">What is this?</h2>
+  <p>The HS2 final (Thu 5 Nov, 12:30, on campus: 130 min, 32 questions, 37% written) — practised from everything she has
+  given you for it. Every practice quiz of Modules 1, 2 and 3, as the three module sims ship them, plus her Case Study
+  Formative Test, plus her ten starred exam cases, written, marked against HER model answers. Her own words: the exam
+  “will be based on the starred *Case studies in your Case Study Booklet A”.</p>
+  <h3>Where the questions come from</h3>
+  <p>${DATA.stats.n} questions from ${DATA.quizzes.length} quizzes: her own Canvas quizzes (answer keys taken from his graded
+  pages — nothing invented) and the ten cases. A case question and its scenario are hers, word for word from the Case Study
+  Workbook; its model answer is hers too — her 2024 case-study answer decks, her NS1 deck, her Fertility quiz — split one
+  marking point per line, and each names its deck and slide. Where a line is the tool’s reading (the “damage →” half of the
+  stroke answer), it says so. ${DATA.held.length} starred or captured questions are held because no answer of hers can be read
+  yet; each case row lists its own.</p>
+  <h3>Learn mode</h3>
+  <p><b>Learn as you go</b> (and the <b>Learn</b> button beside each quiz) marks every question the moment you
+  press Check and shows the answer, her slide or notes, the Patton passage and the matched video right there —
+  you can open any of them before answering. Check with nothing picked just shows you. Nothing from Learn mode
+  goes on the score chart; a wrong or skipped question still joins your misses pile, and a right answer after a
+  peek does not clear it. <b>Sit</b> is the test version: the same questions, nothing shown until the end.</p>
+  <p><b>How many at a time</b> (12 · 25 · 50 · 100 · All) sets the size of every dealt Learn set and of the
+  Module 1 / 2 / 3 sets; All hands you the whole pool, least-seen first, misses first. Under <b>Pick my rep</b>
+  tick any quizzes — or a whole module with the All / Cases / Module 1 / 2 / 3 chips — and the bar at the bottom
+  runs them as one deck, Learn or Sit, every question of every ticked quiz. A Learn run saves itself after every
+  Check; stop partway (or lose the tab) and the home page offers to pick it up where you were.</p>
+  <p>Inside the rows of <b>What to learn, and how far</b> that she pointed at herself, <b>📖 Learn her N questions on
+  this</b> deals only her questions on that one topic — sorted by hand, repeats across quizzes merged, one-tap
+  questions first and written ones last. The loop for a topic is: 🤖 to have it explained, this button to see whether
+  her questions agree, then the tick.</p>
+  <h3>Where the explanations come from</h3>
+  <p>Every reference under a question was checked to <b>state the keyed fact</b>, not just share its topic: each
+  of her slides, learning-page paragraphs, Anatomy Monday answers, the lab workbook, the discussion-board and
+  helpline answers she posted, the other lecture files posted in the course
+  (shown as 📄 Course file, never as hers) and the whole of Patton was shortlisted by keyword, read by a model
+  that had to quote the exact words that state the answer, that quote was re-found in the source by a script,
+  and a second pass tried to knock each match down. For a matching question with many pairs, a table that
+  states at least half of them counts.
+  ${DATA.stats.withRef} of the ${DATA.stats.n} questions carry at least one — ${DATA.stats.withHer} from her own
+  material, ${DATA.stats.withPatton} with a Patton passage (${DATA.stats.pattonOnly} have only Patton). A question with
+  nothing is a question nothing states outright, and no reference beats a wrong one. Patton passages are short
+  excerpts (a sentence or two, never more than 70 words) from <i>Patton &amp; Thibodeau, Anatomy &amp; Physiology,
+  9th ed.</i> (Elsevier, 2016), quoted for study with the page named; the course’s ClinicalKey copy is the 2019
+  edition, so figure numbers may differ. Where Patton and Hannetjie disagree, she wins.</p>
+  <h3>Ask an AI — the 🤖 buttons</h3>
+  <p>Under every marked question, and inside every row of the focus list, <b>${AI_LBL}</b> copies a
+  ready-made prompt to paste into Gemini (or any AI chat). It asks the AI to <b>show it first</b> (a labelled
+  sketch, a real image if it can, and what to search for a proper diagram), then one everyday analogy mapped back to the
+  real terms, in <b>her</b> words — and to <b>stop there</b> until you type “ready”. Only then does it run a five-question
+  blind quiz with instant feedback, easiest question first. It carries her
+  key, her notes and her “where it ends” line, so the AI teaches to her paper and stops where she stops.
+  If the question has a figure, or her slide is its reference, the copy carries that too, as one picture: paste
+  once and the prompt and the picture both land. If your AI keeps only one of them, two small buttons appear
+  under the copied button to re-copy just the text or just the figure. This page sends nothing anywhere; you
+  paste it yourself. An AI’s quiz checks that the analogy landed. Only her questions here check that it would
+  earn marks — come back and sit them.</p>
+  <h3>What’s held out</h3>
+  <p>${DATA.held.length} questions are held: starred case questions whose answer she has not posted where it can be read
+  (case 14’s answer is in her colour-blindness quiz and case 15’s on its board, both hidden on Canvas today), and
+  any capture that did not survive. Her EXAM CASE STUDY HELPLINE opens Mon 19 Oct; it joins this tool when it does.</p>
+  <h3>Your data</h3>
+  <p>Scores and misses live in this browser only. Nothing is sent anywhere. Clearing site data wipes them.</p>
+  <h3>For whoever maintains this</h3>
+  <p>Built by <code>build.mjs</code> from its own captures (<code>hs2-anki/final</code>), the three module sims’ built pages,
+  and <code>content/cases.js</code>. Rebuild after any module sim changes: <code>python host-figs.py &amp;&amp; node build.mjs</code>. Bank built ${DATA.built}. Multi-answer questions mark all-or-nothing;
+  matching and dropdowns mark per part.</p>
+  <button class="btn primary wide" onclick="this.closest('dialog').close()">Close</button>`;
+  $('#help').showModal()};
+document.addEventListener('click',e=>{
+  const vf=e.target.closest('.vfull'); if(vf){const c=vf.closest('.vclip');loadVid(c,+c.dataset.at,null);return}
+  const fr=e.target.closest('.vframe'); if(fr&&!fr.querySelector('iframe')){const c=fr.closest('.vclip');loadVid(c,+c.dataset.at,+c.dataset.end);return}
+  const qa=e.target.closest('.qa'); if(qa){const row=qa.closest('.qr,.lres'),pane=row.querySelector('.qr-pane'),act=qa.dataset.act,open=pane.dataset.act===act&&!pane.hidden;row.querySelectorAll('.qa').forEach(b=>b.classList.toggle('on',b===qa&&!open));if(open){pane.hidden=true;pane.dataset.act='';return}
+    const q=SIT.deck.find(x=>x.id===row.dataset.qid);
+    /* opening a resource on an unchecked learn-mode question is a peek */
+    if(row.classList.contains('lres')&&!SIT.chk[q.id]){SIT.peek[q.id]=true;saveRun()}
+    pane.innerHTML=paneHTML(q,act);pane.hidden=false;pane.dataset.act=act;return}
+  const lf=e.target.closest('[data-learnf]'); if(lf){start('topic:'+lf.dataset.learnf,true);window.scrollTo(0,0);return}
+  const ask=e.target.closest('[data-ask],[data-askf]');
+  if(ask){
+    if(ask.dataset.ask){const q=SIT.deck.find(x=>x.id===ask.dataset.ask);copyPrompt(ask,w=>aiQuestionPrompt(q,w),aiFigures(q).length?aiFigureBlob(q):null)}
+    else copyPrompt(ask,aiTopicPrompt(DATA.focus.find(f=>f.id===ask.dataset.askf)),null);
+    return}
+  const sp=e.target.closest('[data-aitext],[data-aifig]'); if(sp){aiSplitCopy(sp);return}
+  if(e.target.id==='shareBtn'){
+  const l=S.scores[S.scores.length-1];
+  const line=`HS2 Paper Sim — ${l.got}/${l.tot} (${Math.round(100*l.got/l.tot)}%) · ${l.label} · ${daysLeft()}d to my sitting`;
+  navigator.clipboard&&navigator.clipboard.writeText(line);
+  e.target.textContent='Copied ✓';setTimeout(()=>e.target.textContent='Copy score line',1500)}});
+home();
+</script>
+</body>
+</html>
