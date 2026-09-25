@@ -237,13 +237,42 @@ h3{margin:14px 0 4px;font-size:.95rem}
 .footbar.on{display:flex}
 .footbar .btn{flex:1}
 a{color:var(--primary)}
+/* ── home: one screen of row cards, each opening its own screen (was one 14.5-screen scroll) ── */
+.hero{display:flex;align-items:center;gap:12px;width:100%;text-align:left;font:inherit;color:var(--fg);cursor:pointer;
+  background:color-mix(in srgb,var(--primary) 14%,var(--card));border:1px solid color-mix(in srgb,var(--primary) 45%,transparent);
+  border-radius:12px;padding:12px 14px;margin:2px 0 4px}
+.hero small{display:block;font-size:.76rem;color:var(--primary);font-weight:650}
+.hero b{display:block;font-size:1rem;line-height:1.35;margin-top:2px}
+.hero .go{flex:0 0 auto;margin-left:auto;width:42px;height:42px;border-radius:50%;background:var(--primary);color:var(--onprimary);
+  display:flex;align-items:center;justify-content:center;font-size:1rem}
+.lsec{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted-fg);margin:12px 4px 5px}
+.lrow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;font:inherit;color:var(--fg);cursor:pointer;
+  background:var(--card);border:1px solid var(--border);border-radius:12px;padding:8px 12px;margin:0 0 7px;
+  transition:border-color var(--dur) var(--ease)}
+.lrow:hover{border-color:color-mix(in srgb,var(--primary) 55%,var(--border))}
+.lic{flex:0 0 40px;height:40px;border-radius:10px;background:var(--muted);display:flex;align-items:center;justify-content:center;font-size:1.15rem}
+.ltx{flex:1 1 auto;min-width:0}
+.ltx b{display:block;font-size:.97rem;font-weight:650}
+.ltx small{display:block;font-size:.8rem;color:var(--muted-fg);line-height:1.35;margin-top:1px}
+.lch{flex:0 0 auto;color:var(--muted-fg);font-size:1.3rem;line-height:1}
+.shead{display:flex;align-items:center;gap:10px;margin:0 0 12px}
+.shead h2{margin:0;font-size:1.1rem;flex:1}
+.shead .btn{padding:6px 12px;flex:0 0 auto}
+.card .lead{margin:0 0 4px;color:var(--muted-fg);font-size:.9rem;line-height:1.5}
+/* each screen's full explanation, folded under its one-line lead (self-explaining, but out of the way) */
+.how{margin:0 0 6px}
+.how>summary{cursor:pointer;font-size:.82rem;font-weight:650;color:var(--primary);list-style:none;display:inline-block;padding:2px 0}
+.how>summary::-webkit-details-marker{display:none}
+.how>summary::before{content:'ⓘ '}
+.how[open]{border-left:2px solid var(--border);padding-left:10px;margin:4px 0 10px}
+.how p{font-size:.86rem;color:var(--muted-fg);margin:.4rem 0}
 </style>
 </head>
 <body>
 <header>
   <h1>HS2 · Paper Sim</h1>
   <span class="d" id="countdown"></span>
-  <a class="btn ghost" href="#watch" title="The three module video playlists">▶</a>
+  <a class="btn ghost" href="#vid" title="The three module video playlists">▶</a>
   <button class="btn ghost" id="themeBtn" title="theme">◐</button>
   <button class="btn ghost" id="helpBtn" title="what is this?">?</button>
 </header>
@@ -446,15 +475,13 @@ function focusCard(){
       <span class="fnum">· ${DATA.focus.filter(f=>f.tier===t).length} topics</span></div>
     <div class="fwhy">${FTIER[t].w}</div>${rows(t)}`;
   return `<div class="card" style="border-left:4px solid var(--warn)">
-    <details>
-      <summary style="cursor:pointer;font-weight:700">🎯 What to learn, and how far · <span id="fsum">${focusStats().d}/${focusStats().n}</span></summary>
-      <div style="margin-top:10px">
+      <div>
         <div class="fhead" id="fhead">${focusHead()}</div>
-        <p class="fwhy">The ten rows on top are HER ten starred cases — the exam is built on them. Below them, every row of the three module checklists (each one of her own numbered criteria), ranked again on its marks in her quizzes. <b>Questions</b> and <b>marks</b> are counted by the build, never by a person. <b>done / how she asks it / where it stops</b> are this tool’s reading; the questions, her model answers and her case scenarios are hers. The best available read on her emphasis, not a leaked paper.</p>
+        <p class="lead">Her ten starred cases on top — the exam is built on them — then every row of the three module checklists, ranked on marks. Tick a row when you can do it cold.</p>
+        <details class="how"><summary>How this list was made</summary><p class="fwhy">The ten rows on top are HER ten starred cases — the exam is built on them. Below them, every row of the three module checklists (each one of her own numbered criteria), ranked again on its marks in her quizzes. <b>Questions</b> and <b>marks</b> are counted by the build, never by a person. <b>done / how she asks it / where it stops</b> are this tool’s reading; the questions, her model answers and her case scenarios are hers. The best available read on her emphasis, not a leaked paper.</p></details>
         ${tier(0)}${tier(1)}${tier(2)}${tier(3)}
         <div class="refsrc" style="margin-top:10px">Sources: her Assessment Overview and CASE STUDY BOOKLET A page · Case Study Workbook 2026 S2 (scenarios, starred questions, figures) · her 2024 case model-answer decks, her NS1 deck and NS2 learning page, her Fertility quiz · her Case Study Formative Test Modules 1–2 · her Continuous Tests and Exam Focus Points criteria doc and the three module sims’ checklists. Ticks are saved in this browser only.</div>
       </div>
-    </details>
   </div>`;
 }
 /* her own worked answer for this topic, verbatim from the helpline answers board.
@@ -499,7 +526,6 @@ function coreCard(){
   const seenB = B.filter(q=>S.seen[q.id]).length;
   const pA = Math.round(100*seenA/Math.max(1,A.length)), pB = Math.round(100*seenB/Math.max(1,B.length));
   return `<div class="card door" style="border-left:4px solid var(--ok)">
-    <h2>🧭 Decide for me</h2>
     <p>You do <b>not</b> have to do ${DATA.stats.n} questions. The exam is 32 questions on her ten starred cases. <b>${A.length}</b> questions here are hers, written for it — the cases, her formative test, her revision deck. That is the job. Behind them sit <b>${B.length}</b> module questions on the same topics, for once the ${A.length} are done. Everything else is optional.</p>
     <button class="btn primary wide" data-go="core" data-learn="1">▶ Today’s 15 — ${seenA<A.length?'from her exam questions':'her exam questions + the case topics'}</button>
     <div class="hist" style="margin-top:8px">Her exam questions: ${seenA} of ${A.length} seen${missA?` · ${missA} in your misses pile (they come back first)`:''}</div>
@@ -508,63 +534,179 @@ function coreCard(){
     <div class="fbar"><i style="width:${pB}%"></i></div>
   </div>`;
 }
+/* ── home: a launcher of row cards; each door is its own screen ───────
+   Until 26 Sep 2026 every door sat on one page, 14.5 phone screens tall (a stray unclosed <div>
+   on the video card also put the mock test and Pick my rep INSIDE it). Now home is one screen of
+   row cards (hs2-test3's layout, same rules), and each row opens that door on its own screen
+   (#core #cases #learn #pick #mock #miss #focus #vid, so the phone's back button and a shared link
+   both work). Each door keeps its own words: one line up top, the rest under "How this works".
+   A sitting pushes one history entry on top of the screen it started from, so finishing it, its
+   own exit button, or the phone's back button all land back on that screen, and back asks first
+   when leaving would lose something. */
+const SCR = {
+  core: {t:'🧭 Decide for me',              html:()=>coreCard()},
+  cases:{t:'🩺 The 10 starred cases',       html:()=>casesScreen()},
+  learn:{t:'📖 Learn as you go',            html:()=>learnScreen()},
+  pick: {t:'🗂 Pick my rep',                html:()=>pickScreen()},
+  mock: {t:'⏱ Mock exam',                   html:()=>mockScreen()},
+  miss: {t:'🔁 My misses',                  html:()=>missScreen()},
+  ...(DATA.focus.length ? {focus:{t:'🎯 What to learn, and how far', html:()=>focusCard()}} : {}),
+  vid:  {t:'📺 Videos',                     html:()=>vidScreen()},
+};
+const curScr = () => { const h = location.hash.slice(1); return SCR[h] ? h : '' };
+let SITTING = '', LEAVING = false;      /* SITTING: 'mock' | 'learn' while one is on screen */
+if('scrollRestoration' in history) history.scrollRestoration = 'manual';
+function nav(scr){
+  history.pushState({scr}, '', scr ? '#'+scr : location.pathname + location.search);
+  render(scr); window.scrollTo(0,0);
+}
+function enterSit(kind){
+  if(!(history.state && history.state.sit)) history.pushState({sit:1, scr:curScr()}, '', location.href);
+  SITTING = kind;
+}
+/* what the phone's back button would throw away from the sitting on screen, or '' */
+function leaveMsg(){
+  if(SITTING==='mock') return SIT&&SIT.final ? 'Leave without saving this score? Cancel, then press “Save score & finish”.' : 'Abandon this mock test? Nothing is saved.';
+  if(SITTING && [...document.querySelectorAll('#view textarea')].some(t=>t.value.trim())) return 'Leave this page? What you have written here is not saved.';
+  return '';
+}
+window.addEventListener('popstate', () => {
+  if(LEAVING) LEAVING = false;
+  else { const m = leaveMsg(); if(m && !confirm(m)){ history.pushState({sit:1, scr:curScr()}, '', location.href); return } }
+  clearInterval(timerIv); render(curScr()); window.scrollTo(0,0);
+});
+/* every "back to home" in the sittings lands here: off the sitting, onto the screen under it */
 function home(){
+  if(history.state && history.state.sit){ LEAVING = true; history.back(); return }
+  render(curScr());
+}
+function render(scr){
+  SITTING = '';
   $('#footbar').classList.remove('on');
-  const last = S.scores[S.scores.length-1];
-  const mp = missPool().length, res = LS('resume');
-  const nLbl = s => { const pool=CLOSED.filter(q=>q.mod===s).length, n=howMany(pool); return n===pool?`all ${n}`:n };
+  $('#view').innerHTML = scr
+    ? `<div class="shead"><button class="btn ghost" id="homeB">‹ Home</button><h2>${SCR[scr].t}</h2></div>${SCR[scr].html()}`
+    : launcher();
+  bindView();
+}
+/* the one thing to do next: a Learn run you stopped, otherwise Decide for me (her exam questions
+   first, least-seen and misses first; the case-topic questions join once all of hers are seen) */
+function nextUp(){
+  const r = LS('resume');
+  if(r && r.ids && r.ids.length) return {k:'resume', e:'Next up · the Learn run you stopped', t:`${esc(r.label)} · Q${Math.min((r.i|0)+1,r.ids.length)} of ${r.ids.length}`};
+  const A = CORE_A(), seenA = A.filter(q=>S.seen[q.id]).length;
+  return {k:'core', e:`Next up · decide for me · ${seenA} of ${A.length} seen`, t:`Today’s 15 — ${seenA<A.length?'from her exam questions':'her exam questions + the case topics'}`};
+}
+const HERO = {
+  resume: () => { nav('learn'); resumeLearn() },
+  core:   () => { nav('core'); start('core', true) },
+};
+function launcher(){
+  const up = nextUp(), r = LS('resume');
+  const seen = CLOSED.filter(q=>S.seen[q.id]).length, nm = Object.keys(S.miss).length;
+  const A = CORE_A(), seenA = A.filter(q=>S.seen[q.id]).length;
+  const fs = focusStats(), last = S.scores[S.scores.length-1];
+  const row = (scr,ic,t,s) => `<button class="lrow" data-scr="${scr}"><span class="lic" aria-hidden="true">${ic}</span><span class="ltx"><b>${t}</b><small>${s}</small></span><span class="lch" aria-hidden="true">›</span></button>`;
+  return `<button class="hero" data-hero="${up.k}"><span><small>${up.e}</small><b>${up.t}</b></span><span class="go" aria-hidden="true">▶</span></button>
+  <div class="lsec">Practise</div>
+  ${row('core','🧭','Decide for me',`${seenA} of her ${A.length} exam questions seen`)}
+  ${row('cases','🩺','The 10 starred cases',`${CASEQS().length} questions · whole, in booklet order`)}
+  ${row('learn','📖','Learn as you go',`${seen} of ${CLOSED.length} seen${r&&r.ids&&r.ids.length?' · a run is waiting':' · marks itself as you go'}`)}
+  ${row('pick','🗂','Pick my rep',`${DATA.quizzes.length} quizzes${S.pick.length?` · ${S.pick.length} ticked`:' · three modules + the cases'}`)}
+  <div class="lsec">Test yourself</div>
+  ${row('mock','⏱','Mock exam',last?`Last ${last.got}/${last.tot} · ${Math.round(100*last.got/last.tot)}% · ${S.scores.length} sat`:'No sittings yet · mini ~15 or full 130 min')}
+  ${row('miss','🔁','My misses',nm?`${nm} in the pile`:'Empty so far · wrong answers land here')}
+  <div class="lsec">Plan</div>
+  ${SCR.focus?row('focus','🎯','What to learn, and how far',`${fs.d} of ${fs.n} topics ticked · her ten cases first`):''}
+  ${row('vid','📺','Videos',`Three shelves · ${DATA.stats.withVideo} questions carry one`)}`;
+}
+const sysLbl = s => { const pool=CLOSED.filter(q=>q.mod===s).length, n=howMany(pool); return n===pool?`all ${n}`:n };
+function casesScreen(){
   const nCase = CASEQS().length;
-  document.getElementById('view').innerHTML = `
-  ${sparkCard()}
-  ${coreCard()}
-  ${focusCard()}
-  <div class="card door" style="border-left:4px solid var(--ok)">
-    <h2>📖 Learn as you go</h2>
-    <p>Not a test. Every question marks itself the moment you press <b>Check</b>, and the answer, her slide and the matched video open right under it before you move on — you can open the slide or video <i>before</i> you answer, too. Press Check with nothing picked and it just shows you. Nothing here goes on the score chart; a wrong or skipped one still joins your misses pile. Start here when the quizzes feel like deep water.</p>
-    ${res&&res.ids&&res.ids.length?`<button class="btn primary wide" id="resumeB">▶ Pick up where you left off · Q${Math.min((res.i|0)+1,res.ids.length)} of ${res.ids.length} · ${esc(res.label)}</button>`:''}
+  return `<div class="card" style="border-left:4px solid var(--warn)">
+    <p class="lead">Her ten starred cases: ${nCase} questions, always whole and in booklet order. Her own words: the exam “will be based on the starred *Case studies in your Case Study Booklet A”.</p>
+    <button class="btn primary wide" data-go="cases" data-learn="1">Learn the 10 cases · ${nCase}</button>
+    <button class="btn wide" data-go="cases">Sit the 10 cases · ${nCase}</button>
+  </div>`;
+}
+function learnScreen(){
+  const mp = missPool().length, res = LS('resume'), hasRes = res&&res.ids&&res.ids.length, nCase = CASEQS().length;
+  return `<div class="card" style="border-left:4px solid var(--ok)">
+    <p class="lead">Not a test. Every question marks itself the moment you press <b>Check</b>, with the answer, her slide and the matched video right under it.</p>
+    <details class="how"><summary>How this works</summary>
+      <p>Not a test. Every question marks itself the moment you press <b>Check</b>, and the answer, her slide and the matched video open right under it before you move on — you can open the slide or video <i>before</i> you answer, too. Press Check with nothing picked and it just shows you. Nothing here goes on the score chart; a wrong or skipped one still joins your misses pile. Start here when the quizzes feel like deep water.</p>
+      <p>The count applies to every dealt set here and to the Module 1 / 2 / 3 sets under Pick my rep (the 10 cases always come whole, in booklet order); a mock test keeps its own size. Want particular quizzes, as many as you like? Tick them under <b>Pick my rep</b> on the home page. A Learn run saves itself as you go — stop partway and this screen, and the top of home, offer to pick it up.</p>
+    </details>
+    ${hasRes?`<button class="btn primary wide" id="resumeB">▶ Pick up where you left off · Q${Math.min((res.i|0)+1,res.ids.length)} of ${res.ids.length} · ${esc(res.label)}</button>`:''}
     <div class="chips"><span>How many at a time</span>${NOPTS.map(n=>`<button class="chip${String(S.n)===String(n)?' on':''}" data-n="${n}">${n==='all'?'All '+CLOSED.length:n}</button>`).join('')}</div>
-    <button class="btn ${res&&res.ids&&res.ids.length?'':'primary '}wide" data-go="mini" data-learn="1">${S.n==='all'?`Learn the whole bank · ${CLOSED.length} questions, least-seen first`:`Learn through ${howMany(CLOSED.length)} · dealt from the whole bank`}</button>
+    <button class="btn ${hasRes?'':'primary '}wide" data-go="mini" data-learn="1">${S.n==='all'?`Learn the whole bank · ${CLOSED.length} questions, least-seen first`:`Learn through ${howMany(CLOSED.length)} · dealt from the whole bank`}</button>
     <div class="sysrow">
       <button class="btn ghost" data-go="cases" data-learn="1">Learn the 10 cases · ${nCase}</button>
-      <button class="btn ghost" data-sys="m1" data-learn="1">Learn Module 1 · ${nLbl('m1')}</button>
-      <button class="btn ghost" data-sys="m2" data-learn="1">Learn Module 2 · ${nLbl('m2')}</button>
-      <button class="btn ghost" data-sys="m3" data-learn="1">Learn Module 3 · ${nLbl('m3')}</button>
+      <button class="btn ghost" data-sys="m1" data-learn="1">Learn Module 1 · ${sysLbl('m1')}</button>
+      <button class="btn ghost" data-sys="m2" data-learn="1">Learn Module 2 · ${sysLbl('m2')}</button>
+      <button class="btn ghost" data-sys="m3" data-learn="1">Learn Module 3 · ${sysLbl('m3')}</button>
       <button class="btn ghost" data-go="miss" data-learn="1" ${mp?'':'disabled'}>Learn my misses${mp?` · ${howMany(mp)}${howMany(mp)<mp?' of '+mp:''}`:''}</button>
     </div>
-    <p style="margin:8px 0 0">The count applies to every dealt set here and to the Module 1 / 2 / 3 sets under Pick my rep (the 10 cases always come whole, in booklet order); a mock test keeps its own size. Want particular quizzes, as many as you like? Tick them under <b>Pick my rep</b> below. A Learn run saves itself as you go — stop partway and this page offers to pick it up.</p>
-  </div>
-  <div class="card door" id="watch" style="border-left:4px solid var(--primary)">
-    <h2>📺 Watch first — the three video shelves</h2>
-    <p>${DATA.stats.withVideo} of the ${DATA.stats.n} questions carry a Dr Matt &amp; Dr Mike video (or a named gap-filler) matched from the video’s own captions and read by hand, opening where the point is taught — in a mock only after a wrong answer, in Learn mode from the start. The whole shelves, by topic:</p>
-    <a class="btn wide" href="https://jeremyspm.github.io/hs2-m1-videos.html" target="_blank" rel="noopener">Module 1 playlist ↗</a>
-    <a class="btn wide" href="https://jeremyspm.github.io/hs2-videos.html" target="_blank" rel="noopener">Module 2 playlist ↗</a>
-    <a class="btn wide" href="https://jeremyspm.github.io/hs2-m3-videos.html" target="_blank" rel="noopener">Module 3 playlist ↗</a>
-  <div class="card door">
-    <h2>🎯 Deal me a mock test</h2>
-    <p>Practice only — dealt from her quizzes and her case answers. The real exam is on campus: Thu 5 Nov, 12:30, 130 min, 32 questions, 37% written, built on the starred cases.</p>
-    <button class="btn primary wide" data-go="mini">Sit a mini mock test · 12 questions, ~15 min</button>
-    <button class="btn wide" data-go="full">Sit the full mock exam · 32 Q, 37% of the marks written from the cases, 130 min — the exam’s shape</button>
-    <button class="btn wide" data-go="miss" ${Object.keys(S.miss).length? '':'disabled'}>Redo my misses${Object.keys(S.miss).length?` · ${Object.keys(S.miss).length} in the pile`:''}</button>
-  </div>
-  <div class="card door">
-    <h2>🗂 Pick my rep</h2>
-    <p>Her quizzes, unlocked. <b>Tick any number of them</b> — or a whole system — and the bar at the bottom runs them as one: <b>Learn</b> with the answer, slide and video under every question, or <b>Sit</b> as a test and see them at the end. A row's own Learn / Sit takes that quiz alone. No attempt limits, marked instantly.</p>
+  </div>`;
+}
+function pickScreen(){
+  const nCase = CASEQS().length;
+  return `<div class="card">
+    <p class="lead">Her quizzes, unlocked. <b>Tick any number of them</b>, or a whole module, and the bar at the bottom runs them as one.</p>
+    <details class="how"><summary>How this works</summary>
+      <p>Her quizzes, unlocked. <b>Tick any number of them</b> — or a whole system — and the bar at the bottom runs them as one: <b>Learn</b> with the answer, slide and video under every question, or <b>Sit</b> as a test and see them at the end. A row's own Learn / Sit takes that quiz alone. No attempt limits, marked instantly.</p>
+    </details>
     <div class="chips"><span>Tick</span>
       <button class="chip" data-pk="all">All ${DATA.quizzes.length}</button>
       <button class="chip" data-pk="cases">Cases</button><button class="chip" data-pk="exam">Revision deck</button><button class="chip" data-pk="m1">Module 1</button><button class="chip" data-pk="m2">Module 2</button><button class="chip" data-pk="m3">Module 3</button>
     </div>
     <div class="sysrow">
       <button class="btn ghost" data-go="cases">Sit the 10 cases · ${nCase}</button>
-      <button class="btn ghost" data-sys="m1">Sit Module 1 · ${nLbl('m1')}</button>
-      <button class="btn ghost" data-sys="m2">Sit Module 2 · ${nLbl('m2')}</button>
-      <button class="btn ghost" data-sys="m3">Sit Module 3 · ${nLbl('m3')}</button>
+      <button class="btn ghost" data-sys="m1">Sit Module 1 · ${sysLbl('m1')}</button>
+      <button class="btn ghost" data-sys="m2">Sit Module 2 · ${sysLbl('m2')}</button>
+      <button class="btn ghost" data-sys="m3">Sit Module 3 · ${sysLbl('m3')}</button>
     </div>
     <div class="qlist">${DATA.quizzes.map((z,i,a)=>`${i===0||a[i-1].mod!==z.mod?`<div class="qmod">${esc(MODN[z.mod]||z.mod)}</div>`:''}
       <div class="qrow${S.pick.includes(z.id)?' on':''}" data-z="${z.id}"><input type="checkbox" class="pk" ${S.pick.includes(z.id)?'checked':''} aria-label="tick ${esc(z.name)}"><span class="tag ${z.sys}">${z.sys}</span><b>${esc(z.name)}</b>
       <span class="acts"><span class="m">${z.n} Q</span><button class="btn ghost learn" data-quiz="${z.id}" data-learn="1">Learn</button><button class="btn ghost" data-quiz="${z.id}">Sit</button></span></div>`).join('')}
     </div>
   </div>`;
+}
+function mockScreen(){
+  const nm = Object.keys(S.miss).length;
+  return `<div class="card">
+    <p class="lead">Practice only — dealt from her quizzes and her case answers. The real exam is on campus: Thu 5 Nov, 12:30, 130 min, 32 questions, 37% written, built on the starred cases.</p>
+    <button class="btn primary wide" data-go="mini">Sit a mini mock test · 12 questions, ~15 min</button>
+    <button class="btn wide" data-go="full">Sit the full mock exam · 32 Q, 37% of the marks written from the cases, 130 min — the exam’s shape</button>
+    <button class="btn wide" data-go="miss" ${nm?'':'disabled'}>Redo my misses${nm?` · ${nm} in the pile`:''}</button>
+  </div>
+  <div class="lsec">Your sittings</div>
+  ${sparkCard()}`;
+}
+function missScreen(){
+  const nm = Object.keys(S.miss).length, mp = missPool().length;
+  if(!nm) return `<div class="card"><p class="lead"><b>Nothing in your misses pile yet.</b> A question you get wrong or skip, in a mock test or a Learn run, lands here to come back to.</p></div>`;
+  return `<div class="card">
+    <p class="lead">Every question you got wrong or skipped, in a mock test or a Learn run: ${nm} of them. Once four or more have been missed twice, only those are dealt.</p>
+    <button class="btn primary wide" data-go="miss" data-learn="1">Learn my misses · ${howMany(mp)}${howMany(mp)<mp?' of '+mp:''}</button>
+    <button class="btn wide" data-go="miss">Redo my misses as a test · ${Math.min(12,mp)} questions</button>
+  </div>`;
+}
+function vidScreen(){
+  return `<div class="card" style="border-left:4px solid var(--primary)">
+    <p class="lead">The three module video shelves, by topic, each on its own page.</p>
+    <details class="how"><summary>How this works</summary>
+      <p>${DATA.stats.withVideo} of the ${DATA.stats.n} questions carry a Dr Matt &amp; Dr Mike video (or a named gap-filler) matched from the video’s own captions and read by hand, opening where the point is taught — in a mock only after a wrong answer, in Learn mode from the start. The whole shelves, by topic:</p>
+    </details>
+    <a class="btn wide" href="https://jeremyspm.github.io/hs2-m1-videos.html" target="_blank" rel="noopener">Module 1 playlist ↗</a>
+    <a class="btn wide" href="https://jeremyspm.github.io/hs2-videos.html" target="_blank" rel="noopener">Module 2 playlist ↗</a>
+    <a class="btn wide" href="https://jeremyspm.github.io/hs2-m3-videos.html" target="_blank" rel="noopener">Module 3 playlist ↗</a>
+  </div>`;
+}
+function bindView(){
   bindFocus();
+  document.querySelectorAll('[data-scr]').forEach(b=>b.onclick=()=>nav(b.dataset.scr));
+  const hb=$('[data-hero]'); if(hb) hb.onclick=()=>HERO[hb.dataset.hero]();
+  const bk=$('#homeB'); if(bk) bk.onclick=()=>{ if(history.state&&history.state.scr&&!history.state.sit) history.back(); else nav('') };
   document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>start(b.dataset.go,!!b.dataset.learn));
   document.querySelectorAll('[data-quiz]').forEach(b=>b.onclick=()=>start('quiz:'+b.dataset.quiz,!!b.dataset.learn));
   document.querySelectorAll('[data-sys]').forEach(b=>b.onclick=()=>start('sys:'+b.dataset.sys,!!b.dataset.learn));
@@ -639,6 +781,7 @@ function resumeLearn(){
   const byId=new Map(DATA.questions.map(q=>[q.id,q]));
   const deck=r&&Array.isArray(r.ids)?r.ids.map(id=>byId.get(id)).filter(Boolean):[];
   if(!deck.length){SV('resume',null);home();return}
+  enterSit('learn');
   SIT={deck,label:r.label||'picked up',mode:r.mode||'mini',i:Math.min(Math.max(r.i|0,0),deck.length-1),ans:r.ans||{},t0:r.t0||Date.now(),timed:false,end:null,learn:true,chk:r.chk||{},peek:r.peek||{}};
   renderQ();window.scrollTo(0,0);
 }
@@ -664,6 +807,7 @@ function start(mode,learn=false){
   else if(mode.startsWith('sys:')){const s=mode.slice(4), pool=CLOSED.filter(q=>q.mod===s).length;
     deck=dealSys(s,howMany(pool));label=`${deck.length===pool?'all ':''}${deck.length} · ${MODS[s]||s}`}
   if(!deck||!deck.length){alert('Nothing to deal here yet.');return}
+  enterSit(learn?'learn':'mock');
   if(learn){timed=false;SV('resume',null)}
   SIT={deck,label,mode,i:0,ans:{},t0:Date.now(),timed,end:timed?Date.now()+130*60*1000:null,learn,chk:{},peek:{}};
   if(mode==='mini'&&DATA.chains.length){warmup();return}
@@ -882,7 +1026,7 @@ function learnDone(){
     ${missed.map(({q,chk})=>row(q,chk.r.got>0&&SIT.ans[q.id]?'partial':'wrong',SIT.ans[q.id]?`${+chk.r.got.toFixed(1)}/${chk.r.tot}`:'skip')).join('')}
     ${peek.map(({q})=>row(q,'partial','peek')).join('')}
     ${saqs.map(({q,chk})=>row(q,'saq',`✍ ${+(chk.ticks.length*q.pts/q.saq.steps.length).toFixed(1)}/${q.pts}`)).join('')}
-    <button class="btn primary wide" id="doneB">Back to home</button></div>`;
+    <button class="btn primary wide" id="doneB">Done</button></div>`;
   $('#doneB').onclick=()=>{SV('miss',S.miss);SV('seen',S.seen);home();window.scrollTo(0,0)};
   SV('miss',S.miss);SV('seen',S.seen);
   window.scrollTo(0,0);
@@ -1028,7 +1172,7 @@ function weakSpotsHTML(rows){
     Watch these before your next sitting:
     ${[...vids.values()].slice(0,4).map(v=>vidRowHTML(v)).join('')}
     <div class="refsrc">Each video was matched to its question from the video's own captions and checked twice, and the link opens where that point is taught. Where a video and Hannetjie disagree, she wins.
-    <a href="#watch" onclick="home()">The three playlists ↗</a></div></div>`;
+    <a href="#vid">The three playlists</a></div></div>`;
 }
 /* readable key rendering: matching and cloze get one ROW per part, wrong parts
    annotated with what you picked — never a run-on paragraph */
@@ -1176,6 +1320,12 @@ $('#helpBtn').onclick=()=>{$('#help').innerHTML=`
   given you for it. Every practice quiz of Modules 1, 2 and 3, as the three module sims ship them, plus her Case Study
   Formative Test, plus her ten starred exam cases, written, marked against HER model answers. Her own words: the exam
   “will be based on the starred *Case studies in your Case Study Booklet A”.</p>
+  <h3>The home page</h3>
+  <p>One row per part of the tool; each opens its own screen, and <b>‹ Home</b> or your phone's back button brings you back.
+  Every screen leads with one line and keeps the full explanation under <b>ⓘ How this works</b>. The blue <b>Next up</b> card at
+  the top is the tool picking for you: a Learn run you stopped partway comes first; otherwise <b>Decide for me</b>, today's 15
+  from her exam questions (misses and the least-seen first), with the case-topic questions joining once all of hers have been
+  seen. Leaving a mock test with the back button asks first; a Learn run is saved as you go, so it just stops.</p>
   <h3>Where the questions come from</h3>
   <p>${DATA.stats.n} questions from ${DATA.quizzes.length} quizzes: her own Canvas quizzes (answer keys taken from his graded
   pages — nothing invented) and the ten cases. A case question and its scenario are hers, word for word from the Case Study
