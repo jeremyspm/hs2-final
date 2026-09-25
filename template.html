@@ -342,7 +342,17 @@ for(const q of DATA.questions){ if(!q.refs) q.refs = q.ref ? [{k:q.ref.slide?'sl
 const SHORTS = /*@SHORTS@*/;
 for(const q of DATA.questions) if(SHORTS[q.id]){
   q.short = SHORTS[q.id];
-  q.saq = {...q.saq, full:q.saq.steps, steps:q.short.groups.flatMap(g=>g.facts.map(f=>f.t.replace(/\*\*/g,'')+(f.fix?` (⚠ corrected: ${f.fix.split('. ')[0]})`:'')))};
+  const F = q.short.groups.flatMap(g=>g.facts);
+  q.saq = {...q.saq, full:q.saq.steps, steps:F.map(f=>f.t.replace(/\*\*/g,'')+(f.fix?` (⚠ corrected: ${f.fix.split('. ')[0]})`:''))};
+  /* a step's quote (q.prefs, judged per step of the full answer) moves with its step: it shows under the FIRST short line
+     cut from that step (f.of), never under whichever line happens to share the step's number (the 26 Sep bug). A step with
+     no line of its own (a sub-question heading like "Gene therapy?") hands its quote to the answer that follows it; the same
+     quote twice under one line shows once. */
+  if(q.prefs){
+    const n = q.saq.full.length, line = s => F.findIndex(f=>f.of.includes(s)), seen = new Set();
+    const at = s => { for(let t=s; t<n; t++) if(line(t)>=0) return line(t); for(let t=s-1; t>=0; t--) if(line(t)>=0) return line(t); return -1; };
+    q.prefs = q.prefs.map(p=>({...p, i:at(p.i-1)+1})).filter(p=>{ const k=p.i+'|'+p.t; return p.i>0 && !seen.has(k) && seen.add(k); });
+  }
 }
 /* whose full answer it is: hers (quiz feedback, her decks, her slides) unless the source says the tool wrote it */
 const toolsAns = q => /^Model answer is the tool/.test(q.saq&&q.saq.src||'');
@@ -1488,8 +1498,8 @@ function keyHTML(q,a){
 /* the one line that states this part (q.prefs, judged + quote-gated per pair / blank / step);
    shown under a part the student got wrong or left blank, never under a right one */
 function partRefHTML(q,i){
-  const r=(q.prefs||[]).find(x=>x.i===i+1); if(!r)return '';
-  return `<div class="kref">${REF[r.k].ic} <i>“${esc(r.t)}”</i> <span class="refsrc">— ${esc(r.src)}</span></div>`;
+  /* every quote for this part: a short line cut from two steps can carry both steps' quotes */
+  return (q.prefs||[]).filter(x=>x.i===i+1).map(r=>`<div class="kref">${REF[r.k].ic} <i>“${esc(r.t)}”</i> <span class="refsrc">— ${esc(r.src)}</span></div>`).join('');
 }
 function keyText(q){
   if(q.type==='match')return q.pairs.map(p=>`${p.left} → ${p.right}`).join(' · ');

@@ -42,9 +42,12 @@ function checkEntry(s, at, steps, fails) {
   }
   steps.forEach((_, i) => { if (!(i in skip) && !flat.some(f => (Array.isArray(f.of) ? f.of : [f.of]).includes(i))) fails.push(`${at}: step ${i + 1} has no short line (skip it, with the reason, if it carries no fact)`); });
 }
-/* what the page gets: the lines and the corrections' reasons (`of` stays here, it is only for the gate) */
+/* what the page gets: the lines, the steps each is cut from (a step's quote, q.prefs, is shown under the first line cut
+   from that step, so the page needs `of` too) and the corrections' reasons */
 const pack = (s, id) => ({ id, title: s.title, hook: s.hook,
-  groups: s.groups.map(g => ({ q: g.q, facts: g.facts.map(f => ('fix' in f ? { t: f.t, fix: f.fix } : { t: f.t })) })) });
+  groups: s.groups.map(g => ({ q: g.q, facts: g.facts.map(f => {
+    const of = Array.isArray(f.of) ? f.of : [f.of];
+    return 'fix' in f ? { t: f.t, of, fix: f.fix } : { t: f.t, of }; }) })) });
 
 export function loadShorts(questions) {
   const fails = [], out = {};
