@@ -1,7 +1,8 @@
 /* SHORT VERSIONS of her exam-case model answers (26 Sep 2026). His words about the long answers: "very complex… very
    overwhelming… I don't know how anyone just like remembers that." So every written case question gets a short version:
-   a few words a line, cut from HER answer (content/cases.js, or hs2-paper-m1's built cases for 2/3/4) — nothing added.
-   Her answers give one mark per step; a line is one step, or one fact of a step that carries two.
+   a few words a line, cut from the answer the bank carries (content/cases.js, or hs2-paper-m1's built cases for 2/3/4) —
+   nothing added. That answer is HERS for 43 of the 44; the case 3 blood-pressure question's is the tool's, from her CVS 4
+   page (its src says so, and the page labels it). One mark per step; a line is one step, or one fact of a step that carries two.
      case  = the case id ('c2' = quiz case-c2) · k = the normalised opening of her question (must match exactly one)
      title = the trainer list's name for it · hook = one line to remember it by
      groups = the question's own parts; each line: [text, of] — of = the index of HER step the line is cut from.
