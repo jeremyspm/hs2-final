@@ -19,6 +19,7 @@ import { structuredStems, plainText } from './stem-html.mjs';
 import { OVERRIDES } from './content/overrides.js';
 import { AUTHORED_STEMS } from './content/authored-stems.js';
 import { CASES } from './content/cases.js';
+import { loadShorts, shortsJSON } from './shorts.mjs';
 import { REVDECK } from './content/revision-deck.js';
 import { HELPLINE_M1 } from './content/helpline-m1.js';
 import { CASE_TOPICS } from './content/case-topics.js';
@@ -542,7 +543,12 @@ const tpl = fs.readFileSync(path.join(HERE, 'template.html'), 'utf8');
 }
 const marker = '/*@BANK@*/';
 if (tpl.split(marker).length !== 2) { console.error('BUILD FAILED: expected exactly one ' + marker); process.exit(1); }
-const out = tpl.replace(marker, JSON.stringify(DATA));
+if (tpl.split('/*@SHORTS@*/').length !== 2) { console.error('BUILD FAILED: expected exactly one /*@SHORTS@*/'); process.exit(1); }
+/* the short versions of her case answers (content/case-shorts.js, 26 Sep 2026), gated against THIS build's questions:
+   a case answer edited in content/cases.js without its short version following fails here, not on his phone */
+const { shorts: SHORTS, fails: shortFails } = loadShorts(DATA.questions);
+if (shortFails.length) { console.error('BUILD FAILED — short versions:\n  ' + shortFails.join('\n  ')); process.exit(1); }
+const out = tpl.replace('/*@SHORTS@*/', () => shortsJSON(SHORTS)).replace(marker, JSON.stringify(DATA));
 fs.writeFileSync(path.join(HERE, 'index.html'), out);
 
 /* Parse-check the page's own inline script before it ships. A single bad escape

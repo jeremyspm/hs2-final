@@ -266,6 +266,51 @@ a{color:var(--primary)}
 .how>summary::before{content:'ⓘ '}
 .how[open]{border-left:2px solid var(--border);padding-left:10px;margin:4px 0 10px}
 .how p{font-size:.86rem;color:var(--muted-fg);margin:.4rem 0}
+/* ── written answers: her case questions, learned from a short version (ported from hs2-test3's SAQ Trainer) ── */
+.sdoor{border-left:4px solid var(--danger)}
+.slist{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+.srow{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;border:1px solid var(--border);border-radius:var(--radius);
+  padding:8px 10px;background:var(--muted);cursor:pointer}
+.srow b{flex:1 1 160px;font-size:.86rem;font-weight:600}
+.srow .m{color:var(--muted-fg);font-size:.74rem;white-space:nowrap}
+.sbadge{font-size:.7rem;padding:1px 8px;border-radius:99px;background:var(--accent);color:var(--muted-fg);white-space:nowrap}
+.sbadge.lock{background:hsl(158 64% 42% / .2);color:var(--ok);font-weight:650}
+.sbadge.go{background:hsl(38 92% 55% / .18);color:var(--warn)}
+#sqBack,.qhead .tag{white-space:nowrap;flex:0 0 auto}
+.sstages{display:flex;gap:4px;margin:0 0 12px}
+.sstage{flex:1;font:inherit;font-size:.74rem;font-weight:600;padding:5px 2px;border-radius:6px;background:var(--muted);
+  color:var(--muted-fg);border:1px solid var(--border);cursor:pointer}
+.sstage.on{background:var(--primary);color:var(--onprimary);border-color:var(--primary)}
+.sask{font-weight:650;margin:0 0 10px;line-height:1.45}
+.shook{border:1px dashed var(--primary);border-radius:8px;padding:8px 10px;font-size:.88rem;margin:10px 0;line-height:1.45}
+.ssteps{margin:0 0 6px;padding-left:1.5em}
+.ssteps li{margin:7px 0;line-height:1.5}
+.ssteps b,.scheck b{color:var(--warn);font-weight:700}
+.sprog{display:flex;align-items:center;gap:10px;margin:0 0 6px}
+.scheck label{display:flex;gap:9px;align-items:flex-start;margin:9px 0;cursor:pointer;line-height:1.45;font-size:.92rem}
+.scheck input{margin-top:3px;width:18px;height:18px;flex:0 0 auto;accent-color:var(--ok)}
+.sres{font-size:1.7rem;font-weight:800;text-align:center;margin:.2rem 0}
+.syou{white-space:pre-wrap;font-size:.86rem;background:var(--muted);border-radius:8px;padding:8px 10px;margin:6px 0 10px}
+.sheet .sheeti{border-top:1px solid var(--border);padding-top:10px;margin-top:12px}
+.sheet h3{margin:0 0 4px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.sgrp{margin:12px 0 0}
+.sgq{font-size:.8rem;font-weight:700;color:var(--muted-fg);margin:0 0 2px}
+.ssteps.sfacts{margin:0}
+.ssteps.sfacts li{margin:4px 0;line-height:1.4}
+.sgap{display:block;width:100%;text-align:left;font:inherit;font-size:.9rem;color:var(--muted-fg);background:transparent;
+  border:1px dashed var(--primary);border-radius:8px;padding:7px 10px;cursor:pointer;line-height:1.4}
+.sgap.open{border-style:solid;color:var(--fg);cursor:default}
+.sgap.ok{border:1px solid var(--ok);color:var(--fg);cursor:default}
+.sgap.miss{border:1px solid var(--danger);color:var(--fg);cursor:default}
+.sgmk{display:flex;gap:6px;margin:5px 0 2px}
+.sgmk .btn{flex:1;padding:7px 10px;font-size:.84rem}
+.how.sfull{margin-top:14px}
+/* the case scenario, folded above a written question; its figure shows under it */
+.scase{margin:0 0 8px}
+.scase>summary{cursor:pointer;font-size:.82rem;font-weight:650;color:var(--muted-fg);list-style:none}
+.scase>summary::-webkit-details-marker{display:none}
+.scase>summary::before{content:'▸ '}
+.scase[open]>summary::before{content:'▾ '}
 </style>
 </head>
 <body>
@@ -285,6 +330,16 @@ const DATA = {"built":"2026-09-21","stats":{"n":1370,"held":14,"videos":462,"vid
 /* references: q.refs = [{k:'slide'|'her'|'patton', src, slide|t, ...}] in authority order —
    her slide, her prose, Patton. A bank built with the older single q.ref still renders. */
 for(const q of DATA.questions){ if(!q.refs) q.refs = q.ref ? [{k:q.ref.slide?'slide':'her', ...q.ref}] : []; }
+/* short versions of her exam-case answers (content/case-shorts.js, gated by shorts.mjs, 26 Sep 2026). His rule (estate memory
+   "saq-short-answers"): a written answer is learned from a SHORT version, a few words a line, cut from HER answer. So wherever a
+   case question is marked (Learn mode, the mock) you tick its short lines; q.saq.full keeps her answer word for word. */
+const SHORTS = {"q6732f41a5b":{"title":"Lymphatic system: three functions","hook":"DIGEST fat, DEFEND the body, DRAIN the tissues.","groups":[{"q":"Digestive","facts":[{"t":"**Digestive**: **lacteals** in the gut absorb **dietary fat**","of":0}]},{"q":"Immunological","facts":[{"t":"**Immunological**: the **immune response**","of":1},{"t":"**thymus** (**T cells** mature), **bone marrow** (**B cells** mature)","of":1},{"t":"**lymph nodes**: where immune cells meet and coordinate","of":1}]},{"q":"Fluid balance","facts":[{"t":"**Fluid balance**: drains **excess tissue fluid**","of":2},{"t":"and returns it to the **venous system**","of":2}]}]},"q3a616933df":{"title":"Axillary nodes and cancer spread","hook":"Cancer escapes into the lymph; the SENTINEL node is checked first.","groups":[{"q":"How cancer spreads","facts":[{"t":"Spread of cancer = **metastasis**","of":0},{"t":"Cancer cells in the **lymphatic system** can reach **any part of the body**","of":0}]},{"q":"Why the axillary nodes matter","facts":[{"t":"The **axillary** (armpit) nodes are checked for **cancer cells**","of":1},{"t":"The first, closest to the breast, is the **sentinel node**","of":1},{"t":"Cancer there = it has **spread**; none = likely still in the breast","of":1}]}]},"q9aee7ae3e9":{"title":"Mary's swollen arm","hook":"Nodes out → drain BLOCKED → fluid stays → LYMPHOEDEMA.","groups":[{"q":"Why the arm swells","facts":[{"t":"Removing the **lymph nodes**: the arm's drainage is **blocked**","of":0},{"t":"Normally tissue fluid drains back at the **subclavian vein**","of":1},{"t":"Now the **lymphatic vessels** fill and cannot drain the tissue","of":1},{"t":"The swelling is **lymphoedema**","of":1}]}]},"qfa09d306fc":{"title":"Difficulty breathing: the term","hook":"DYS = bad, PNOEA = breathing.","groups":[{"q":"The term","facts":[{"t":"**Dyspnoea**: **dys** (bad) + **pnoea** (breathing)","of":0}]}]},"qa113555c77":{"title":"What asthma does to the airways","hook":"SQUEEZE, SWELL, SLIME.","groups":[{"q":"Three things narrow the airway","facts":[{"t":"**Bronchoconstriction**: the airway **smooth muscle** has **contracted**","of":0},{"t":"**Inflammation**: the airway wall is thick with **swelling**","of":1},{"t":"More **mucus** secretion: less room for air","of":2}]}]},"qf5924de181":{"title":"Ane's ventilation and resistance","hook":"Narrow pipes: HIGH resistance, HARDER work, EXTRA muscles.","groups":[{"q":"Airway resistance","facts":[{"t":"**Airway resistance** is **high** → **harder to breathe**","of":0},{"t":"It needs a **greater pressure difference** → **dyspnoea**","of":0}]},{"q":"Ventilation","facts":[{"t":"**Accessory respiratory muscles** are recruited","of":1},{"t":"An **increase in the work of breathing**","of":1}]}]},"q0f73a5184b":{"title":"How the reliever inhaler helps","hook":"The reliever RELAXES the airway; the preventer calms inflammation.","groups":[{"q":"The reliever","facts":[{"t":"A reliever is a **bronchodilator**","of":0},{"t":"The airway **smooth muscle** is forced to **relax**, so the airway widens","of":0},{"t":"(A preventer is a **corticosteroid**: **anti-inflammatory**)","of":0}]}]},"q37e28a925c":{"title":"Keeping dust out of the lungs","hook":"STICK and SWEEP, FILTER, COUGH.","groups":[{"q":"The defences","facts":[{"t":"**Mucus and cilia**: the **muco-ciliary escalator**","of":0},{"t":"**Nasal hairs** filter; particles stick in **mucus**","of":1},{"t":"The **carina** triggers the **cough reflex**","of":2},{"t":"The **epiglottis** keeps large objects out of the **trachea**","of":2}]}]},"q4d2b76c870":{"title":"The muco-ciliary escalator","hook":"Mucus STICKS it, cilia SWEEP it up and out.","groups":[{"q":"How it works","facts":[{"t":"**Cilia** line the **respiratory epithelium**","of":0},{"t":"They **beat to sweep mucus up and out** of the airways","of":0},{"t":"**Mucus** is **sticky**: dust is **trapped** in it","of":1}]}]},"q799f22cca4":{"title":"What smoking does to the escalator","hook":"Cilia DAMAGED → mucus STUCK → smoker's COUGH.","groups":[{"q":"The effect","facts":[{"t":"The **cilia are damaged**","of":0},{"t":"so **mucus** cannot be moved **up and out**","of":0},{"t":"A **smoker’s cough** develops to replace them","of":1}]}]},"q25a98e73f3":{"title":"Bringing Ane's blood pressure down","hook":"STRETCH → MEDULLA → vagus SLOWS the heart → vessels WIDEN.","groups":[{"q":"Sense it","facts":[{"t":"**Baroreceptors** in the **aortic arch** and **carotid sinus** stretch, fire faster","of":0}]},{"q":"Tell the brain","facts":[{"t":"They signal the **medulla oblongata** (**cardiac** and **vasomotor centres**)","of":1}]},{"q":"Slow the heart","facts":[{"t":"**Cardiac inhibitory centre**: **parasympathetic** (**vagus**) impulses to the **SA node**","of":2},{"t":"**Acetylcholine** lowers the **heart rate** (and stroke volume)","of":2}]},{"q":"Widen the vessels","facts":[{"t":"**Vasomotor centre** inhibited: less **sympathetic** tone, **arterioles dilate**","of":3},{"t":"**Peripheral resistance** falls: BP returns to the **set point**","of":3}]}]},"qe2dfe3e07a":{"title":"Inhalation, step by step","hook":"CONTRACT → BIGGER → LOWER pressure → air IN.","groups":[{"q":"The steps","facts":[{"t":"The **diaphragm contracts** (its dome lowers)","of":0},{"t":"The **external intercostal muscles contract**: ribs up and out","of":0},{"t":"The **thoracic cavity** enlarges; **intrapleural** pressure falls (**Boyle’s law**)","of":1},{"t":"**Intrapulmonary** volume increases, so its pressure falls","of":2},{"t":"Air flows in, **from high pressure to low**","of":3}]}]},"q3e837d2c7e":{"title":"Exhalation, step by step","hook":"RELAX → RECOIL → HIGHER pressure → air OUT.","groups":[{"q":"The steps","facts":[{"t":"The **diaphragm relaxes** (its dome rises)","of":0},{"t":"The **external intercostals relax**: ribs down and in","of":0},{"t":"The elastic lungs **recoil passively**","of":1},{"t":"**Intrapulmonary pressure rises** (**Boyle’s law**)","of":2},{"t":"Air flows out to the lower **atmospheric pressure**","of":3}]}]},"q7694a8a77a":{"title":"The muscles of forced breathing","hook":"IN: the neck lifts. OUT: the abs and internal intercostals squeeze.","groups":[{"q":"Breathing in","facts":[{"t":"At rest: **diaphragm** and **external intercostals** contract","of":0},{"t":"Forced: also **sternocleidomastoid** and **scalenes** (neck)","of":0}]},{"q":"Breathing out","facts":[{"t":"Forced: the **abdominal muscles** and **internal intercostals** contract","of":1}]}]},"q6f24781585":{"title":"What makes ventilation harder","hook":"BLOCKED airways, STIFF lungs, a LOST pleural seal.","groups":[{"q":"Blocked airways","facts":[{"t":"**Airway obstruction**: fluid, mucus, swelling (**COPD**, **asthma**)","of":0},{"t":"raises **resistance** and the muscular effort needed","of":0}]},{"q":"Stiff lungs","facts":[{"t":"Less **lung compliance**: **scar tissue**, rib cage or diaphragm problems","of":1},{"t":"No **surfactant**, or fluid in the **alveoli**","of":1}]},{"q":"The pleural seal","facts":[{"t":"Air in the pleural cavity (**pneumothorax**) collapses the lung (**atelectasis**)","of":2}]}]},"q6dab37e921":{"title":"Normal blood pH","hook":"7.35 to 7.45: below is acid, above is alkaline.","groups":[{"q":"The range","facts":[{"t":"**7.35–7.45** (average **7.4**)","of":0},{"t":"Below 7.35 = **acidotic**; above 7.45 = **alkalotic**","of":0}]}]},"q483ab46348":{"title":"The bicarbonate buffer equation","hook":"CO₂ + water ⇌ carbonic acid ⇌ H⁺ + bicarbonate.","groups":[{"q":"The equation","facts":[{"t":"**CO₂ + H₂O ⇌ H₂CO₃ ⇌ H⁺ + HCO₃⁻**","of":0},{"t":"**carbon dioxide + water ⇌ carbonic acid ⇌ hydrogen ions + bicarbonate ions**","of":0}]}]},"q6673b8cccc":{"title":"Breathing rate and blood pH","hook":"Blow off CO₂ → H⁺ FALLS → pH RISES: alkalosis.","groups":[{"q":"The link","facts":[{"t":"Rate and depth change the **CO₂** in the **alveoli** and the **blood**","of":0},{"t":"**Blood CO₂** drives the **bicarbonate buffer**","of":1},{"t":"so **H⁺** changes with it, and so does **pH**","of":1}]},{"q":"Manaia","facts":[{"t":"**Hyperventilation** blows off CO₂ → **H⁺ falls** → **pH rises**","of":2},{"t":"This is **respiratory alkalosis**","of":2},{"t":"(**Hypoventilation**: CO₂ up, H⁺ up → **respiratory acidosis**)","of":2}]}]},"qa617be9cdf":{"title":"How breathing corrects blood pH","hook":"Too ACID → breathe FASTER. Too ALKALINE → breathe SLOWER.","groups":[{"q":"Metabolic acidosis","facts":[{"t":"**Metabolic acidosis** (**H⁺ up**): **hyperventilation**","of":0},{"t":"H⁺ becomes CO₂ and water; the extra **CO₂** is **breathed off**","of":0}]},{"q":"Metabolic alkalosis","facts":[{"t":"**Metabolic alkalosis** (**H⁺ down**): **hypoventilation**","of":1},{"t":"CO₂ is **kept** and turned back into H⁺ and bicarbonate","of":1}]}]},"q7c2ef5ce3b":{"title":"Where insulin is made","hook":"Pancreas → islets → BETA cells make insulin (glucAgon = Alpha).","groups":[{"q":"Where","facts":[{"t":"The **endocrine pancreas**","of":0},{"t":"in the **islets of Langerhans**","of":0}]},{"q":"Which cells","facts":[{"t":"**Beta cells** make **insulin**, which **decreases blood sugar**","of":1},{"t":"(**Alpha cells** make **glucagon**)","of":1}]}]},"qcb61f37c64":{"title":"Hormones that raise blood sugar","hook":"GLUCAGON, the stress pair (ADRENALINE, CORTISOL), then GROWTH and THYROID.","groups":[{"q":"The hormones and where they are made","facts":[{"t":"**Glucagon**: the pancreas **alpha cells**","of":0},{"t":"**Adrenaline** (**adrenal medulla**) and **cortisol** (**adrenal cortex**)","of":1},{"t":"both mediate the **stress response**, which needs ready glucose","of":1},{"t":"**Growth hormone** (**anterior pituitary**) and **thyroid hormones**","of":2}]}]},"qf5747c02f3":{"title":"What insulin does at a cell","hook":"TRAVEL, BIND, MOVE GLUT4, LET GLUCOSE IN.","groups":[{"q":"The steps","facts":[{"t":"Insulin travels in the **blood**","of":0},{"t":"It binds to **insulin receptors** on the cell surface","of":1},{"t":"A cascade moves **GLUT4** into the **cell membrane**","of":2},{"t":"GLUT4 lets **glucose** in, down its **concentration gradient**","of":3},{"t":"by **facilitated diffusion**","of":3}]}]},"q59b26e3655":{"title":"Insulin in the liver","hook":"Liver and muscle STORE glucose as GLYCOGEN.","groups":[{"q":"Its role","facts":[{"t":"**Glucose** → **glycogen**, by **glycogenesis**","of":0}]}]},"q3f9f8bc08e":{"title":"Insulin in the muscles","hook":"Same as the liver: glucose into GLYCOGEN.","groups":[{"q":"Its role","facts":[{"t":"**Glucose** → **glycogen**, by **glycogenesis**","of":0}]}]},"qcc94a0c925":{"title":"Insulin in fat tissue","hook":"Fat tissue turns glucose into FAT: LIPOgenesis.","groups":[{"q":"Its role","facts":[{"t":"**Glucose** → **fats**, by **lipogenesis**","of":0},{"t":"the most **efficient storage form**","of":0}]}]},"q3873615069":{"title":"The joint, A to H","hook":"Muscle, enthesis, fluid, bursa, capsule, tendon, bone, cartilage, ligament.","groups":[{"q":"Each letter: structure and function","facts":[{"t":"A: **muscle**, **contracts** to move the bones","of":0},{"t":"A (the other two): **enthesis**, where the **ligaments attach**","of":1},{"t":"B: **synovial fluid**, **lubricates** the joint","of":2},{"t":"C: **bursa**, **reduces friction**","of":3},{"t":"D: **joint capsule**, **holds the bones together**","of":4},{"t":"E: **tendon**, **joins muscle to bone**","of":5},{"t":"F: **bone**, a **lever** that **articulates** at joints","of":6},{"t":"G: **hyaline cartilage**, **reduces friction** and **absorbs shock**","of":7},{"t":"H: **ligament**, **holds bones together**","of":8}]}]},"q14e46cfb34":{"title":"Rheumatoid arthritis","hook":"AUTOIMMUNE, FAST, BOTH SIDES, WHOLE BODY.","groups":[{"q":"What occurs","facts":[{"t":"**Autoimmune**: the **immune system attacks the joints**","of":0},{"t":"Onset is **relatively rapid**, over **weeks to months**, at any age","of":1},{"t":"Joints **painful, swollen and stiff**, on **both sides** of the body","of":2},{"t":"**Morning stiffness** longer than **1 hour**","of":2},{"t":"**Whole-body** symptoms: **fatigue**, feeling ill","of":3}]}]},"q05841f0fb9":{"title":"The other arthritis","hook":"OSTEO-arthritis: the wear-and-tear one.","groups":[{"q":"Its name","facts":[{"t":"**Osteoarthritis**","of":0}]}]},"qf845b6ee38":{"title":"Osteoarthritis vs rheumatoid","hook":"Cause, onset, joints, whole body: rheumatoid is immune, fast, both sides, systemic.","groups":[{"q":"Cause","facts":[{"t":"Rheumatoid: **autoimmune**; osteo: **wear and tear**","of":0}]},{"q":"Onset","facts":[{"t":"Rheumatoid: any age, **weeks to months**; osteo: **later in life**, **over years**","of":1}]},{"q":"Joints","facts":[{"t":"Rheumatoid: **swollen**, **symmetrical**, stiffness **over 1 hour**","of":2},{"t":"Osteo: **ache**, little swelling, **one set of joints**, **under 1 hour**","of":2}]},{"q":"Whole body","facts":[{"t":"Rheumatoid has **whole body symptoms**; osteo does not","of":3}]}]},"q8a654cb90d":{"title":"Where cortisol comes from","hook":"Adrenal CORTEX, on the kidney, told by ACTH.","groups":[{"q":"Where","facts":[{"t":"The **adrenal glands**, on top of the **kidneys**","of":0},{"t":"in the **adrenal cortex** (the outer part)","of":1}]},{"q":"What releases it","facts":[{"t":"**ACTH** from the **anterior pituitary**","of":1}]}]},"q0fbf219f0f":{"title":"Cortisol and the stress response","hook":"More SUGAR, steady BLOOD VOLUME, LESS inflammation.","groups":[{"q":"What it does","facts":[{"t":"**Increases blood glucose** by **gluconeogenesis**","of":0},{"t":"and raises blood **fatty acids** and **amino acids**","of":0},{"t":"Reduces **inflammation** and **suppresses the immune system**","of":3}]},{"q":"How that helps with stress","facts":[{"t":"Helps resist **chronic** (long-term) **stress**: steady **blood sugar**","of":1},{"t":"Keeps up **blood volume**, so **tissue perfusion** continues","of":2}]}]},"qcd2b5c7c3f":{"title":"Cortisol for Shannon's arthritis","hook":"Calms the SWELLING, calms the IMMUNE attack.","groups":[{"q":"How it helps","facts":[{"t":"**Reduces inflammation**: less **swelling**, **redness** and **pain**","of":0},{"t":"**Suppresses the immune system**: RA is **autoimmune**","of":1}]}]},"q9950502a7a":{"title":"Neurotransmitters and dopamine","hook":"A chemical across the synapse; dopamine from the SUBSTANTIA NIGRA.","groups":[{"q":"What a neurotransmitter is","facts":[{"t":"A **chemical** released at the **presynaptic** endings of a **chemical synapse**","of":0},{"t":"It acts on the **receptor** region of the **postsynaptic neuron**","of":0}]},{"q":"Where dopamine is made","facts":[{"t":"**Dopamine**: the **substantia nigra** of the **midbrain**","of":1}]}]},"q48b9b61889":{"title":"Calcium at the synapse","hook":"Impulse ARRIVES → Ca²⁺ IN → vesicles RELEASE.","groups":[{"q":"Calcium's role","facts":[{"t":"The **action potential** reaches the **axon terminal**","of":0},{"t":"**Ca2+ channels open**; Ca2+ enters the **presynaptic neuron**","of":0},{"t":"Ca2+ opens the **vesicles**: neurotransmitter out by **exocytosis**","of":1}]}]},"qee46bc01d7":{"title":"Synaptic transmission","hook":"ARRIVE, CALCIUM, RELEASE, CROSS, BIND, RESPOND, CLEAR.","groups":[{"q":"The steps","facts":[{"t":"The **action potential** reaches the **axon terminal**","of":0},{"t":"**Ca2+** enters the **presynaptic neuron**","of":0},{"t":"Vesicles release it into the **synaptic cleft** (**exocytosis**)","of":1},{"t":"It **diffuses across the synaptic cleft**","of":2},{"t":"It **binds to receptors** on the **postsynaptic neuron**","of":3},{"t":"**Permeability** changes: **excitatory** or **inhibitory**","of":4},{"t":"Then **re-uptake** or **enzymatic destruction**","of":5}]}]},"q6c0b707735":{"title":"When a neurotransmitter binds","hook":"The gate changes: EXCITE or INHIBIT.","groups":[{"q":"What happens","facts":[{"t":"The **postsynaptic membrane’s permeability changes**","of":0},{"t":"**Excitatory** or **inhibitory**: **stimulated or inhibited**","of":1}]}]},"qa1f7429862":{"title":"Clearing the signal","hook":"Take it BACK or BREAK it down.","groups":[{"q":"What happens to it","facts":[{"t":"**Re-uptake** into the **presynaptic neuron**","of":0},{"t":"or **enzymatic destruction**","of":0}]}]},"qdef14f2387":{"title":"Cerebrum areas, A to G","hook":"A to G: PLAN, SPEAK, MOVE, FEEL, HEAR, UNDERSTAND, SEE.","groups":[{"q":"Each letter","facts":[{"t":"A: **prefrontal cortex**","of":0},{"t":"B: **Broca’s area**","of":1},{"t":"C: **motor area**, **precentral gyrus**","of":2},{"t":"D: **somatosensory area**, **postcentral gyrus**","of":3},{"t":"E: **auditory area**","of":4},{"t":"F: **Wernicke’s area**","of":5},{"t":"G: **occipital** (**visual**) area","of":6}]}]},"qee46310ded":{"title":"What damage to each area does","hook":"Lose what it does: judgement, speech, movement, touch, hearing, understanding, sight.","groups":[{"q":"Each area, damaged","facts":[{"t":"A prefrontal: **poor judgement**, **inappropriate behaviour**, **loss of focus**","of":0},{"t":"B Broca’s: **difficulty producing speech** and writing","of":1},{"t":"C motor: **loss of voluntary movement**","of":2},{"t":"D somatosensory: **loss of touch** and general sensation","of":3},{"t":"E auditory: **hearing affected**","of":4},{"t":"F Wernicke’s: **cannot understand language**","of":5},{"t":"G occipital: **vision affected**","of":6}]}]},"qb04815257c":{"title":"The ovulation predictor kit","hook":"It catches the LH PEAK in urine.","groups":[{"q":"What it shows","facts":[{"t":"When **ovulation** is about to happen","of":0},{"t":"It picks up the **peak** in **luteinizing hormone** (**LH**) in the **urine**","of":0}]}]},"q2baad665ae":{"title":"What happens at ovulation","hook":"LH PEAK → follicle BURSTS → oocyte OUT → toward the FIMBRIAE.","groups":[{"q":"What occurs","facts":[{"t":"A **secondary oocyte** is released from the **ovary**","of":0},{"t":"Triggered by a **peak** in **LH**","of":1},{"t":"The **Graafian** (tertiary) **follicle** bursts; the ovarian wall **ruptures**","of":2},{"t":"Fluid pushes the oocyte to the **fimbriae** of the **Fallopian tube**","of":3}]}]},"q22b21b3a98":{"title":"The fertile days","hook":"Days 10 to 17.","groups":[{"q":"The days","facts":[{"t":"**Days 10–17**","of":0}]}]},"q574fdc480d":{"title":"Why the hormones change","hook":"Each hormone has a job: FSH grows, estrogen thickens, LH releases, progesterone prepares.","groups":[{"q":"Why","facts":[{"t":"Each hormone drives a **different process**","of":0},{"t":"**Follicles** develop (**FSH**); the **uterine lining** thickens (**estrogen**)","of":1},{"t":"**Ovulation** (**LH**); ready for **implantation** (**progesterone**)","of":1}]}]},"qc184f15557":{"title":"Pregnancy and the hormone graph","hook":"No DROP at day 21: the levels keep RISING.","groups":[{"q":"The change","facts":[{"t":"The **hormone drop** at about **day 21** does not happen","of":0},{"t":"**Estrogen** and **progesterone** keep **rising**","of":1}]}]}};
+for(const q of DATA.questions) if(SHORTS[q.id]){
+  q.short = SHORTS[q.id];
+  q.saq = {...q.saq, full:q.saq.steps, steps:q.short.groups.flatMap(g=>g.facts.map(f=>f.t.replace(/\*\*/g,'')))};
+}
+/* her full answer, word for word, folded under a short answer's tick list */
+const herFull = q => q.saq&&q.saq.full ? `<details class="hlans"><summary>📄 Her full answer, word for word</summary><div class="hlbody">${q.saq.full.map(s=>esc(s)).join(String.fromCharCode(10))}</div></details>` : '';
 const REF = {slide:{ic:'📖',lbl:'Her slide'}, her:{ic:'✍',lbl:'Her notes'}, course:{ic:'📄',lbl:'Course file'}, patton:{ic:'📕',lbl:'Patton'}};
 /* ── state ─────────────────────────────────────────────────────────── */
 /* Its own prefix: every tool on jeremyspm.github.io shares ONE localStorage (it is per origin, not per path), so the final keeps
@@ -573,7 +628,7 @@ function leaveMsg(){
 window.addEventListener('popstate', () => {
   if(LEAVING) LEAVING = false;
   else { const m = leaveMsg(); if(m && !confirm(m)){ history.pushState({sit:1, scr:curScr()}, '', location.href); return } }
-  clearInterval(timerIv); render(curScr()); window.scrollTo(0,0);
+  clearInterval(timerIv); SQR = null; render(curScr()); window.scrollTo(0,0);
 });
 /* every "back to home" in the sittings lands here: off the sitting, onto the screen under it */
 function home(){
@@ -609,7 +664,7 @@ function launcher(){
   return `<button class="hero" data-hero="${up.k}"><span><small>${up.e}</small><b>${up.t}</b></span><span class="go" aria-hidden="true">▶</span></button>
   <div class="lsec">Practise</div>
   ${row('core','🧭','Decide for me',`${seenA} of her ${A.length} exam questions seen`)}
-  ${row('cases','🩺','The 10 starred cases',`${CASEQS().length} questions · whole, in booklet order`)}
+  ${row('cases','🩺','The 10 starred cases',SAQD.length?`${SAQD.length} written answers · ${SAQD.filter(x=>sqS(x.id).lock).length} locked`:`${CASEQS().length} questions · whole, in booklet order`)}
   ${row('learn','📖','Learn as you go',`${seen} of ${CLOSED.length} seen${r&&r.ids&&r.ids.length?' · a run is waiting':' · marks itself as you go'}`)}
   ${row('pick','🗂','Pick my rep',`${DATA.quizzes.length} quizzes${S.pick.length?` · ${S.pick.length} ticked`:' · three modules + the cases'}`)}
   <div class="lsec">Test yourself</div>
@@ -626,7 +681,223 @@ function casesScreen(){
     <p class="lead">Her ten starred cases: ${nCase} questions, always whole and in booklet order. Her own words: the exam “will be based on the starred *Case studies in your Case Study Booklet A”.</p>
     <button class="btn primary wide" data-go="cases" data-learn="1">Learn the 10 cases · ${nCase}</button>
     <button class="btn wide" data-go="cases">Sit the 10 cases · ${nCase}</button>
+  </div>
+  ${saqCard()}`;
+}
+/* ── ✍️ written answers: her exam-case questions, learned from their short versions (26 Sep 2026) ──────────────
+   hs2-test3's SAQ Trainer, ported over her written case questions (same rungs, same marking help): 1 Read the short
+   version (her full answer folds underneath) → 2 Fill the gaps (1, a quarter, half, then every line hidden; say it, tap
+   to check, mark yourself; a missed line stays hidden next round) → 3 Write it (the page looks for each line's bold words
+   in what he wrote, he confirms, 80% locks it). No multiple-choice drill: none exists for the cases. Progress lives in
+   this browser under this sim's own prefix ('saqd'). */
+const CASEN = id => (DATA.quizzes.find(z=>z.id===id)||{}).name||id;
+const SAQD = DATA.questions.filter(q=>q.short).map(q=>({id:q.id, q, title:q.short.title, cse:CASEN(q.quiz), quiz:q.quiz,
+  marks:q.pts, ask:q.qt, steps:q.saq.full, src:q.saq.src, short:q.short}));
+let SQ = LS('saqd') || {};            /* saq id -> {read, gaps, best (0..1), lock, tries, last} */
+const sqS = id => SQ[id] || (SQ[id] = {});
+const sqSave = () => SV('saqd', SQ);
+const mdB = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+let SQR = null;                        /* the trainer run on screen */
+const sqNext = () => SAQD.find(x=>!sqS(x.id).lock);
+const sqPoints = x => x.short.groups.flatMap(g=>g.facts.map(f=>f.t));
+const sqMk = n => `${n} mark${n===1?'':'s'}`;
+function saqCard(){
+  if(!SAQD.length) return '';
+  const nL = SAQD.filter(x=>sqS(x.id).lock).length, nx = sqNext(), nC = new Set(SAQD.map(x=>x.quiz)).size;
+  const badge = x => { const s=sqS(x.id);
+    return s.lock ? `<span class="sbadge lock">✓ locked</span>`
+      : s.best!=null ? `<span class="sbadge go">written ${Math.round(s.best*100)}% · not yet</span>`
+      : s.gaps ? `<span class="sbadge go">gaps done</span>` : s.read ? `<span class="sbadge">read</span>` : `<span class="sbadge">new</span>` };
+  let list='', cur='';
+  for(const x of SAQD){
+    if(x.quiz!==cur){ cur=x.quiz; list+=`<div class="qmod">${esc(x.cse)}</div>`; }
+    list+=`<div class="srow" data-sq="${x.id}"><b>${esc(x.title)}</b><span class="m">${sqMk(x.marks)}</span>${badge(x)}</div>`;
+  }
+  return `<div class="card door sdoor" id="saqCard">
+    <h2>✍️ Written answers, one at a time</h2>
+    <p class="lead">The exam is <b>37% written</b>, from these cases. Each of her ${SAQD.length} written questions has a <b>short version</b>: her answer, a few words a line.</p>
+    <details class="how"><summary>How this works</summary>
+      <p>These are the ${SAQD.length} written questions she has answered, in ${nC} of her ten starred cases; the other cases' answers were not readable when this was built. Her model answers give one mark per step, and each has a short version cut from it, one fact a line.
+      For each one: <b>1 Read</b> the short version (the <b style="color:var(--warn)">bold</b> words are the mark words; her full answer folds away underneath)
+      → <b>2 Fill the gaps</b>: the lines disappear a round at a time, 1, then a quarter, half, then all of them; say each one, tap to check
+      → <b>3 Write it</b> from memory → the page looks for each line's bold words in what you wrote, you confirm, and it shows what you missed
+      → write it again until you get 80% (then it's locked ✓).</p>
+      <p class="refsrc">The model answers are hers, word for word, from her case model-answer decks and her Fertility quiz. Each short version is cut from hers line by line, and the build checks every bold word against the step of hers it came from. Progress is saved in this browser only.</p>
+    </details>
+    ${nx?`<button class="btn primary wide" data-sqgo="${nx.id}">▶ ${sqS(nx.id).read?'Continue':'Start'}: ${esc(nx.title)}</button>`
+       :`<p style="margin:.4rem 0"><b>All ${SAQD.length} locked.</b> Keep them warm with the last-look sheet.</p>`}
+    <button class="btn ghost wide" id="sqSheet">📄 Last-look sheet · every short answer on one page</button>
+    <div class="hist" style="margin-top:10px">${nL} of ${SAQD.length} locked</div>
+    <div class="slist">${list}</div>
   </div>`;
+}
+function bindSaq(){
+  document.querySelectorAll('[data-sqgo],[data-sq]').forEach(b=>b.onclick=()=>sqOpen(b.dataset.sqgo||b.dataset.sq));
+  const h=$('#sqSheet'); if(h) h.onclick=sqSheet;
+}
+function sqHome(){ SQR=null; home(); }     /* off the trainer run, back onto the cases screen it started from */
+function sqOpen(id,stage){
+  const x=SAQD.find(s=>s.id===id); if(!x) return;
+  enterSit('saq');
+  SQR={x, stage: stage || (sqS(id).lock ? 'cold' : 'read')};
+  sqRender(); window.scrollTo(0,0);
+}
+const SQ_ST = [['read','1 Read'],['gaps','2 Fill gaps'],['cold','3 Write it']];
+function sqHead(){
+  const x=SQR.x;
+  return `<div class="qhead"><button class="btn ghost" id="sqBack" style="padding:4px 10px">← Cases</button><span class="n">${esc(x.title)}</span><span class="tag" style="margin-left:auto">${sqMk(x.marks)}</span></div>
+    <div class="sstages">${SQ_ST.map(a=>`<button class="sstage${a[0]===SQR.stage?' on':''}" data-sqst="${a[0]}">${a[1]}</button>`).join('')}</div>`;
+}
+/* the case, folded, and the question's own figure: many of her questions are about the scenario or a diagram */
+const sqCase = x => `${x.q.scenario?`<details class="scase"><summary>The case: ${esc(x.cse)}</summary><div class="note">${esc(x.q.scenario)}</div></details>`:''}${(x.q.imgs||[]).map(f=>`<img class="qimg" src="${imgU(f)}" alt="question figure" loading="lazy">`).join('')}`;
+/* marking help (hs2-test3's, unchanged): which of a line's bold (mark-earning) words appear in what he wrote. Generous about
+   form (a long word must match all but its last 3 letters; either side of a "(x)" or "a / b"), strict about substance (half
+   the bold words or more to pre-tick). It only suggests; he ticks. */
+const sqNorm = s => String(s).toLowerCase().replace(/²⁺|2\+/g,'2').replace(/[^a-z0-9 ]+/g,' ');
+const SQ_STOP = new Set(['the','and','of','in','for','from','into','with','via','its','than','not','a','an','to','on']);
+function sqHit(term,text){
+  const t=' '+sqNorm(text).replace(/\s+/g,' ')+' ';
+  return term.split(/[()\/]| or /).map(s=>s.trim()).filter(Boolean).some(alt=>{
+    const ws=sqNorm(alt).split(/\s+/).filter(w=>w.length>1&&!SQ_STOP.has(w));
+    return ws.length>0 && ws.filter(w=>t.includes(' '+w.slice(0,w.length<=5?w.length:Math.max(5,w.length-3)))).length>=Math.ceil(ws.length/2);
+  });
+}
+function sqCheckStep(step,text){
+  const ts=[...step.matchAll(/\*\*(.+?)\*\*/g)].map(m=>m[1]), found=ts.filter(t=>sqHit(t,text));
+  return {ts, found, auto: ts.length>0 && found.length>=Math.ceil(ts.length/2)};
+}
+function sqBindHead(){
+  const b=$('#sqBack'); if(b) b.onclick=sqHome;
+  document.querySelectorAll('[data-sqst]').forEach(e=>e.onclick=()=>{SQR.stage=e.dataset.sqst;SQR.cold=null;SQR.gap=null;sqRender();window.scrollTo(0,0)});
+}
+function sqRender(){ const st=SQR.stage; if(st==='read') sqReadShort(); else if(st==='gaps') sqGaps(); else sqCold(); }
+/* the short version, grouped under the question's own parts, numbered straight through */
+function sqShortHTML(x, line){
+  let k=-1;
+  return x.short.groups.map(g=>`<div class="sgrp"><div class="sgq">${esc(g.q)}</div><ol class="ssteps sfacts">${g.facts.map(()=>line(++k)).join('')}</ol></div>`).join('');
+}
+/* rung 1: the short answer first; her full answer (and her helpline worked answer, where she posted one) folds away */
+function sqReadShort(){
+  const x=SQR.x, P=sqPoints(x); sqS(x.id).read=1; sqSave();
+  $('#view').innerHTML=`<div class="card">${sqHead()}
+    ${sqCase(x)}
+    <p class="sask">${esc(x.ask)}</p>
+    <div class="shook">🧠 ${esc(x.short.hook)}</div>
+    <p class="hist" style="margin:8px 0 0">The short version: ${P.length} line${P.length===1?'':'s'} for ${sqMk(x.marks)}, cut from her answer (she gives one mark per step). Learn these; the bold words are what earn the marks.</p>
+    ${sqShortHTML(x, i=>`<li value="${i+1}">${mdB(P[i])}</li>`)}
+    <button class="btn primary wide" id="sqGaps" style="margin-top:14px">🕳 Fill the gaps →</button>
+    <button class="btn wide" id="sqGo">✍️ Write it from memory</button>
+    <details class="how sfull"><summary>Her full answer, word for word</summary>
+      <ol class="ssteps">${x.steps.map(t=>`<li>${esc(t)}</li>`).join('')}</ol>
+      ${x.q.hl&&hasHer(x.q)?herAnswer(x.q.hl):''}
+      <div class="src">${esc(x.src)}. The short version is cut from it line by line; the build checks every bold word against the step of hers it came from.</div>
+    </details></div>`;
+  sqBindHead();
+  $('#sqGaps').onclick=()=>{SQR.stage='gaps';SQR.gap=null;sqRender();window.scrollTo(0,0)};
+  $('#sqGo').onclick=()=>{SQR.stage='cold';SQR.cold=null;sqRender();window.scrollTo(0,0)};
+}
+/* rung 2: the whole short answer on screen with lines punched out, one line, then a quarter, half, then all of them.
+   Say the missing line, tap to check, mark yourself; a missed line stays hidden next round. */
+function sqGaps(){
+  const x=SQR.x, P=sqPoints(x), n=P.length;
+  const L=[...new Set([1,Math.ceil(n/4),Math.ceil(n/2),n])].sort((a,b)=>a-b);
+  if(!SQR.gap) SQR.gap={lvl:0, carry:[]};
+  const g=SQR.gap;
+  if(!g.hide){
+    const want=L[g.lvl], pick=g.carry.slice(0,want);
+    for(const i of shuffle(P.map((_,i)=>i))) if(pick.length<want&&!pick.includes(i)) pick.push(i);
+    g.hide=pick; g.res={}; g.open={};
+  }
+  const line=i=>{
+    if(!g.hide.includes(i)) return `<li value="${i+1}">${mdB(P[i])}</li>`;
+    if(g.res[i]) return `<li value="${i+1}"><div class="sgap ${g.res[i]}">${mdB(P[i])}</div></li>`;
+    if(g.open[i]) return `<li value="${i+1}"><div class="sgap open">${mdB(P[i])}</div><div class="sgmk"><button class="btn" data-gok="${i}">✓ Had it</button><button class="btn" data-gmiss="${i}">✗ Missed it</button></div></li>`;
+    return `<li value="${i+1}"><button class="sgap" data-gopen="${i}">? Say it, then tap to check</button></li>`;
+  };
+  const done=g.hide.every(i=>g.res[i]), miss=g.hide.filter(i=>g.res[i]==='miss'), last=g.lvl===L.length-1, hid=k=>k===n?'every line':k+' line'+(k>1?'s':'');
+  $('#view').innerHTML=`<div class="card">${sqHead()}
+    ${sqCase(x)}
+    <div class="sprog"><div class="fbar"><i style="width:${Math.round(100*g.lvl/L.length)}%"></i></div><span class="hist">Round ${g.lvl+1} of ${L.length} · ${hid(L[g.lvl])} hidden</span></div>
+    <div class="shook">🧠 ${esc(x.short.hook)}</div>
+    ${sqShortHTML(x, line)}
+    ${!done?'':miss.length
+      ?`<div class="mk wrong"><p class="verdict">${miss.length} missed. ${miss.length>1?'They stay':'It stays'} hidden next time.</p></div><button class="btn primary wide" id="gAgain">Try this round again</button>`
+      :last?`<div class="mk right"><p class="verdict">✓ You said the whole answer.</p></div><button class="btn primary wide" id="gWrite">✍️ Now write it from memory →</button>`
+      :`<div class="mk right"><p class="verdict">${L[g.lvl]===1?'✓ Got it.':`✓ All ${L[g.lvl]} right.`}</p></div><button class="btn primary wide" id="gNext">Next round: ${hid(L[g.lvl+1])} hidden →</button>`}
+  </div>`;
+  sqBindHead();
+  document.querySelectorAll('[data-gopen]').forEach(b=>b.onclick=()=>{g.open[+b.dataset.gopen]=1;sqGaps()});
+  document.querySelectorAll('[data-gok]').forEach(b=>b.onclick=()=>{g.res[+b.dataset.gok]='ok';sqGaps()});
+  document.querySelectorAll('[data-gmiss]').forEach(b=>b.onclick=()=>{g.res[+b.dataset.gmiss]='miss';sqGaps()});
+  const a=$('#gAgain'); if(a) a.onclick=()=>{g.carry=miss;g.hide=null;sqGaps();window.scrollTo(0,0)};
+  const nx=$('#gNext'); if(nx) nx.onclick=()=>{g.lvl++;g.carry=[];g.hide=null;sqGaps();window.scrollTo(0,0)};
+  const w=$('#gWrite'); if(w) w.onclick=()=>{sqS(x.id).gaps=1;sqSave();SQR.stage='cold';SQR.cold=null;SQR.gap=null;sqRender();window.scrollTo(0,0)};
+}
+/* rung 3: write it from memory, then mark it against the short lines. The page pre-ticks a line when it finds that
+   line's bold words in what he wrote; he confirms. */
+function sqCold(){
+  const x=SQR.x, P=sqPoints(x);
+  if(!SQR.cold) SQR.cold={text:'', marked:false};
+  const c=SQR.cold;
+  if(!c.marked){
+    $('#view').innerHTML=`<div class="card">${sqHead()}
+      ${sqCase(x)}
+      <p class="sask">${esc(x.ask)}</p>
+      <p class="hist" style="margin:0 0 8px">Write it from memory, like the exam: one point per line, using the proper terms. ${sqMk(x.marks)} ≈ ${P.length} short line${P.length===1?'':'s'}.</p>
+      <textarea id="sqTxt" style="min-height:200px" placeholder="1. …&#10;2. …&#10;3. …">${esc(c.text)}</textarea>
+      <button class="btn primary wide" id="sqMark">Mark my answer →</button>
+      <p class="hist" style="margin:8px 0 0">No keyboard handy? Say it out loud, leave the box empty and press Mark; you tick the lines yourself.</p></div>`;
+    sqBindHead();
+    const ta=$('#sqTxt'); ta.oninput=e=>{c.text=e.target.value};
+    $('#sqMark').onclick=()=>{c.marked=true;sqCold();window.scrollTo(0,0)};
+    return;
+  }
+  const typed=c.text.trim().length>0, chk=P.map(t=>sqCheckStep(t,c.text));
+  $('#view').innerHTML=`<div class="card">${sqHead()}
+    <p class="sask">${esc(x.ask)}</p>
+    ${typed?`<div class="hist">Your answer</div><div class="syou">${esc(c.text)}</div>`:''}
+    <p class="hist" style="margin:0 0 4px">${typed
+      ?'The page ticked every line where it found the <b style="color:var(--warn)">bold</b> mark words in your answer. Check it: untick a line you named but did not explain, and tick one you got in other words.'
+      :'Tick every line you said. The <b style="color:var(--warn)">bold</b> words are what earn the mark, so be honest.'}</p>
+    <div class="scheck">${P.map((t,i)=>{const k=chk[i];
+      return `<label><input type="checkbox" data-k="${i}" ${typed&&k.auto?'checked':''}><span>${mdB(t)}${typed&&k.ts.length?`<span class="refsrc" style="display:block;margin-top:2px">${k.ts.map(w=>k.found.includes(w)?`<span style="color:var(--ok)">✓ ${esc(w)}</span>`:`<span style="color:var(--danger)">✗ ${esc(w)}</span>`).join(' · ')}</span>`:''}</span></label>`}).join('')}</div>
+    <button class="btn primary wide" id="sqScore">Score it</button></div>`;
+  sqBindHead();
+  $('#sqScore').onclick=()=>sqColdResult([...document.querySelectorAll('.scheck input')].map(b=>b.checked));
+}
+function sqColdResult(ticks){
+  const x=SQR.x, P=sqPoints(x), s=sqS(x.id), n=ticks.filter(Boolean).length, pct=n/ticks.length, miss=ticks.map((t,i)=>t?-1:i).filter(i=>i>=0);
+  const pts=Math.round(pct*x.marks*2)/2;
+  s.tries=(s.tries||0)+1; s.best=Math.max(s.best||0,pct); if(pct>=0.8) s.lock=1; s.last=SQR.cold?SQR.cold.text:''; sqSave();
+  const nx=sqNext(), locked=pct>=0.8;
+  $('#view').innerHTML=`<div class="card">${sqHead()}
+    <p class="sres">≈${pts}/${x.marks}</p>
+    <p class="score-sub">${n} of ${ticks.length} lines · ${locked?'✓ Locked. That answer would score.':'not locked yet (80% locks it). What was missing:'}</p>
+    ${miss.length?`<ol class="ssteps">${miss.map(i=>`<li value="${i+1}">${mdB(P[i])}</li>`).join('')}</ol>`:''}
+    ${locked&&nx&&nx!==x?`<button class="btn primary wide" id="sqNx">▶ Next: ${esc(nx.title)}</button>`:''}
+    <button class="btn ${locked?'':'primary '}wide" id="sqAgainCold">✍️ Write it again${miss.length?' (read the missing lines first)':''}</button>
+    <button class="btn ghost wide" id="sqGapsAgain">🕳 Fill the gaps again</button>
+    <button class="btn ghost wide" id="sqHomeB">← All written answers</button></div>`;
+  sqBindHead(); window.scrollTo(0,0);
+  const b=$('#sqNx'); if(b) b.onclick=()=>sqOpen(nx.id,'read');
+  $('#sqAgainCold').onclick=()=>{SQR.cold=null;SQR.stage='cold';sqCold();window.scrollTo(0,0)};
+  $('#sqGapsAgain').onclick=()=>{SQR.cold=null;SQR.gap=null;SQR.stage='gaps';sqGaps();window.scrollTo(0,0)};
+  $('#sqHomeB').onclick=sqHome;
+}
+/* 📄 last-look sheet: every short answer on one page, by case, for the final read-through */
+function sqSheet(){
+  enterSit('saq'); SQR=null;
+  let cur='', body='';
+  for(const x of SAQD){
+    if(x.quiz!==cur){ cur=x.quiz; body+=`<div class="qmod">${esc(x.cse)}</div>`; }
+    const P=sqPoints(x);
+    body+=`<div class="sheeti"><h3>${esc(x.title)} <span class="tag">${sqMk(x.marks)}</span></h3><div class="shook">🧠 ${esc(x.short.hook)}</div>${sqShortHTML(x, i=>`<li value="${i+1}">${mdB(P[i])}</li>`)}</div>`;
+  }
+  $('#view').innerHTML=`<div class="card sheet"><div class="qhead"><button class="btn ghost" id="sqBack" style="padding:4px 10px">← Cases</button><span class="n">📄 Last-look sheet</span></div>
+    <p class="hist" style="margin:0">All ${SAQD.length} short answers, one fact a line, by case. Bold = the words that earn the mark.</p>
+    ${body}
+    <button class="btn ghost wide" id="sqHomeB">← All written answers</button></div>`;
+  $('#sqBack').onclick=sqHome; $('#sqHomeB').onclick=sqHome; window.scrollTo(0,0);
 }
 function learnScreen(){
   const mp = missPool().length, res = LS('resume'), hasRes = res&&res.ids&&res.ids.length, nCase = CASEQS().length;
@@ -704,6 +975,7 @@ function vidScreen(){
 }
 function bindView(){
   bindFocus();
+  bindSaq();
   document.querySelectorAll('[data-scr]').forEach(b=>b.onclick=()=>nav(b.dataset.scr));
   const hb=$('[data-hero]'); if(hb) hb.onclick=()=>HERO[hb.dataset.hero]();
   const bk=$('#homeB'); if(bk) bk.onclick=()=>{ if(history.state&&history.state.scr&&!history.state.sit) history.back(); else nav('') };
@@ -894,7 +1166,7 @@ function renderQ(){
       : q.blanks.map((b,i)=>`<div class="blankrow"><label>${esc(blankLabel(b,i))}${q.bk==='dd'?'':' (type it)'}</label>${widget(b,i)}</div>`).join('');
   } else if(q.type==='essay'){
     body=`${q.scenario?`<div class="note">${esc(q.scenario)}</div>`:''}
-      <div class="note">Written question · ${q.pts} marks — write ${q.pts} numbered points, one causal step each. You mark yourself against the model at the end.</div>
+      <div class="note">Written question · ${q.pts} marks — write ${q.pts} numbered points, one causal step each. You mark yourself against ${q.short?'its short answer (cut from hers, a few words a line) at the end; her full answer sits under it':'the model at the end'}.</div>
       <textarea data-essay placeholder="1. …&#10;2. …">${a&&a.text?esc(a.text):''}</textarea>`;
   }
   /* learn mode: once checked, a wrong/skipped/written question already has its slide and
@@ -980,7 +1252,7 @@ function learnMkHTML(q,chk){
   else if(r.got>0){verdict=`Partly right · ${+r.got.toFixed(1)}/${r.tot}`;cls='wrong'}
   else{verdict='✗ Not quite';cls='wrong'}
   const body=!r
-    ? `${a&&a.text?'':'<div class="you">— nothing written — read the model, then say it out loud</div>'}<div class="steps">${q.saq.steps.map((s,i)=>`<label><input type="checkbox" data-lsaq ${chk.ticks.includes(i)?'checked':''}> <span>${esc(s)}</span></label>${partRefHTML(q,i)}`).join('')}</div><div class="refsrc">${esc(q.saq.src)}</div>`
+    ? `${a&&a.text?'':'<div class="you">— nothing written — read the model, then say it out loud</div>'}<div class="steps">${q.saq.steps.map((s,i)=>`<label><input type="checkbox" data-lsaq ${chk.ticks.includes(i)?'checked':''}> <span>${esc(s)}</span></label>${partRefHTML(q,i)}`).join('')}</div><div class="refsrc">${esc(q.saq.src)}</div>${herFull(q)}`
     : keyHTML(q,a);
   const res=learnOpen(q,chk)?(hasHer(q)?herAnswer(q.hl):'')+refsHTML(q)+(q.vid?vidClipHTML(q.vid)+(q.vid.alt?vidRowHTML(q.vid.alt,'also · '):''):''):'';
   return `<div class="mk ${cls}"><div class="verdict">${verdict}</div>${body}${res}${r?`<button class="btn ghost askai" data-ask="${q.id}">${AI_LBL}</button>`:''}</div>`;
@@ -1081,6 +1353,7 @@ function mark(){
         <div class="qr-head"><span class="qr-mk mk-p" id="mk${i}">✍ /${q.pts}</span><span class="qr-stem">${esc(flatStem(q)).slice(0,140)}</span></div>
         ${a&&a.text?`<div class="you">You wrote: ${esc(a.text.slice(0,240)).replace(/\n/g,' ')}${a.text.length>240?'…':''}</div>`:'<div class="you">— no answer written —</div>'}
         <div class="steps">${q.saq.steps.map((s,si)=>`<label><input type="checkbox" data-saq="${i}" data-pt="${q.pts/q.saq.steps.length}"> <span>${esc(s)}</span></label>${partRefHTML(q,si)}`).join('')}</div>
+        ${q.saq.full?`<div style="padding:0 11px 6px">${herFull(q)}</div>`:''}
         <div class="qr-acts"><span class="src">${esc(q.saq.src)}</span>${q.vid?btn('vid','▶ Video'):''}${refBtns(q,btn)}${hasHer(q)?btn('hl','✅ Her answer'):''}</div><div class="qr-pane" hidden></div></div>`}
       const pct=r.got/r.tot, cls=pct>=1?'right':pct>0?'partial':'wrong';
       return `<div class="qr ${cls}" data-qid="${q.id}" data-sys="${q.sys}" data-wrong="${pct<1?1:0}">
@@ -1234,7 +1507,7 @@ function aiQuestionPrompt(q,withFig){
   const you=a?(a.text||((a.sel||[]).map(i=>optLabel(q,q.opts[i])).join(', ')||Object.values(a.pick||{}).join(', '))):'';
   const L=[AI_CTX+' This is one of my lecturer’s own practice questions. I want to understand it, not memorise the answer.','',`Question: ${flatStem(q)}`];
   if(q.opts&&q.opts.length)L.push(`Options: ${q.opts.map(o=>optLabel(q,o)).join(' | ')}`);
-  if(q.saq)L.push('Her model answer, one mark per step: '+q.saq.steps.map((s,i)=>`(${i+1}) ${s}`).join(' '));
+  if(q.saq)L.push('Her model answer, one mark per step: '+(q.saq.full||q.saq.steps).map((s,i)=>`(${i+1}) ${s}`).join(' '));
   else L.push(`Correct answer: ${keyText(q)}`);
   L.push(`My answer: ${you||'(none — I didn’t know)'}`);
   if(q.imgs&&q.imgs.length)L.push(withFig?'The question’s figure is pasted with this message. Read it before answering — the question is about it.':'This question has a diagram I can’t paste. Don’t guess what it shows; work from the text.');
@@ -1326,6 +1599,16 @@ $('#helpBtn').onclick=()=>{$('#help').innerHTML=`
   the top is the tool picking for you: a Learn run you stopped partway comes first; otherwise <b>Decide for me</b>, today's 15
   from her exam questions (misses and the least-seen first), with the case-topic questions joining once all of hers have been
   seen. Leaving a mock test with the back button asks first; a Learn run is saved as you go, so it just stops.</p>
+  <h3>Written answers (on The 10 starred cases screen)</h3>
+  <p>The exam is 37% written, and its written questions come from her starred cases. Each written case question she has answered
+  has a <b>short version</b>: her model answer (one mark per step) cut down to one fact a line, a few words each, the bold words
+  being the ones that earn the mark; her full answer, word for word, folds underneath. Learn one at a time: <b>Read</b> it, then
+  <b>Fill the gaps</b> (the whole short answer with 1, then a quarter, half, then every line hidden: say the missing line, tap to
+  check, mark yourself honestly; a line you miss stays hidden next round), then <b>Write it</b> from memory: the page ticks every
+  line where it finds that line's bold words in what you wrote, you correct the ticks, and 80% locks it. <b>📄 Last-look sheet</b>
+  is every short answer on one page. Wherever a case question is marked elsewhere (Learn as you go, the mock exam) you tick the
+  same short lines, with her full answer under them. Every short version is checked by the build: each bold word must be in
+  the step of hers it was cut from, and every step of hers must have a line.</p>
   <h3>Where the questions come from</h3>
   <p>${DATA.stats.n} questions from ${DATA.quizzes.length} quizzes: her own Canvas quizzes (answer keys taken from his graded
   pages — nothing invented) and the ten cases. A case question and its scenario are hers, word for word from the Case Study
