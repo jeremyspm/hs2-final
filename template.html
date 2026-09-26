@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>HS2 · Paper Sim — Final exam</title>
+<title>HS2 Final · Paper Sim</title>
 <meta name="robots" content="noindex,nofollow">
 <style>
 /* ── estate tokens (house.css contract, dark default) ─────────────── */
@@ -257,6 +257,28 @@ a{color:var(--primary)}
 .lch{flex:0 0 auto;color:var(--muted-fg);font-size:1.3rem;line-height:1}
 .shead{display:flex;align-items:center;gap:10px;margin:0 0 12px}
 .shead h2{margin:0;font-size:1.1rem;flex:1}
+/* the tool's own name and colour (26 Sep 2026): four Paper Sims share one layout, so the title card on home, the stripe
+   along the header and the tab icon are what tell them apart. --tool is set from TOOL at load. */
+header{border-top:4px solid var(--tool)}
+.idcard{display:flex;align-items:center;gap:12px;margin:0 0 12px;padding:12px 14px;border-radius:var(--radius);
+  background:color-mix(in srgb,var(--tool) 15%,var(--card));border:1px solid color-mix(in srgb,var(--tool) 45%,var(--border))}
+.idic{flex:0 0 48px;height:48px;border-radius:12px;background:var(--tool);display:flex;align-items:center;justify-content:center;font-size:1.55rem}
+.idtx{min-width:0}
+.idtx small{display:block;font-size:.7rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:color-mix(in srgb,var(--tool) 62%,var(--fg))}
+.idtx b{display:block;font-size:1.45rem;line-height:1.15;margin:2px 0 3px;font-weight:800}
+.idtx>span{display:block;font-size:.8rem;color:var(--muted-fg);line-height:1.3}
+/* phone: the title card and the rows tighten so home still fits one 375x812 screen */
+@media(max-width:560px){
+  .idcard{padding:9px 12px;gap:10px;margin-bottom:8px}
+  .idic{flex-basis:40px;height:40px;border-radius:10px;font-size:1.3rem}
+  .idtx b{font-size:1.25rem;margin:1px 0 2px}
+  .idtx small,.idtx>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .lrow{padding:6px 12px;margin-bottom:5px}
+  .lic{flex-basis:36px;height:36px}
+  .lsec{margin:8px 4px 4px}
+  .hero{padding-top:9px;padding-bottom:9px}
+  .bnote{padding:6px 10px;margin-bottom:8px;line-height:1.35}
+}
 .shead .btn{padding:6px 12px;flex:0 0 auto}
 .card .lead{margin:0 0 4px;color:var(--muted-fg);font-size:.9rem;line-height:1.5}
 /* each screen's full explanation, folded under its one-line lead (self-explaining, but out of the way) */
@@ -320,7 +342,7 @@ a{color:var(--primary)}
 </head>
 <body>
 <header>
-  <h1>HS2 · Paper Sim</h1>
+  <h1>HS2 Final exam · Paper Sim</h1>
   <span class="d" id="countdown"></span>
   <a class="btn ghost" href="#vid" title="The three module video playlists">▶</a>
   <button class="btn ghost" id="themeBtn" title="theme">◐</button>
@@ -409,6 +431,16 @@ function paintCountdown(){
   el.onclick = askSitting;
 }
 const $ = s => document.querySelector(s);
+/* this tool's identity: the four Paper Sims share one layout, so the name, colour and tab icon are what tell them apart */
+const TOOL = {kick:'Health Science 2 · 722.541', name:'HS2 Final exam', sub:'Her 10 starred cases · 32 questions · 130 min', icon:'🫀', hue:'#7c3aed'};
+function paintTool(){
+  document.documentElement.style.setProperty('--tool', TOOL.hue);
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="${TOOL.hue}"/><text x="32" y="45" font-size="38" text-anchor="middle">${TOOL.icon}</text></svg>`;
+  let l = document.querySelector('link[rel=icon]');
+  if(!l){ l = document.createElement('link'); l.rel = 'icon'; document.head.appendChild(l); }
+  l.href = 'data:image/svg+xml,' + encodeURIComponent(svg);
+}
+const idCard = () => `<div class="idcard"><span class="idic" aria-hidden="true">${TOOL.icon}</span><span class="idtx"><small>${TOOL.kick}</small><b>${TOOL.name}</b><span>${TOOL.sub}</span></span></div>`;
 const esc = s => String(s??'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const shuffle = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]} return a };
 const SYS = {cvs:'Cardiovascular', resp:'Respiratory', lymph:'Lymphatic', ms:'Musculoskeletal', ns:'Nervous', endo:'Endocrine',
@@ -601,6 +633,7 @@ function coreCard(){
   const seenB = B.filter(q=>S.seen[q.id]).length;
   const pA = Math.round(100*seenA/Math.max(1,A.length)), pB = Math.round(100*seenB/Math.max(1,B.length));
   return `<div class="card door" style="border-left:4px solid var(--ok)">
+    <h3 style="margin:0 0 6px">🧭 Decide for me</h3>
     <p>You do <b>not</b> have to do ${DATA.stats.n} questions. The exam is 32 questions on her ten starred cases. <b>${A.length}</b> questions here are hers, written for it — the cases, her formative test, her revision deck. That is the job. Behind them sit <b>${B.length}</b> module questions on the same topics, for once the ${A.length} are done. Everything else is optional.</p>
     <button class="btn primary wide" data-go="core" data-learn="1">▶ Today’s 15 — ${seenA<A.length?'from her exam questions':'her exam questions + the case topics'}</button>
     <div class="hist" style="margin-top:8px">Her exam questions: ${seenA} of ${A.length} seen${missA?` · ${missA} in your misses pile (they come back first)`:''}</div>
@@ -613,22 +646,24 @@ function coreCard(){
    Until 26 Sep 2026 every door sat on one page, 14.5 phone screens tall (a stray unclosed <div>
    on the video card also put the mock test and Pick my rep INSIDE it). Now home is one screen of
    row cards (hs2-test3's layout, same rules), and each row opens that door on its own screen
-   (#core #cases #learn #pick #mock #miss #focus #vid, so the phone's back button and a shared link
+   (#learn #pick #saq #mock #miss #focus #vid, so the phone's back button and a shared link
    both work). Each door keeps its own words: one line up top, the rest under "How this works".
    A sitting pushes one history entry on top of the screen it started from, so finishing it, its
    own exit button, or the phone's back button all land back on that screen, and back asks first
-   when leaving would lose something. */
+   when leaving would lose something.
+   26 Sep 2026, same names and groups as the other three Paper Sims: "Cases & written answers" is the ✍️ SAQ trainer (its
+   Learn / Sit the 10 cases buttons were already on Learn and Pick my rep), and Decide for me sits at the top of Learn as
+   you go. The old #cases / #core links still land. */
 const SCR = {
-  core: {t:'🧭 Decide for me',              html:()=>coreCard()},
-  cases:{t:'🩺 Cases & written answers',   html:()=>casesScreen()},
-  learn:{t:'📖 Learn as you go',            html:()=>learnScreen()},
+  learn:{t:'📖 Learn as you go',            html:()=>coreCard()+learnScreen()},
   pick: {t:'🗂 Pick my rep',                html:()=>pickScreen()},
-  mock: {t:'⏱ Mock exam',                   html:()=>mockScreen()},
+  saq:  {t:'✍️ SAQ trainer',               html:()=>saqCard()},
+  mock: {t:'⏱ Mock test',                   html:()=>mockScreen()},
   miss: {t:'🔁 My misses',                  html:()=>missScreen()},
   ...(DATA.focus.length ? {focus:{t:'🎯 What to learn, and how far', html:()=>focusCard()}} : {}),
   vid:  {t:'📺 Videos',                     html:()=>vidScreen()},
 };
-const curScr = () => { const h = location.hash.slice(1); return SCR[h] ? h : '' };
+const curScr = () => { const x = location.hash.slice(1), h = ({cases:'saq', core:'learn'})[x] || x; return SCR[h] ? h : '' };
 let SITTING = '', LEAVING = false;      /* SITTING: 'mock' | 'learn' while one is on screen */
 if('scrollRestoration' in history) history.scrollRestoration = 'manual';
 function nav(scr){
@@ -673,37 +708,28 @@ function nextUp(){
 }
 const HERO = {
   resume: () => { nav('learn'); resumeLearn() },
-  core:   () => { nav('core'); start('core', true) },
+  core:   () => { nav('learn'); start('core', true) },
 };
 function launcher(){
   const up = nextUp(), r = LS('resume');
   const seen = CLOSED.filter(q=>S.seen[q.id]).length, nm = Object.keys(S.miss).length;
-  const A = CORE_A(), seenA = A.filter(q=>S.seen[q.id]).length;
-  const fs = focusStats(), last = S.scores[S.scores.length-1];
+  const nL = SAQD.filter(x=>sqS(x.id).lock).length, fs = focusStats(), last = S.scores[S.scores.length-1];
   const row = (scr,ic,t,s) => `<button class="lrow" data-scr="${scr}"><span class="lic" aria-hidden="true">${ic}</span><span class="ltx"><b>${t}</b><small>${s}</small></span><span class="lch" aria-hidden="true">›</span></button>`;
-  return `<button class="hero" data-hero="${up.k}"><span><small>${up.e}</small><b>${up.t}</b></span><span class="go" aria-hidden="true">▶</span></button>
+  return `${idCard()}
+  <button class="hero" data-hero="${up.k}"><span><small>${up.e}</small><b>${up.t}</b></span><span class="go" aria-hidden="true">▶</span></button>
   <div class="lsec">Practise</div>
-  ${row('core','🧭','Decide for me',`${seenA} of her ${A.length} exam questions seen`)}
-  ${row('cases','🩺','Cases & written answers',SAQD.length?`${SAQD.length} written answers · ${SAQD.filter(x=>sqS(x.id).lock).length} locked`:`${CASEQS().length} questions · whole, in booklet order`)}
-  ${row('learn','📖','Learn as you go',`${seen} of ${CLOSED.length} seen${r&&r.ids&&r.ids.length?' · a run is waiting':' · marks itself as you go'}`)}
-  ${row('pick','🗂','Pick my rep',`${DATA.quizzes.length} quizzes${S.pick.length?` · ${S.pick.length} ticked`:' · three modules + the cases'}`)}
+  ${row('learn','📖','Learn as you go',`${seen} of ${CLOSED.length} seen${r&&r.ids&&r.ids.length?' · a run is waiting':' · Decide for me is in here'}`)}
+  ${row('pick','🗂','Pick my rep',`${DATA.quizzes.length} quizzes${S.pick.length?` · ${S.pick.length} ticked`:' · tick any, run them as one'}`)}
+  ${SAQD.length?`<div class="lsec">Write</div>
+  ${row('saq','✍️','SAQ trainer',`${nL} of ${SAQD.length} locked · the exam is 37% written`)}`:''}
   <div class="lsec">Test yourself</div>
-  ${row('mock','⏱','Mock exam',last?`Last ${last.got}/${last.tot} · ${Math.round(100*last.got/last.tot)}% · ${S.scores.length} sat`:'No sittings yet · mini ~15 or full 130 min')}
+  ${row('mock','⏱','Mock test',last?`Last ${last.got}/${last.tot} · ${Math.round(100*last.got/last.tot)}% · ${S.scores.length} sat`:'No sittings yet · mini ~15 min or full 130 min')}
   ${row('miss','🔁','My misses',nm?`${nm} in the pile`:'Empty so far · wrong answers land here')}
   <div class="lsec">Plan</div>
   ${SCR.focus?row('focus','🎯','What to learn, and how far',`${fs.d} of ${fs.n} topics ticked · her ten cases first`):''}
   ${row('vid','📺','Videos',`Three shelves · ${DATA.stats.withVideo} questions carry one`)}`;
 }
 const sysLbl = s => { const pool=CLOSED.filter(q=>q.mod===s).length, n=howMany(pool); return n===pool?`all ${n}`:n };
-function casesScreen(){
-  const nCase = CASEQS().length;
-  return `<div class="card" style="border-left:4px solid var(--warn)">
-    <p class="lead">Her ten starred cases: ${nCase} questions, always whole and in booklet order. Her own words: the exam “will be based on the starred *Case studies in your Case Study Booklet A”.</p>
-    <button class="btn primary wide" data-go="cases" data-learn="1">Learn the 10 cases · ${nCase}</button>
-    <button class="btn wide" data-go="cases">Sit the 10 cases · ${nCase}</button>
-  </div>
-  ${saqCard()}`;
-}
 /* ── ✍️ written answers: her exam-case questions, learned from their short versions (26 Sep 2026) ──────────────
    hs2-test3's SAQ Trainer, ported over her written case questions (same rungs, same marking help): 1 Read the short
    version (her full answer folds underneath) → 2 Fill the gaps (1, a quarter, half, then every line hidden; say it, tap
@@ -745,7 +771,6 @@ function saqCard(){
   const modSec = m => { const xs=ms.filter(x=>x.mod===m); if(!xs.length) return '';
     return `<details class="smod"><summary>${esc(MODN[m]||m)} · ${xs.length} · ${xs.filter(x=>sqS(x.id).lock).length} locked</summary><div class="slist">${sqRows(xs)}</div></details>`; };
   return `<div class="card door sdoor" id="saqCard">
-    <h2>✍️ Written answers, one at a time</h2>
     <p class="lead">The exam is <b>37% written</b>, from these cases. Every written question has a <b>short version</b>: its answer, a few words a line. Her ${cs.length} case questions first; the module ones below.</p>
     <details class="how"><summary>How this works</summary>
       <p>First the ${cs.length} written case questions she has answered, in ${nC} of her ten starred cases (the other cases' answers were not readable when this was built); her answers give one mark per step. Below them, ${ms.length} written questions from the three modules, one row each even where two quizzes set the same one. Every answer has a short version cut from it, one fact a line.
@@ -911,7 +936,7 @@ function sqColdResult(ticks){
     ${locked&&nx&&nx!==x?`<button class="btn primary wide" id="sqNx">▶ Next: ${esc(nx.title)}</button>`:''}
     <button class="btn ${locked?'':'primary '}wide" id="sqAgainCold">✍️ Write it again${miss.length?' (read the missing lines first)':''}</button>
     <button class="btn ghost wide" id="sqGapsAgain">🕳 Fill the gaps again</button>
-    <button class="btn ghost wide" id="sqHomeB">← All written answers</button></div>`;
+    <button class="btn ghost wide" id="sqHomeB">← All SAQs</button></div>`;
   sqBindHead(); window.scrollTo(0,0);
   const b=$('#sqNx'); if(b) b.onclick=()=>sqOpen(nx.id,'read');
   $('#sqAgainCold').onclick=()=>{SQR.cold=null;SQR.stage='cold';sqCold();window.scrollTo(0,0)};
@@ -931,7 +956,7 @@ function sqSheet(){
   $('#view').innerHTML=`<div class="card sheet"><div class="qhead"><button class="btn ghost" id="sqBack" style="padding:4px 10px">← Cases</button><span class="n">📄 Last-look sheet</span></div>
     <p class="hist" style="margin:0">All ${SAQD.length} short answers, one fact a line: her exam cases first, then each module. Bold = the words that earn the mark.</p>
     ${body}
-    <button class="btn ghost wide" id="sqHomeB">← All written answers</button></div>`;
+    <button class="btn ghost wide" id="sqHomeB">← All SAQs</button></div>`;
   $('#sqBack').onclick=sqHome; $('#sqHomeB').onclick=sqHome; window.scrollTo(0,0);
 }
 function learnScreen(){
@@ -982,7 +1007,7 @@ function mockScreen(){
   return `<div class="card">
     <p class="lead">Practice only — dealt from her quizzes and her case answers. The real exam is on campus: Thu 5 Nov, 12:30, 130 min, 32 questions, 37% written, built on the starred cases.</p>
     <button class="btn primary wide" data-go="mini">Sit a mini mock test · 12 questions, ~15 min</button>
-    <button class="btn wide" data-go="full">Sit the full mock exam · 32 Q, 37% of the marks written from the cases, 130 min — the exam’s shape</button>
+    <button class="btn wide" data-go="full">Sit the full mock test · 32 Q, 37% of the marks written from the cases, 130 min — the exam’s shape</button>
     <button class="btn wide" data-go="miss" ${nm?'':'disabled'}>Redo my misses${nm?` · ${nm} in the pile`:''}</button>
   </div>
   <div class="lsec">Your sittings</div>
@@ -1099,7 +1124,7 @@ function start(mode,learn=false){
   if(mode==='mini'){
     if(learn){deck=dealMini(howMany(CLOSED.length));label=deck.length===CLOSED.length?'the whole bank':`${deck.length} from the bank`}
     else{deck=dealMini();label='mini mock'}}
-  else if(mode==='full'){deck=dealFull();label='full mock exam';timed=true}
+  else if(mode==='full'){deck=dealFull();label='full mock test';timed=true}
   else if(mode==='cases'){deck=CASEQS();label='the 10 cases'}
   else if(mode==='core'){deck=dealCore(15);label='today from the exam core'}
   else if(mode==='miss'){deck=dealMisses(learn?CAP():12);label=learn?'my misses':'redo misses'}
@@ -1617,7 +1642,7 @@ function aiSplitCopy(s){
   p.then(()=>flash('Copied ✓')).catch(()=>flash('Copy blocked'));
 }
 /* ── chrome ────────────────────────────────────────────────────────── */
-paintCountdown();
+paintCountdown(); paintTool();
 $('#themeBtn').onclick=()=>{const r=document.documentElement;
   const to=r.dataset.theme==='light'?'':'light';
   to?r.dataset.theme='light':delete r.dataset.theme;SV('theme',to)};
@@ -1631,10 +1656,10 @@ $('#helpBtn').onclick=()=>{$('#help').innerHTML=`
   <h3>The home page</h3>
   <p>One row per part of the tool; each opens its own screen, and <b>‹ Home</b> or your phone's back button brings you back.
   Every screen leads with one line and keeps the full explanation under <b>ⓘ How this works</b>. The blue <b>Next up</b> card at
-  the top is the tool picking for you: a Learn run you stopped partway comes first; otherwise <b>Decide for me</b>, today's 15
+  the top is the tool picking for you: a Learn run you stopped partway comes first; otherwise <b>Decide for me</b> (it also heads Learn as you go), today's 15
   from her exam questions (misses and the least-seen first), with the case-topic questions joining once all of hers have been
   seen. Leaving a mock test with the back button asks first; a Learn run is saved as you go, so it just stops.</p>
-  <h3>Written answers (on the Cases &amp; written answers screen)</h3>
+  <h3>SAQ trainer (the ✍️ row under Write)</h3>
   <p>The exam is 37% written, and its written questions come from her starred cases. Each written case question with a model
   answer has a <b>short version</b>: that answer (hers for all but one, which this tool wrote from her CVS page and labels so;
   one mark per step) cut down to one fact a line, a few words each, the bold words being the ones that earn the mark; the full
@@ -1645,7 +1670,7 @@ $('#helpBtn').onclick=()=>{$('#help').innerHTML=`
   <b>Fill the gaps</b> (the whole short answer with 1, then a quarter, half, then every line hidden: say the missing line, tap to
   check, mark yourself honestly; a line you miss stays hidden next round), then <b>Write it</b> from memory: the page ticks every
   line where it finds that line's bold words in what you wrote, you correct the ticks, and 80% locks it. <b>📄 Last-look sheet</b>
-  is every short answer on one page. Wherever a written question is marked elsewhere (Learn as you go, the mock exam) you tick the
+  is every short answer on one page. Wherever a written question is marked elsewhere (Learn as you go, the mock test) you tick the
   same short lines, with the full answer under them. Every short version is checked by the build: each bold word must be in
   the step it was cut from (a ⚠ correction line says why it differs instead), and every step must have a line or a stated
   reason it carries no fact (a table header, her sub-question heading, page-capture junk).</p>
