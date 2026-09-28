@@ -93,6 +93,9 @@ a.btn{text-decoration:none}
 .fchip.hl{background:hsl(158 64% 42% / .2);color:var(--ok);font-weight:650}
 .fchip.rev{background:hsl(158 64% 42% / .12);color:var(--ok)}
 .fchip.kh{background:hsl(280 60% 60% / .16);color:hsl(280 70% 72%)}
+/* the HS2 Genetics Trainer link on cases 14 and 15 wears that tool's colour */
+.fchip.xtool{background:hsl(330 81% 60% / .16);color:hsl(330 81% 70%)}
+a.btn.xtool{background:#db2777;border-color:#db2777;color:#fff;text-decoration:none}
 .hlans{margin-top:8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);overflow:hidden}
 .hlans>summary{cursor:pointer;padding:7px 10px;font-weight:650;font-size:.84rem;color:var(--ok);list-style:none}
 .hlans>summary::-webkit-details-marker{display:none}
@@ -545,6 +548,13 @@ function focusHead(){
     <span class="fbar"><i style="width:${pc}%"></i></span>
     <span class="hist">${st.dpts} of ${st.pts} marks of her bank covered</span>`;
 }
+/* the two genetics cases open straight into the HS2 Genetics Trainer's story drill for their shape (29 Sep 2026):
+   case 14 = X-linked recessive in a family, case 15 = the cystic fibrosis and Huntington's whānau */
+const TRAINER = {
+  'case-c14': [['🌳 Practise case 14 in the Genetics Trainer', '../hs2-genetics/#go/story:XLR', 'a colour-blind boy, his grandad and aunt, a hidden carrier mum: pick the chart, tap the carriers, pass it on']],
+  'case-c15': [['🌳 Practise the cystic fibrosis whānau', '../hs2-genetics/#go/story:AR', 'who must be a carrier; what the youngest sisters would need'],
+               ['🌳 Practise the Huntington’s whānau', '../hs2-genetics/#go/story:AD', 'who is Hh; the chance each cousin passes it on']]
+};
 function focusCard(){
   if(!DATA.focus.length) return '';
   const rows = t => DATA.focus.filter(f=>f.tier===t).map(f=>{
@@ -558,6 +568,7 @@ function focusCard(){
     if(f.kh)  chips.push(`<span class="fchip kh">🎮 ${f.kh} in her Kahoots</span>`);
     if(f.saq) chips.push(`<span class="fchip saq">✍️ ${f.saq} written / dropdown</span>`);
     if(f.cases&&f.cases.length) chips.push(`<span class="fchip her">📎 feeds case ${f.cases.map(c=>c.slice(1)).join(', ')}</span>`);
+    if(TRAINER[f.id]) chips.push('<span class="fchip xtool">🌳 practise it in the Genetics Trainer</span>');
     return `<div class="frow${on?' on':''}" style="--tc:${FTIER[f.tier].c}" data-fid="${f.id}">
       <input type="checkbox" class="fchk" ${on?'checked':''} aria-label="I can do this: ${esc(f.t)}">
       <details class="fbody"><summary>
@@ -573,6 +584,7 @@ function focusCard(){
         ${f.hl ? `<p><b>Her helpline section:</b> “${esc(f.hl)}” — she posts <a href="${esc(f.hlUrl)}" target="_blank" rel="noopener">her own worked answers</a> for it.</p>` : ''}
         ${f.cap ? `<p class="fcap"><b>Where it ends:</b> ${esc(f.cap)}</p>` : ''}
         ${herAnswer(f.id)}
+        ${(TRAINER[f.id]||[]).map(([t,href,sub])=>`<div class="aiwrap"><a class="btn primary learnrow xtool" href="${href}">${esc(t)}</a><span class="refsrc">${esc(sub)} · her own answers are still hidden on Canvas, so the charts and keys there are the trainer’s</span></div>`).join('')}
         ${f.qs&&f.qs.length?`<div class="aiwrap"><button class="btn primary learnrow" data-learnf="${f.id}">📖 Learn her ${f.qs.length} question${f.qs.length>1?'s':''} on this</button><span class="refsrc">only her questions on this topic, marked one at a time with her answer, slide and video in place — one-tap questions first, written ones last</span></div>`:''}
         <div class="aiwrap"><button class="btn ghost askai" data-askf="${f.id}">${AI_LBL}</button><span class="refsrc">copies a prompt for Gemini (or any AI) — her level, her wording and her “where it ends” line go with it</span></div>
         <div class="refsrc">Focus Points doc: ${esc(f.crit)}</div>
