@@ -19,7 +19,14 @@ const FERT = 'Her answer · her MODULE 3 CASES: FERTILITY QUIZ (211050), which h
 /* Her 31 May 2024 case-study session, transcribed locally 5 Oct 2026 (the video stays off this repo): she talks through her
    Fertility quiz, then her RG colour-blindness quiz (the one still hidden on Canvas as 211016) and keys it 10/10 on screen,
    then marks the genetic-diseases board. Times are into that video. */
+/* an UNSTARRED question inside a yellow (exam) case — said in its src, so the page shows it */
+const YELLOW = ' · not starred, but inside her yellow exam case (her exam announcement: “Exam case studies are marked in yellow and starred”; her helpline: an unstarred question can still be asked, depending on marks)';
 const S24 = 'Her answer · her 31 May 2024 case-study session (Canvas page “RECORDINGS EXAM PREP & CASE STUDIES Model answers”, the Fertility & Red green colorblindness video)';
+/* her other three sessions on the same page, transcribed the same day (5 Oct 2026) */
+const S24NS = 'Her answer · her 31 May 2024 morning case-study session (same Canvas page, the Neurotransmitters & Stroke video)';
+const S24J = 'Her answer · her 30 May 2024 case-study session (same Canvas page, the Joints & Arthritis video, where she also plays her exam revision Kahoot)';
+const S24M1 = 'Her answer · her 29 May 2024 case-study session (same Canvas page, the Lymph node removal · Panic · Asthma · Diabetes video)';
+const EMMA = 'Emma’s answer (her co-lecturer, who set the exam) on Emma’s exam-prep page, “Recordings Module 2&3 Part 2 and Exam Prep”, which Hannetjie points the class to for exam revision';
 
 export const CASES = [
   { id: 'c2', n: 2, from: 'm1:lymph', mod: 'm1', sys: 'lymph', name: 'Exam case 2 · The aftereffects of lymph node removal',
@@ -28,6 +35,17 @@ export const CASES = [
     ask: 'Short written answers of 2–3 marks each; her formative test turns the metastasis question into drop-downs.',
     cap: 'Functions, metastasis via the sentinel node, and the fluid-drainage reason for the swelling.' },
   { id: 'c3', n: 3, from: 'm1:asthma', mod: 'm1', sys: 'resp', name: 'Exam case 3 · Asthma',
+    /* `swap` (5 Oct 2026): the blood-pressure question was the ONE case answer that was the tool's (from her CVS 4 page — her
+       deck answers it with a picture). Her 29 May 2024 session says it in full, so hers replaces it. */
+    swap: [
+      { k: 'ane s blood pressure', src: S24M1 + ', 1:26:36–1:33:00 (until 5 Oct this answer was the tool’s, from her CVS 4 page)',
+        steps: ['The carotid and aortic baroreceptors — stretch receptors in the blood vessel walls — pick up that the blood pressure is high (the walls are very stretched).',
+                'They send the message to the medulla oblongata: its cardio-acceleratory, cardio-inhibitory and vasomotor centres.',
+                'The cardio-inhibitory centre is stimulated and the cardio-acceleratory centre is inhibited (you can’t brake and accelerate at once).',
+                'The message goes via the vagus nerve: the rate and force of the heartbeat drop, so the cardiac output drops.',
+                'The vasomotor centre brings about vasodilation: more space for the blood.',
+                'Together these bring the blood pressure back down to normal.'] },
+    ],
     /* `more` (5 Oct 2026): her workbook's "Images of different parts of the lungs" — four micrographs in a table she fills in
        herself — is not a starred question, but her EXAM CASE STUDY HELPLINE links "CASE STUDY LUNG HISTOLOGY FOR EXAM" under
        this case and she says the exam's diagrams and graphs are the booklet's. The question wording and the A–D letters are the
@@ -77,11 +95,33 @@ export const CASES = [
         steps: ['To stimulate the conversion of glucose to glycogen (the storage form of glucose) via glycogenesis.'] },
       { q: 'Insulin’s role in the fat tissue is:', marks: 1, src: DECK24 + ', slide 31',
         steps: ['To stimulate the conversion of glucose to fats (the most efficient storage form — more energy in a smaller space) via lipogenesis.'] },
+      /* 5 Oct 2026: the case's UNSTARRED questions. Her exam announcement (413237): "Exam case studies are marked in yellow and
+         starred" — the whole case is yellow, and her helpline says an unstarred question in a starred case can still be asked,
+         depending on marks. Each question is her workbook's words (the context sentence before it included); each answer is her
+         deck's. */
+      { q: 'What other molecules also influence blood glucose levels?', marks: 3, src: DECK24 + ', slide 31' + YELLOW,
+        steps: ['Glucagon stimulates the breakdown of glycogen (glycogenolysis).',
+                'Glucagon stimulates the breakdown of fats (lipolysis).',
+                'Glucagon stimulates the liver to promote gluconeogenesis: creating new glucose from non-glucose sources.'] },
+      { q: 'Insulin is designed to only be high after a meal, so in normal function it shows a pattern like the accompanying diagram. Can you describe the normal BGL over the day? What about insulin?', marks: 4, img: 'wb26-bgl-day.png', src: DECK24 + ', slide 33' + YELLOW,
+        steps: ['BGL changes over the day based on your meals (particularly around carbs and sugar).',
+                'There is a background insulin level: insulin is never at zero.',
+                'BGL is also never at zero: it stays in the normal range of blood glucose.',
+                'Basal insulin = background levels; bolus insulin = released or given after meals.'] },
+      { q: 'In normal blood sugar regulation, does BGL go above the normal range?', marks: 1, src: DECK24 + ', slide 33' + YELLOW,
+        steps: ['No: it should not exceed the normal range.'] },
+      { q: 'What happens overnight? What could that mean for the morning?', marks: 2, src: DECK24 + ', slide 34' + YELLOW,
+        steps: ['BGL drops to its lowest overnight.',
+                'Breakfast is breaking the fast: you wake up hungry, as your body has run out of glycogen.'] },
+      { q: 'When the body cells are resistant to the insulin signal, the pancreas tries to compensate by making MORE insulin, to make the signal meaningful again. Due to all this pancreas hyperactivity, damage and loss of function can occur, which means the pancreas now struggles to make enough insulin. What would happen in the body now? How might we need to intervene?', marks: 3, src: DECK24 + ', slide 34' + YELLOW,
+        steps: ['Pancreatic fatigue: damage to the pancreas from overworking.',
+                'Low insulin levels: impaired blood glucose regulation.',
+                'Type 2 diabetes mellitus: the person might end up on insulin.'] },
     ],
     formative: ['insulin s role in the liver is to stimulate'],
-    done: 'Where insulin is made (beta cells, islets of Langerhans), the hormones that oppose it and where each comes from, the GLUT4 story at the cell, and insulin’s job in liver, muscle and fat.',
-    ask: 'Six short written answers (1–4 marks); her formative test asks the liver / muscle / fat roles as drop-downs.',
-    cap: 'Pancreas → receptor → GLUT4 → glycogenesis / lipogenesis, and the opposing hormones.' },
+    done: 'Where insulin is made (beta cells, islets of Langerhans), the hormones that oppose it and where each comes from, the GLUT4 story at the cell, and insulin’s job in liver, muscle and fat — plus the yellow, unstarred part: what glucagon does, her day graph of glucose and insulin (basal vs bolus, never zero, lowest overnight), and what pancreatic fatigue leads to.',
+    ask: 'Six starred short written answers (1–4 marks); her formative test asks the liver / muscle / fat roles as drop-downs. Five more are unstarred but inside this yellow case, with her day graph: she says those can be asked too, depending on marks.',
+    cap: 'Pancreas → receptor → GLUT4 → glycogenesis / lipogenesis, the opposing hormones, and reading her glucose-and-insulin day graph.' },
 
   { id: 'c8', n: 8, mod: 'm2', sys: 'ms', name: 'Exam case 8 · Joints and arthritis',
     scenario: 'Shannon is a 30-year-old woman that has had a series of issues with her joints. She has had bursitis in her hip in the past, and is now has presented mainly with pain in her knee and hip joints, as well as her hands. After consultation, she has recently been diagnosed with rheumatoid arthritis. She is concerned, as she feels she is too young to have arthritis, even though she is fairly active and has been an athlete most of her life. Part of the treatment plan that manage the joint includes the use of prednisone. Prednisone is a synthetic corticosteroid, similar to cortisol. Cortisol is part of the body’s long term stress response.',
@@ -120,11 +160,30 @@ export const CASES = [
       { q: 'How is cortisol going to aid in Shannon’s rheumatoid arthritis?', marks: 2, src: JOINTS + ', slide 11',
         steps: ['It reduces inflammation: less swelling, redness and pain in her joints.',
                 'It suppresses the immune system: rheumatoid arthritis is an autoimmune condition, an overactive immune system.'] },
+      /* the yellow case's UNSTARRED questions (5 Oct 2026) — her workbook's words; answers from her 30 May 2024 session, her
+         exam revision Kahoot and Emma's exam-prep page (Emma's page says these three "should absolutely be asterisked") */
+      { q: 'The knee and hip are both synovial joints. What are the benefits to the body of a synovial joint?', marks: 2,
+        src: 'Her answer · her exam revision Kahoot, question 24 (“Both the shoulder (ball-and-socket) and the knee (hinge) are synovial joints which mean they are freely movable” — True); the second line is ' + EMMA + YELLOW,
+        steps: ['Synovial joints are freely movable.',
+                'They are the most freely moving type of joint in the body: without synovial joints we would have very limited movement.'] },
+      { q: 'What kind of synovial joint are the hip and knee? The shoulder and the elbow?', marks: 2, src: S24J + ', 40:30' + YELLOW,
+        steps: ['The shoulder and the hip are ball-and-socket joints: a ball moving in a socket.',
+                'The knee and the elbow are hinge joints: they can only open and close like a door.'] },
+      { q: 'What is bursitis?', marks: 2, src: S24J + ', 1:13:35–1:15:09 (“inflammation of the bursa — associated with pain” is ' + EMMA + ')' + YELLOW,
+        steps: ['A bursa is a lubricated, fluid-filled thin sac between bone and the surrounding soft tissue (tendons, muscles): a cushion to reduce friction.',
+                'In bursitis it becomes inflamed and swollen, and then it has the opposite effect (and it is painful).'] },
+      { q: 'What might you say to Shannon about her concerns?', marks: 2,
+        src: S24J + ', 1:18:34 (“an autoimmune condition, it can hit at any age”), with her deck’s RA-vs-OA table (“It may begin any time in life” / “It usually begins later in life”)' + YELLOW,
+        steps: ['Rheumatoid arthritis is an autoimmune condition: it can hit at any age, so she is not too young for it.',
+                'It is not the wear and tear of osteoarthritis, which usually begins later in life.'] },
+    ],
+    held: [
+      { q: 'Compare and contrast bursitis and arthritis.', why: 'not starred, inside the yellow case; no answer of hers anywhere — her sessions give bursitis and arthritis separately (the two questions above, and her “arthritis wears away the articular cartilage and inflames the synovial membrane”)' },
     ],
     formative: ['the part labeled b in the diagram is known as'],
-    done: 'Name and give the function of every lettered joint structure, describe rheumatoid arthritis, name osteoarthritis and set the two side by side, and explain where cortisol comes from, what it does in stress, and why it helps Shannon.',
-    ask: 'A label-and-function table on her joint figure, then short written answers; her formative test asks the joint letters as drop-downs.',
-    cap: 'Her nine structures, her RA-vs-OA table, and cortisol’s jobs.' },
+    done: 'Name and give the function of every lettered joint structure, describe rheumatoid arthritis, name osteoarthritis and set the two side by side, and explain where cortisol comes from, what it does in stress, and why it helps Shannon — plus the yellow, unstarred part: why synovial joints matter, which type the hip, knee, shoulder and elbow are, what bursitis is, and what to tell Shannon.',
+    ask: 'A label-and-function table on her joint figure, then short written answers; her formative test asks the joint letters as drop-downs. Her 30 May 2024 session: “the diagrams in the case studies will be in the exam. I’m promising you” — this joint is “definitely in”, perhaps numbered 1, 2, 3 instead of lettered.',
+    cap: 'Her nine structures, her RA-vs-OA table, cortisol’s jobs, ball-and-socket vs hinge, and bursitis.' },
 
   { id: 'c9', n: 9, mod: 'm2', sys: 'ns', name: 'Exam case 9 · Neurotransmitters and the brain',
     scenario: 'Mr Paraone has been admitted to hospital after a fall and has reported they are having issues with mobility and tremors. Mr Paraone is later diagnosed with Parkinson’s disease. This is a brain disease where cells that normally make Dopamine, a neurotransmitter, start to die. One of the treatments to help control their symptoms is called Levodopa, which travels through the blood and into the brain to help to boost the brain’s Dopamine levels, so the neurons can continue to communicate properly via their synapses.',
@@ -148,11 +207,30 @@ export const CASES = [
                 'causing either an excitatory or an inhibitory effect — the postsynaptic neuron is stimulated or inhibited.'] },
       { q: 'After the neurotransmitter has been released, what happens to that chemical signal?', marks: 1, src: NS24 + ', slides 3–4',
         steps: ['It is removed: re-uptake into the presynaptic neuron, or enzymatic destruction of the neurotransmitter.'] },
+      /* 5 Oct 2026: her synapse figure, labelled in her own words — "you will get this specific drawing in the exam. So this is
+         the one that you need to be able to label" (her slide is this workbook figure, same letters). Question wording: the tool's. */
+      { q: 'Label her synapse figure, A to G, and name the two transport processes it shows.', marks: 9, img: 'wb26-synapse.png',
+        src: S24NS + ', 45:19–48:46; her joints session (38:27) says the same: “they’re going to ask you to pinpoint presynaptic neuron, label it…”. The question wording is the tool’s; every label is hers',
+        steps: ['A — calcium channel: where calcium (Ca2+) can enter the cell.',
+                'B — vesicle: contains the neurotransmitters.',
+                'C — neurotransmitter molecules (every dot is one).',
+                'D — reuptake channel: the neurotransmitter goes back to be used again.',
+                'E — receptors (on the postsynaptic membrane).',
+                'F — presynaptic neuron: you can tell by the vesicles.',
+                'G — postsynaptic neuron: you can tell by the receptors.',
+                'Exocytosis: the vesicle fuses with the membrane and releases the neurotransmitter.',
+                'Diffusion: the neurotransmitters cross the synaptic cleft (from high to low concentration).'] },
+      /* the yellow case's UNSTARRED question */
+      { q: 'Levodopa, which travels through the blood and into the brain is used as medication. Why not Dopamine itself?', marks: 3,
+        src: S24J + ', 53:58–54:58, for the first two lines (her Kahoot question 37: “Alcohol affects the brain because it can cross the blood-brain barrier” — True). The LAST line is the tool’s: she never says it outright' + YELLOW,
+        steps: ['To work on brain cells, a medication must be able to cross the blood-brain barrier.',
+                'Substances that are not lipid (fat) soluble cannot cross it, so they are useless in treating conditions of the brain.',
+                'Levodopa crosses into the brain and is made into dopamine there; dopamine itself does not cross the blood-brain barrier.'] },
     ],
     formative: ['b is pointing towards a vesicle containing'],
-    done: 'Define a neurotransmitter, say where dopamine is made, give calcium’s role, and walk the six steps of synaptic transmission from the action potential to re-uptake.',
-    ask: 'Short written answers; the six-step sequence is the long one, and her formative test asks the synapse figure as drop-downs.',
-    cap: 'Her six steps in order, excitatory vs inhibitory, re-uptake or enzymes.' },
+    done: 'Define a neurotransmitter, say where dopamine is made, give calcium’s role, walk the steps of synaptic transmission from the action potential to re-uptake, and label every letter of her synapse figure — plus the unstarred levodopa question (the blood-brain barrier).',
+    ask: 'Short written answers; the step sequence is the long one, and her formative test asks the synapse figure as drop-downs. Her 2024 sessions: “you will get this specific drawing in the exam” (label it: pre/post by vesicles/receptors, Ca2+ and reuptake channels, exocytosis, diffusion); “you will probably be asked to place [the steps] in the right order”; and depth — “a superficial answer will just say neurotransmitters diffuse… you must give all seven steps”.',
+    cap: 'Her steps in order, every letter of her synapse figure, excitatory vs inhibitory, re-uptake or enzymes.' },
 
   { id: 'c10', n: 10, mod: 'm2', sys: 'ns', name: 'Exam case 10 · Stroke and the brain',
     scenario: 'You are working in a stroke rehabilitation unit, and are often interacting with individuals that are recovering from stroke, cerebrovascular accident, when parts of the brain are damaged during periods of ischaemia. Different areas of the brain control different tasks, so the symptoms a person shows, or the functions they have lost will be reflective of the part of their brain that has been damaged by the ischaemia. You are working with a range of people with differing functions, and you’re thinking about what parts of the brains must be involved.',
@@ -172,8 +250,8 @@ export const CASES = [
     ],
     formative: ['judgment reasoning and impulse control can be improved', 'a person who did not take any alcohol or drugs behaved like a drunk person'],
     done: 'Put a name and a function on every lettered area of her cerebrum figure, and say what damage there would change — plus the guided “where is it” answers for the cerebellum, pons, medulla and corpus callosum.',
-    ask: 'Her figure with letters; her formative test asks the areas as drop-downs and the four brain-part locations as fill-in-the-gaps.',
-    cap: 'Her seven lettered areas, and the four “other brain parts” locations.' },
+    ask: 'Her figure with letters; her formative test asks the areas as drop-downs and the four brain-part locations as fill-in-the-gaps. Her 31 May 2024 session (1:09:29–1:13:51): “you’ll get the same diagram in the exam, even ABCs on the same places”. Her hooks: the central sulcus divides the frontal lobe (in front, MOTOR) from the parietal lobe (behind, SENSORY); Broca’s area is motor (“the motor mouth”, producing speech), Wernicke’s is sensory (understanding it); G, vision, is in the occipital lobe. And “make a note of it”: two types of stroke — ischaemic (the majority, a blood clot, a lack of blood supply) and haemorrhagic (a burst vessel or aneurysm, the most serious).',
+    cap: 'Her seven lettered areas, motor-in-front / sensory-behind, the two stroke types, and the four “other brain parts” locations.' },
 
   { id: 'c13', n: 13, mod: 'm3', sys: 'repro', name: 'Exam case 13 · Fertility',
     scenario: 'Rose and Simon are seeing the nurse at their local GP’s clinic, as they have recently made the decision to begin trying to conceive. Rose has been on the Depo Provera injection as a method of contraception for the past 2 years. As her nurse, you advise that it could take a little while for her normal cycle to settle after coming off this hormonal contraceptive. Rose takes your recommendation about tracking her cycle after learning that there are limited days in the month where she will be fertile and able to conceive. She has also taken your recommendation about purchasing an ovulation predictor kit and some pregnancy tests.',

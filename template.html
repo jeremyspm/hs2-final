@@ -418,7 +418,7 @@ S.pick = (Array.isArray(S.pick)?S.pick:[]).filter(id=>DATA.quizzes.some(z=>z.id=
    window closes Mon 21 Sep, so a single hard-coded date would mislead whoever it did
    not belong to. Default is his (it is his tool); anyone else taps the countdown and
    sets their own, kept in their own browser. */
-const COHORT_CLOSE = '2026-11-05';      // the HS2 exam: Thu 5 Nov 2026 — opens 1 pm sharp, at the venue 60 min before (her EXAM CASE STUDY HELPLINE, read 5 Oct; the timetable's 12:30 is the room)
+const COHORT_CLOSE = '2026-11-05';      // the HS2 exam: Thu 5 Nov 2026, time TO BE CONFIRMED (her FINAL HS2 EXAM announcement 413237, 5 Oct: "at a time that will be confirmed", be there 45 min before) — her helpline still says 1 pm sharp, 60 min before
 const DEFAULT_SITTING = '2026-11-05';
 const sittingISO = () => LS('testday') || DEFAULT_SITTING;
 const TESTDAY = () => new Date(sittingISO() + 'T12:00:00+12:00');
@@ -526,15 +526,18 @@ function dealFull(){
   const load = c => byCase[c].reduce((a,q)=>a+(S.seen[q.id]||0),0) + Math.random();
   const order = Object.keys(byCase).map(c=>[c,load(c)]).sort((a,b)=>a[1]-b[1]).map(x=>x[0]);
   const queue = order.map(c=>pickN(byCase[c], byCase[c].length, new Set()));      /* each case's questions, least-seen first */
-  const written = [];
+  const written = [], skipped = [];
   const marks = a => a.reduce((t,q)=>t+(q.pts||1),0);
+  const share = () => { const w = marks(written), c = marks(closed.slice(0, 32-written.length)); return w/(w+c) };
   for(let r=0; written.length<16; r++){
     const next = queue[r % queue.length].shift(); if(!next){ if(queue.every(x=>!x.length)) break; continue; }
     written.push(next);
-    const w = marks(written), c = marks(closed.slice(0, 32-written.length)), s = w/(w+c);
-    if(s>0.42){ written.pop(); continue; }      /* a big one (her 10-mark micrographs) would overshoot: it waits for another sitting */
+    const s = share();
+    if(s>0.42){ written.pop(); skipped.push(next); continue; }      /* a big one (her 10-mark micrographs) would overshoot: it waits for another sitting */
     if(s>=0.37) break;      /* stop at the exam's share; the least-sat rotation carries the other cases into the next sitting */
   }
+  /* ran out short of 37%: take back the smallest question that was set aside, so the paper still matches her share */
+  if(share()<0.37 && skipped.length && written.length<16) written.push(skipped.sort((a,b)=>(a.pts||1)-(b.pts||1))[0]);
   return closed.slice(0, 32-written.length).concat(written);
 }
 /* the misses pile, worst first: once four or more have been missed twice, only those */
@@ -675,8 +678,9 @@ function allCaseScreen(){
     <button class="btn ghost wide" data-go="coreb" data-learn="1">Then the ${B} module questions on the case topics</button>
     <details class="how"><summary>ⓘ How this works</summary>
       <p>The mock test is the exam’s size (32 questions, or 12 in the mini), so it never shows you everything. This does: the
-      ten cases’ written questions, her case formative test, her exam revision deck, her red-green colour-blindness quiz, and the
-      case quizzes her exam helpline lists under the cases (fertility, neuron and synapse, pedigrees) — nothing off the cases. There
+      ten cases’ written questions (the starred ones and the unstarred ones inside her yellow cases), her case formative test, her exam
+      revision deck, her exam revision Kahoot, her red-green colour-blindness quiz, and the case quizzes her exam helpline lists under
+      the cases (fertility, neuron and synapse, pedigrees) — nothing off the cases. There
       is no cap and it deals least-seen and missed questions first, so going through it again starts with whatever you have not
       nailed. Learn checks each answer the moment you press Check (written ones you mark against her short answer) and saves your
       place if you stop. When all of these are solid, the ${B} module questions that sit on a case topic are the next layer —
@@ -1074,7 +1078,7 @@ function pickScreen(){
 function mockScreen(){
   const nm = Object.keys(S.miss).length;
   return `<div class="card">
-    <p class="lead">Built like her exam: the closed questions are only her own case questions in closed form (${DATA.mock.pool.length} of them — her formative case test, her revision deck, her case quizzes), spread across the ten cases; the written ones are her starred case questions. The real exam is on campus: Thu 5 Nov, opens 1 pm sharp (be at your venue by 12:00, with your MIT ID), 130 min, 32 questions, 80 marks, 37% written, built on the starred cases.</p>
+    <p class="lead">Built like her exam: the closed questions are only her own case questions in closed form (${DATA.mock.pool.length} of them — her formative case test, her revision deck, her exam revision Kahoot, her case quizzes), spread across the ten cases; the written ones are her starred case questions. The real exam is on campus: Thu 5 Nov, time to be confirmed (her exam announcement; her helpline says 1 pm sharp) — be at your venue 45–60 min early with your MIT ID. 130 min, 32 questions, 80 marks, 37% written, built on the ten yellow, starred cases.</p>
     <button class="btn primary wide" data-go="mini">Sit a mini mock test · 12 of her closed case questions, ~15 min</button>
     <button class="btn wide" data-go="full">Sit the full mock test · 32 Q, 37% of the marks written from the cases, 130 min — the exam’s shape</button>
     <button class="btn wide" data-go="miss" ${nm?'':'disabled'}>Redo my misses${nm?` · ${nm} in the pile`:''}</button>
@@ -1722,7 +1726,7 @@ $('#themeBtn').onclick=()=>{const r=document.documentElement;
 if(LS('theme')==='light')document.documentElement.dataset.theme='light';
 $('#helpBtn').onclick=()=>{$('#help').innerHTML=`
   <h2 style="margin-top:0">What is this?</h2>
-  <p>The HS2 final (Thu 5 Nov, on campus, opens 1 pm sharp — be at your venue by 12:00 with your MIT ID: 130 min, 32 questions, 80 marks of ½-mark answers, 37% written) — practised from everything she has
+  <p>The HS2 final (Thu 5 Nov, on campus, time to be confirmed — her exam announcement says so; her helpline says 1 pm sharp. Be at your venue 45–60 min early with your MIT ID: 130 min, 32 questions, 80 marks of ½-mark answers, 37% written) — practised from everything she has
   given you for it. Every practice quiz of Modules 1, 2 and 3, as the three module sims ship them, plus her Case Study
   Formative Test, plus her ten starred exam cases, written, marked against HER model answers. Her own words: the exam
   “will be based on the starred *Case studies in your Case Study Booklet A”.</p>
@@ -1750,12 +1754,16 @@ $('#helpBtn').onclick=()=>{$('#help').innerHTML=`
   <h3>Where the questions come from</h3>
   <p>${DATA.stats.n} questions from ${DATA.quizzes.length} quizzes: her own Canvas quizzes (answer keys taken from his graded
   pages — nothing invented) and the ten cases. A case question and its scenario are hers, word for word from the Case Study
-  Workbook; its model answer is hers too — her 2024 case-study answer decks, her NS1 deck, her Fertility quiz, and (cases 13, 14
-  and 15) her recorded 31 May 2024 case-study session, where she talks her colour-blindness quiz through and keys it on screen —
-  split one marking point per line, and each names its deck and slide or the minute of the recording. Where a line is the tool’s
-  reading (the “damage →” half of the stroke answer, the photopic / scotopic line of case 14), it says so; and one case 3
-  question — her four lung micrographs — is worded by this tool around her own workbook table (not starred, but her exam
-  helpline links her “lung histology for exam” deck under that case), and says so. ${DATA.held.length} starred or captured questions are held because no answer of hers can be read
+  Workbook — the starred ones, and since 5 Oct the unstarred ones inside her yellow exam cases (her exam announcement: “Exam case
+  studies are marked in yellow and starred”; each says so); its model answer is hers too — her 2024 case-study answer decks, her NS1
+  deck, her Fertility quiz, and her four recorded May 2024 case-study sessions (where she talks the cases through, keys her
+  colour-blindness quiz on screen and labels her synapse figure) — split one marking point per line, and each names its deck and
+  slide or the minute of the recording. A few lines lean on Emma, her co-lecturer who set the exam, from the exam-prep page Hannetjie
+  points the class to; those say so. Where a line is the tool’s
+  reading (the “damage →” half of the stroke answer, the photopic / scotopic line of case 14, the last levodopa line), it says so;
+  and two questions are worded by this tool around her own material, and say so — case 3’s four lung micrographs (her workbook
+  table; her exam helpline links her “lung histology for exam” deck under that case) and case 9’s synapse labels (her figure,
+  labelled by her in her session: “you will get this specific drawing in the exam”). ${DATA.held.length} starred or captured questions are held because no answer of hers can be read
   yet; each case row lists its own.</p>
   <h3>Learn mode</h3>
   <p><b>Learn as you go</b> (and the <b>Learn</b> button beside each quiz) marks every question the moment you

@@ -22,6 +22,7 @@ import { CASES } from './content/cases.js';
 import { loadShorts, shortsJSON } from './shorts.mjs';
 import { REVDECK } from './content/revision-deck.js';
 import { RGQUIZ } from './content/rg-quiz.js';
+import { KAHOOT } from './content/kahoot-exam.js';
 import { HELPLINE_M1 } from './content/helpline-m1.js';
 import { CASE_TOPICS } from './content/case-topics.js';
 import { HELPLINE } from './content/helpline.js';
@@ -391,7 +392,11 @@ const escH = t => t.replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': 
 for (const c of CASES) {
   let from = c;
   if (c.from) { const m = m1cases[c.from.split(':')[1]]; if (!m) { fails2.push(`case ${c.id}: ${c.from} is not in hs2-paper-m1's built cases`); continue; }
-    from = { ...c, scenario: m.scenario, questions: [...m.questions, ...(c.more || [])] }; }      // `more` = this sim's own additions to an imported case
+    /* `swap` = HER answer replaces the imported one (matched by the normalised opening of the question); `more` = this sim's
+       own additions to an imported case */
+    for (const sw of c.swap || []) if (!m.questions.some(q => norm(q.q).startsWith(sw.k))) fails2.push(`case ${c.id}: swap "${sw.k}" matched no imported question`);
+    const swapped = m.questions.map(q => { const sw = (c.swap || []).find(x => norm(q.q).startsWith(x.k)); return sw ? { ...q, steps: sw.steps, src: sw.src, marks: sw.marks || q.marks } : q; });
+    from = { ...c, scenario: m.scenario, questions: [...swapped, ...(c.more || [])] }; }
   else if (c.more) fails2.push(`case ${c.id}: 'more' is only for a case imported with 'from' (put the question in 'questions')`);
   const qz = 'case-' + c.id; caseQs[c.id] = [];
   for (const cq of from.questions || []) {
@@ -438,6 +443,7 @@ fs.writeFileSync(path.join(HERE, 'slides-todo.json'), JSON.stringify([...usedSli
 /* ── 4b. her RG colour-blindness quiz (content/rg-quiz.js), read off her recorded 2024 session: the questions whose every option
    was on her screen, keyed by her own answer (10/10). They sit on case 14's row, with its scenario (they name Simon). ── */
 const rgIds = [];
+const caseExtra = {};      // case id -> ids of her closed questions that sit on that case's row (RG quiz, her Kahoot)
 {
   const c = CASES.find(x => x.id === RGQUIZ.case);
   for (const it of RGQUIZ.items) {
@@ -450,7 +456,22 @@ const rgIds = [];
     questions.push(q); rgIds.push(q.id);
   }
   quizzes.push({ id: RGQUIZ.quiz, name: RGQUIZ.name, sys: c.sys, mod: 'cases', n: rgIds.length });
+  caseExtra[c.id] = [...(caseExtra[c.id] || []), ...rgIds];
 }
+
+/* ── 4c. her exam revision Kahoot (content/kahoot-exam.js): 49 of her 50, keys as she marked them; each on its case's row,
+   in its case's module (like her revision deck), so Learn by module and the mock's body-system groups see it ── */
+const kahIds = [];
+for (const it of KAHOOT.items) {
+  const c = CASES.find(x => x.id === it.case);
+  if (!c) { fails2.push(`Kahoot Q${it.n}: no case ${it.case}`); continue; }
+  if (it.key.length !== 1 || !it.opts.includes(it.key[0])) fails2.push(`Kahoot Q${it.n}: key not among its options`);
+  const q = { id: qid(KAHOOT.quiz, it.q, it.key), quiz: KAHOOT.quiz, sys: c.sys, mod: c.mod, type: it.type, pts: 1, q: it.q,
+    qh: '<p>' + escH(it.q) + '</p>', qt: it.q, imgs: [], opts: it.opts, key: it.key, refs: [] };
+  if (questions.some(x => x.id === q.id)) fails2.push(`Kahoot Q${it.n}: the same question twice`);
+  questions.push(q); kahIds.push(q.id); (caseExtra[c.id] = caseExtra[c.id] || []).push(q.id);
+}
+quizzes.push({ id: KAHOOT.quiz, name: KAHOOT.name, sys: 'mixed', mod: 'exam', n: kahIds.length });
 
 /* ── the exam checklist: the ten cases on top (HER words), then every module row, re-tiered on its own marks ── */
 const byIdAll = new Map(questions.map(q => [q.id, q]));
@@ -472,7 +493,7 @@ const rowOut = (f, ids) => {
 };
 const FOCUS_OUT = [];
 for (const c of CASES) {
-  const ids = [...(ownByCase[c.id] || []), ...(caseQs[c.id] || []), ...(c.id === RGQUIZ.case ? rgIds : [])];
+  const ids = [...(ownByCase[c.id] || []), ...(caseQs[c.id] || []), ...(caseExtra[c.id] || [])];
   for (const p of c.pull || []) {
     const [pm, pid] = p.split(':');
     if (/^\d+$/.test(pid)) { const got = questions.filter(q => q.mod === pm && q.quiz === pid).map(q => q.id); if (!got.length) fails2.push(`case ${c.id}: pull ${p} matched no question`); ids.push(...got); }
@@ -503,7 +524,7 @@ for (const [c, t] of Object.entries(CASE_TOPICS)) {
 }
 /* the exam core: A = the questions she wrote FOR this exam (the cases, her formative test, her revision deck); B = every
    module question on a row a case stands on. The home page deals from A until every A question has been seen once. */
-const coreA = questions.filter(q => /^case-/.test(q.quiz) || q.quiz === '211092' || q.quiz === REVDECK.quiz || q.quiz === RGQUIZ.quiz).map(q => q.id);
+const coreA = questions.filter(q => /^case-/.test(q.quiz) || [ '211092', REVDECK.quiz, RGQUIZ.quiz, KAHOOT.quiz ].includes(q.quiz)).map(q => q.id);
 const inA = new Set(coreA);
 const coreB = [...new Set(FOCUS_OUT.filter(f => f.tier === 1).flatMap(f => f.qs || []))].filter(id => !inA.has(id));
 console.log(`exam core: ${coreA.length} of her exam questions, then ${coreB.length} module questions on the case topics (of ${questions.length})`);
@@ -514,7 +535,7 @@ console.log(`exam core: ${coreA.length} of her exam questions, then ${coreB.leng
    211050 → 13; neuron, AP & synapse 211129 → 9/10; pedigree review 211086 and pedigree pop quiz 211014 → 15). Each item gets a
    body-system group (her deck's one CVS item = case 3's blood pressure); the page deals the groups in proportion to how many of
    the ten cases sit on each, least-seen first. The written half is unchanged: her starred case questions. */
-const MOCK_QUIZZES = ['211092', REVDECK.quiz, RGQUIZ.quiz, '211050', '211129', '211086', '211014'];
+const MOCK_QUIZZES = ['211092', REVDECK.quiz, RGQUIZ.quiz, KAHOOT.quiz, '211050', '211129', '211086', '211014'];
 const GROUP = { lymph: 'lymph', resp: 'resp', cvs: 'resp', endo: 'endo', ms: 'ms', ns: 'ns', repro: 'repro', gen: 'gen', senses: 'gen' };
 const caseOf = Object.fromEntries(Object.entries(ownByCase).flatMap(([cid, ids]) => ids.map(id => [id, cid])));
 const mockPool = [];

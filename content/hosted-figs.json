@@ -43,6 +43,11 @@
    "out": "wb26-retina.png",
    "media": "image14.JPG",
    "for": "case 14, the retina: rods and cone photoreceptors"
+  },
+  {
+   "out": "wb26-bgl-day.png",
+   "media": "image5.png",
+   "for": "case 6, normal blood glucose and insulin over a day (her yellow case text; the image she credits to Wikipedia)"
   }
  ]
 }

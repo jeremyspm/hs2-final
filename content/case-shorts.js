@@ -1,11 +1,12 @@
 /* SHORT VERSIONS of her exam-case model answers (26 Sep 2026). His words about the long answers: "very complex… very
    overwhelming… I don't know how anyone just like remembers that." So every written case question gets a short version:
    a few words a line, cut from the answer the bank carries (content/cases.js, or hs2-paper-m1's built cases for 2/3/4) —
-   nothing added. That answer is HERS for 50 of the 51; the case 3 blood-pressure question's is the tool's, from her CVS 4
-   page (its src says so, and the page labels it). Six (5 Oct 2026: case 13's progesterone question, all four of case 14,
-   case 15's modes of inheritance) are taken down from her recorded 31 May 2024 case session; case 14's last rods/cones line
-   puts her words into the question's terms and its src says so. Case 3's lung-micrograph question (5 Oct) is worded by the
-   tool around her own workbook table, which is its answer. One mark per step; a line is one step, or one fact of a step that carries two.
+   nothing added. Since 5 Oct 2026 every one of the 62 answers is HERS: the case 3 blood-pressure answer, the tool's until
+   then (from her CVS 4 page), is now hers from her 29 May 2024 session (`swap` in cases.js). Her four recorded May 2024 case
+   sessions supply the rest of 5 Oct's additions (case 13's progesterone question, all four of case 14, case 15's modes, case
+   8's and case 9's unstarred yellow-case questions, case 9's synapse labels), with case 6's unstarred five from her deck. Lines
+   that are the tool's say so in their src (case 14's last rods/cones line, the last levodopa line); two questions are worded by
+   the tool around her material (case 3's lung micrographs, case 9's synapse labels). One mark per step; a line is one step, or one fact of a step that carries two.
      case  = the case id ('c2' = quiz case-c2) · k = the normalised opening of her question (must match exactly one)
      title = the trainer list's name for it · hook = one line to remember it by
      groups = the question's own parts; each line: [text, of] — of = the index of HER step the line is cut from.
@@ -104,18 +105,19 @@ export const CASE_SHORTS = [
         ['A **smoker’s cough** develops to replace them', 1]),
     ] },
   { case: 'c3', k: 'ane s blood pressure', title: 'Bringing Ane\'s blood pressure down',
-    hook: 'STRETCH → MEDULLA → vagus SLOWS the heart → vessels WIDEN.',
+    hook: 'STRETCH → MEDULLA: brake ON, accelerator OFF → vagus slows → vessels WIDEN.',
     groups: [
       G('Sense it',
-        ['**Baroreceptors** in the **aortic arch** and **carotid sinus** stretch, fire faster', 0]),
+        ['**Carotid** and **aortic baroreceptors** (**stretch receptors**) pick up **high** pressure', 0]),
       G('Tell the brain',
-        ['They signal the **medulla oblongata** (**cardiac** and **vasomotor centres**)', 1]),
+        ['To the **medulla oblongata**: **cardio-acceleratory**, **cardio-inhibitory**, **vasomotor** centres', 1]),
       G('Slow the heart',
-        ['**Cardiac inhibitory centre**: **parasympathetic** (**vagus**) impulses to the **SA node**', 2],
-        ['**Acetylcholine** lowers the **heart rate** (and stroke volume)', 2]),
+        ['**Cardio-inhibitory** **stimulated**; **cardio-acceleratory** **inhibited**', 2],
+        ['Via the **vagus nerve**: **rate** and **force** drop, **cardiac output** drops', 3]),
       G('Widen the vessels',
-        ['**Vasomotor centre** inhibited: less **sympathetic** tone, **arterioles dilate**', 3],
-        ['**Peripheral resistance** falls: BP returns to the **set point**', 3]),
+        ['**Vasomotor centre**: **vasodilation**, more **space** for the blood', 4]),
+      G('Result',
+        ['Blood pressure back down to **normal**', 5]),
     ] },
   { case: 'c3', k: 'her four lung micrographs', title: 'Four lung micrographs, A to D',
     hook: 'Cartilage stops at the bronchiole; muscle stops at the alveoli.',
@@ -259,6 +261,42 @@ export const CASE_SHORTS = [
         ['**Glucose** → **fats**, by **lipogenesis**', 0],
         ['the most **efficient storage form**', 0]),
     ] },
+  /* the yellow case's unstarred questions (5 Oct 2026), her deck's answers */
+  { case: 'c6', k: 'what other molecules also', title: 'What glucagon does to blood sugar',
+    hook: 'Glucagon RAISES BGL three ways: glycogen, fat, new glucose.',
+    groups: [
+      G('Glucagon',
+        ['**Glucagon**: breaks down **glycogen** (**glycogenolysis**)', 0],
+        ['Breaks down **fats** (**lipolysis**)', 1],
+        ['Liver: **gluconeogenesis**, **new glucose** from **non-glucose** sources', 2]),
+    ] },
+  { case: 'c6', k: 'insulin is designed to', title: 'Glucose and insulin over a day',
+    hook: 'Spikes after MEALS; never zero; basal underneath, bolus on top.',
+    groups: [
+      G('Over the day',
+        ['**BGL** follows your **meals** (**carbs** and **sugar**)', 0],
+        ['**Background insulin**: insulin is **never at zero**', 1],
+        ['BGL never zero either: stays in the **normal range**', 2],
+        ['**Basal** = background; **bolus** = after **meals**', 3]),
+    ] },
+  { case: 'c6', k: 'in normal blood sugar', title: 'Does BGL leave the normal range?',
+    hook: 'No.',
+    groups: [G('The answer', ['**No**: it should not **exceed** the **normal range**', 0])] },
+  { case: 'c6', k: 'what happens overnight what', title: 'Overnight and the morning',
+    hook: 'Lowest at night; break the FAST in the morning.',
+    groups: [
+      G('Overnight',
+        ['BGL is **lowest overnight**', 0],
+        ['**Breakfast** = **breaking the fast**: hungry, **glycogen** run out', 1]),
+    ] },
+  { case: 'c6', k: 'when the body cells', title: 'When the pancreas tires',
+    hook: 'Overworked pancreas → too little insulin → type 2 on insulin.',
+    groups: [
+      G('What happens',
+        ['**Pancreatic fatigue**: **damage** from **overworking**', 0],
+        ['**Low insulin**: **impaired** glucose regulation', 1],
+        ['**Type 2** diabetes: may end up **on insulin**', 2]),
+    ] },
 
   /* ── Exam case 8 · Joints and arthritis ───────────────────────────── */
   { case: 'c8', k: 'arthritis is a condition', title: 'The joint, A to H',
@@ -324,6 +362,37 @@ export const CASE_SHORTS = [
         ['**Reduces inflammation**: less **swelling**, **redness** and **pain**', 0],
         ['**Suppresses the immune system**: RA is **autoimmune**', 1]),
     ] },
+  /* the yellow case's unstarred questions (5 Oct 2026) */
+  { case: 'c8', k: 'the knee and hip', title: 'Why synovial joints matter',
+    hook: 'FREELY movable: without them, very little movement.',
+    groups: [
+      G('Benefits',
+        ['Synovial joints are **freely movable**', 0],
+        ['The **most freely moving** joints: without them, **very limited movement**', 1]),
+    ] },
+  { case: 'c8', k: 'what kind of synovial', title: 'Hip, knee, shoulder, elbow: joint types',
+    hook: 'Ball-and-socket: shoulder, HIP. Hinge, like a door: KNEE, elbow.',
+    groups: [
+      G('Types',
+        ['**Shoulder** and **hip**: **ball-and-socket**', 0],
+        ['**Knee** and **elbow**: **hinge**, open and close like a **door**', 1]),
+    ] },
+  { case: 'c8', k: 'what is bursitis', title: 'Bursitis',
+    hook: 'A friction CUSHION that gets inflamed.',
+    groups: [
+      G('The bursa',
+        ['**Bursa**: a **fluid-filled** **sac** between bone and soft tissue', 0],
+        ['A **cushion** to reduce **friction**', 0]),
+      G('Bursitis',
+        ['**Inflamed** and **swollen**: the **opposite effect**, and painful', 1]),
+    ] },
+  { case: 'c8', k: 'what might you say', title: 'What to tell Shannon',
+    hook: 'RA is autoimmune: ANY age.',
+    groups: [
+      G('What to say',
+        ['**Rheumatoid arthritis** is **autoimmune**: it can hit at **any age**', 0],
+        ['Not the **wear and tear** of osteoarthritis, which begins **later in life**', 1]),
+    ] },
 
   /* ── Exam case 9 · Neurotransmitters and the brain ───────────────── */
   { case: 'c9', k: 'what is a neurotransmitter', title: 'Neurotransmitters and dopamine',
@@ -368,6 +437,29 @@ export const CASE_SHORTS = [
       G('What happens to it',
         ['**Re-uptake** into the **presynaptic neuron**', 0],
         ['or **enzymatic destruction**', 0]),
+    ] },
+  { case: 'c9', k: 'label her synapse figure', title: 'Label the synapse, A to G',
+    hook: 'VESICLES mean pre (F); RECEPTORS mean post (G).',
+    groups: [
+      G('The letters',
+        ['**A**: **calcium channel**', 0],
+        ['**B**: **vesicle**', 1],
+        ['**C**: **neurotransmitter** molecules', 2],
+        ['**D**: **reuptake** channel', 3],
+        ['**E**: **receptors**', 4],
+        ['**F**: **presynaptic** neuron (the **vesicles**)', 5],
+        ['**G**: **postsynaptic** neuron (the **receptors**)', 6]),
+      G('The processes',
+        ['**Exocytosis**: the **vesicle fuses**, releasing the neurotransmitter', 7],
+        ['**Diffusion** across the **synaptic cleft**', 8]),
+    ] },
+  { case: 'c9', k: 'levodopa which travels through', title: 'Why levodopa, not dopamine',
+    hook: 'Only what crosses the BLOOD-BRAIN BARRIER works on the brain.',
+    groups: [
+      G('Why',
+        ['Must cross the **blood-brain barrier** to work on brain cells', 0],
+        ['Not **fat soluble**: cannot cross, **useless** for the brain', 1],
+        ['**Levodopa** crosses, becomes **dopamine**; dopamine itself **does not cross**', 2]),
     ] },
 
   /* ── Exam case 10 · Stroke and the brain ──────────────────────────── */

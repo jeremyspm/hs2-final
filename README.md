@@ -1,13 +1,15 @@
 # HS2 Paper Sim — Final exam
 
-The HS2 (722.541) final: **Thu 5 Nov 2026 — it opens 1 pm sharp, be at your venue 60 min before (her helpline, 5 Oct); on
-campus, 130 min, 32 questions / 80 marks (160 answers at ½ mark), 37% written, Modules 1–3**, and in her
+The HS2 (722.541) final: **Thu 5 Nov 2026, time TO BE CONFIRMED** (her FINAL HS2 EXAM announcement 413237, 5 Oct: "at a time that
+will be confirmed", gather 45 min before; her helpline still says "opens 1 pm sharp", 60 min before) — **on campus, 130 min, 32
+questions / 80 marks (160 answers at ½ mark), 37% written, Modules 1–3**. Her announcement: "Exam case studies are marked in
+yellow and starred (test case studies are marked in blue, not starred and are not in the exam)" — and in her
 own words (Assessment Overview) "based on the starred *Case studies in your Case Study Booklet A". Same format as
 `hs2-test2`, `hs2-paper-m1` and `hs2-test3`; own storage prefix `hs2f.`; `noindex`.
 
 ## What is in it (built 2026-09-21)
 
-**1,377 questions from 97 quizzes** (1,370 on 21 Sep; +7 written case questions on 5 Oct).
+**1,439 questions from 99 quizzes** (1,370 on 21 Sep; 5 Oct: + her RG quiz's two, her exam revision Kahoot's 49, and 18 written case questions).
 - **The ten starred cases** (`content/cases.js`): 2 lymph-node removal · 3 asthma · 4 panic attacks · 6 diabetes · 8 joints &
   arthritis · 9 neurotransmitters · 10 stroke · 13 fertility · 14 RG colour blindness · 15 genetic diseases. Scenario and
   starred questions verbatim from her *Case Study Workbook 2026 S2*; **51 written questions marked against HER model
@@ -22,8 +24,21 @@ own words (Assessment Overview) "based on the starred *Case studies in your Case
   `src` gives the minute, and the page labels these answers "tidied into lines from her recorded session" (not word for word).
   Case 14's last rods/cones line is the tool's (photopic / scotopic / peripheral are the question's words) and says so. Plus
   `more` on case 3: her four lung micrographs (workbook table, her "CASE STUDY LUNG HISTOLOGY FOR EXAM" deck that the helpline
-  links under case 3), the question worded by the tool around her own table. **8 held** starred questions (four of 13, four
-  of 15: the whānau charts are worked on board 413346, still hidden) — each case row lists its held questions.
+  links under case 3), the question worded by the tool around her own table.
+  **5 Oct, later — her other three sessions on that page** (29 May: lymph, panic, asthma, diabetes · 30 May: joints, with her
+  exam revision Kahoot · 31 May morning: neurotransmitters and stroke), same recipe: case 3's blood-pressure answer is now HERS
+  (`swap`; it was the one tool answer), case 9 gains her synapse labels ("you will get this specific drawing in the exam") and the
+  levodopa question, and the case rows carry her exam tips (the booklet's diagrams "will be in the exam. I'm promising you"; the
+  same cerebrum letters; steps put in order; depth). **The YELLOW part:** her exam announcement (413237) says "Exam case studies
+  are marked in yellow and starred" — in the workbook the yellow is paragraph shading on each exam case's text, i.e. the whole
+  case, so its UNSTARRED questions now come in too, each labelled so (`YELLOW` in its src): case 6's five + her glucose/insulin
+  day graph (her deck slides 31–34), case 8's four (her session, her Kahoot, Emma's page), case 9's levodopa; case 4's were
+  already in via hs2-paper-m1; case 8's "compare bursitis and arthritis" has no answer of hers and is held.
+  **Her exam revision Kahoot** (`content/kahoot-exam.js`, "Exam revision BN2", her own account, the one she plays in the 30 May
+  session): 49 of its 50 with her keys, each on its case's row, in the exam core, the mock pool and Every case question; its Getty
+  stock pictures are not copied (question 26 needs its picture and is left out).
+  **9 held** (four of 13, four of 15 — the whānau charts are worked on board 413346, still hidden — and case 8's compare
+  question) — each case row lists its held questions.
 - **Her exam revision deck** (`content/revision-deck.js`, "Exam Revison ppt for Hs2 Final", linked from her Module 3 Completion
   page): her 30 exam-style slides → **33 questions** (her T/F slide splits into four). Every key was read off her RED answer
   slide on the render; each question carries that answer slide under it. Its own tier-0 checklist row, with her charades
@@ -57,14 +72,14 @@ answer, her ventilation table and factors, her CO2 transport, her lymph pointer 
 case 4's breathing questions. Gated both ways.
 
 **The mock exam** (`dealFull` in `template.html`): 32 questions, 130-min clock. **Since 5 Oct the closed questions are ONLY her
-own case questions in closed form** (`DATA.mock.pool`, 81: her formative case test 211092, her revision deck, her RG quiz read
-off her recorded session, and the case quizzes her exam helpline lists under the cases — Fertility 211050, neuron/AP/synapse
+own case questions in closed form** (`DATA.mock.pool`, 130: her formative case test 211092, her revision deck, her exam revision
+Kahoot, her RG quiz read off her recorded session, and the case quizzes her exam helpline lists under the cases — Fertility 211050, neuron/AP/synapse
 211129, pedigree 211086 + 211014), because her 413286 post says the exam's closed questions are her case SAQs converted. They
 are dealt by body-system group in proportion to how many of the ten cases sit on each (lymph 1, resp 2, endo 1, ms 1, ns 2,
 repro 1, gen 2; thin groups top up from the rest), least-seen first. Then written case questions are added one case at a time
 (least-sat case first) until the written share of the MARKS reaches 37%; one that would push it past 42% waits for another
-sitting. Measured over 200 deals: always 32, never a module-bank question, written 37–42%, every case 155–178 written
-appearances. The mini mock is 12 from the same pool. Learn as you go still deals from the whole bank. **Learn / Sit the 10 cases** deals her formative items
+sitting, and a deal that runs out short of 37% takes back the smallest one set aside. Measured over 500 deals: always 32, never a
+module-bank question, written 37–42% (six at 44–45%). The mini mock is 12 from the same pool. Learn as you go still deals from the whole bank. **Learn / Sit the 10 cases** deals her formative items
 and the written case questions in booklet order.
 
 **The checklist:** the ten case rows on top ("The exam is built on these — her words"), then all 123 module rows of the three
@@ -94,7 +109,8 @@ Preview locally by serving the estate ROOT (the figures live in the sibling sims
    Her EXAM CASE STUDY HELPLINE (413364) is open: read 5 Oct, its lung-histology deck is in (case 3).
 2. Case 13's four unanswered starred questions, if she posts answers; the M1 helpline's worked answers (BP control,
    ventilation, CO2 transport) under the case 3 / 4 questions.
-3. Her other three 2024 session videos on the same Canvas page (Neurotransmitters & Stroke · Joints · Lymph/Panic/Asthma/
-   Diabetes) — same recipe (`D:\hs2-exam-recordings`: download, `transcribe.py`, `frames.py` + `sheets.py`, `crop.py`).
+3. ~~Her other three 2024 session videos~~ — done 5 Oct (recipe in `D:\hs2-exam-recordings`: download, `transcribe.py` with
+   `HS2_HOTWORDS`/`HS2_PROMPT`, `frames.py` + `sheets.py`, `crop.py`, `grab.py`). Her other Kahoots (Module 3, Emma's six,
+   Module 2's) are public too and could join the same way.
 4. Her RG quiz's Q1, Q2 and Q5 (drop-downs / genotype grid / pedigree): only some options were on her screen, so they are out;
    add them when 211016 opens. The musculoskeletal (1) and lymph (2) groups of the mock pool are thin.
