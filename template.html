@@ -260,6 +260,16 @@ a{color:var(--primary)}
 .lch{flex:0 0 auto;color:var(--muted-fg);font-size:1.3rem;line-height:1}
 .shead{display:flex;align-items:center;gap:10px;margin:0 0 12px}
 .shead h2{margin:0;font-size:1.1rem;flex:1}
+/* the final's stripped home (his pick, 5 Oct 2026): one line saying what the exam is, the three doors that rep it, the rest folded */
+.exambar{margin:0 2px 8px;font-size:.88rem;line-height:1.4;color:var(--muted-fg)}
+.exambar b{color:var(--fg);font-size:1rem}
+.lmore{margin-top:10px}
+.lmore>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;
+  border:1px dashed var(--border);color:var(--muted-fg);font-size:.88rem}
+.lmore>summary::-webkit-details-marker{display:none}
+.lmore>summary::before{content:'▸';transition:transform var(--dur) var(--ease)}
+.lmore[open]>summary::before{transform:rotate(90deg)}
+.lmore[open]>summary{margin-bottom:4px}
 /* the tool's own name and colour (26 Sep 2026): four Paper Sims share one layout, so the title card on home, the stripe
    along the header and the tab icon are what tell them apart. --tool is set from TOOL at load. */
 header{border-top:4px solid var(--tool)}
@@ -651,6 +661,28 @@ function bindFocus(){
    practice. So: her own exam questions first (A), least-seen and misses first; once every one has been seen, the module
    questions on the case topics (B) join. Nothing to choose, nothing to plan. */
 const CORE_A = () => DATA.questions.filter(q=>DATA.core.a.includes(q.id));
+/* EVERY case question at once (his ask, 5 Oct 2026: "what happens if a user wants to aim for perfect marks and therefore needs
+   to rep every single thing to do with the case studies?"). The mock caps at 32 / 12; this does not: her exam questions (the
+   ten cases' written questions, her formative case test, her revision deck, her RG quiz) + the mock's closed pool (adds the
+   case quizzes her exam helpline lists). Least-seen and misses first, so a second sweep starts with what is not nailed yet. */
+const ALLCASE = () => { const ids=new Set([...DATA.core.a, ...DATA.mock.pool.map(p=>p.id)]); return DATA.questions.filter(q=>ids.has(q.id)) };
+function allCaseScreen(){
+  const A=ALLCASE(), seen=A.filter(q=>S.seen[q.id]).length, nW=A.filter(q=>q.saq).length, B=DATA.core.b.length;
+  return `<div class="card">
+    <p class="lead">Every question she has written on the ten starred cases: <b>${A.length}</b>, ${nW} of them written. ${seen} of ${A.length} seen so far.</p>
+    <button class="btn primary wide" data-go="allcase" data-learn="1">📖 Learn all ${A.length} · each one marks itself as you go, your place is saved</button>
+    <button class="btn wide" data-go="allcase">⏱ Sit all ${A.length} as one test · no clock, scored at the end</button>
+    <button class="btn ghost wide" data-go="coreb" data-learn="1">Then the ${B} module questions on the case topics</button>
+    <details class="how"><summary>ⓘ How this works</summary>
+      <p>The mock test is the exam’s size (32 questions, or 12 in the mini), so it never shows you everything. This does: the
+      ten cases’ written questions, her case formative test, her exam revision deck, her red-green colour-blindness quiz, and the
+      case quizzes her exam helpline lists under the cases (fertility, neuron and synapse, pedigrees) — nothing off the cases. There
+      is no cap and it deals least-seen and missed questions first, so going through it again starts with whatever you have not
+      nailed. Learn checks each answer the moment you press Check (written ones you mark against her short answer) and saves your
+      place if you stop. When all of these are solid, the ${B} module questions that sit on a case topic are the next layer —
+      the background her case answers lean on.</p></details>
+  </div>`;
+}
 const CORE_B = () => DATA.questions.filter(q=>DATA.core.b.includes(q.id));
 function dealCore(n=15){
   const A = CORE_A(), allSeen = A.every(q=>S.seen[q.id]);
@@ -688,6 +720,7 @@ const SCR = {
   pick: {t:'🗂 Pick my rep',                html:()=>pickScreen()},
   saq:  {t:'✍️ SAQ trainer',               html:()=>saqCard()},
   mock: {t:'⏱ Mock test',                   html:()=>mockScreen()},
+  allcase:{t:'🩺 Every case question',      html:()=>allCaseScreen()},
   miss: {t:'🔁 My misses',                  html:()=>missScreen()},
   ...(DATA.focus.length ? {focus:{t:'🎯 What to learn, and how far', html:()=>focusCard()}} : {}),
   vid:  {t:'📺 Videos',                     html:()=>vidScreen()},
@@ -733,7 +766,7 @@ function nextUp(){
   const r = LS('resume');
   if(r && r.ids && r.ids.length) return {k:'resume', e:'Next up · the Learn run you stopped', t:`${esc(r.label)} · Q${Math.min((r.i|0)+1,r.ids.length)} of ${r.ids.length}`};
   const A = CORE_A(), seenA = A.filter(q=>S.seen[q.id]).length;
-  return {k:'core', e:`Next up · decide for me · ${seenA} of ${A.length} seen`, t:`Today’s 15 — ${seenA<A.length?'from her exam questions':'her exam questions + the case topics'}`};
+  return {k:'core', e:`Next up · decide for me · ${seenA} of ${A.length} seen`, t:`Today’s 15 — ${seenA<A.length?'her case questions':'her case questions + the case topics'}`};
 }
 const HERO = {
   resume: () => { nav('learn'); resumeLearn() },
@@ -744,19 +777,26 @@ function launcher(){
   const seen = CLOSED.filter(q=>S.seen[q.id]).length, nm = Object.keys(S.miss).length;
   const nL = SAQD.filter(x=>sqS(x.id).lock).length, fs = focusStats(), last = S.scores[S.scores.length-1];
   const row = (scr,ic,t,s) => `<button class="lrow" data-scr="${scr}"><span class="lic" aria-hidden="true">${ic}</span><span class="ltx"><b>${t}</b><small>${s}</small></span><span class="lch" aria-hidden="true">›</span></button>`;
+  /* HIS PICK, 5 Oct 2026 ("strip the home down", from three mockups): the exam is the 10 starred cases — her 413286 post, "I am
+     100% sure" — so this home shows only what reps them: Next up (her case questions), the SAQ trainer, the mock. Everything
+     else folds under More, rows and names unchanged. A deliberate exception to the four-sim same-rows rule, for this sim only. */
+  const nCaseW = DATA.questions.filter(q=>q.mod==='cases'&&q.saq).length, ALLC = ALLCASE();
   return `${idCard()}
+  <p class="exambar"><b>The exam is the 10 starred cases.</b> Her words: “I am 100% sure.” Rep these; the rest is optional.</p>
   <button class="hero" data-hero="${up.k}"><span><small>${up.e}</small><b>${up.t}</b></span><span class="go" aria-hidden="true">▶</span></button>
+  ${row('allcase','🩺','Every case question',`${ALLC.filter(q=>S.seen[q.id]).length} of ${ALLC.length} seen · all of them at once, no cap`)}
+  ${SAQD.length?row('saq','✍️','SAQ trainer',`${nL} of ${SAQD.length} locked · her ${nCaseW} case answers first, short`):''}
+  ${row('mock','⏱','Mock test',last?`Last ${last.got}/${last.tot} · ${Math.round(100*last.got/last.tot)}% · ${S.scores.length} sat`:'Built like her exam · mini ~15 min or full 130 min')}
+  <details class="lmore"><summary>More — the whole bank, pick quizzes, misses, checklist, videos</summary>
   <div class="lsec">Practise</div>
   ${row('learn','📖','Learn as you go',`${seen} of ${CLOSED.length} seen${r&&r.ids&&r.ids.length?' · a run is waiting':' · Decide for me is in here'}`)}
   ${row('pick','🗂','Pick my rep',`${DATA.quizzes.length} quizzes${S.pick.length?` · ${S.pick.length} ticked`:' · tick any, run them as one'}`)}
-  ${SAQD.length?`<div class="lsec">Write</div>
-  ${row('saq','✍️','SAQ trainer',`${nL} of ${SAQD.length} locked · the exam is 37% written`)}`:''}
   <div class="lsec">Test yourself</div>
-  ${row('mock','⏱','Mock test',last?`Last ${last.got}/${last.tot} · ${Math.round(100*last.got/last.tot)}% · ${S.scores.length} sat`:'No sittings yet · mini ~15 min or full 130 min')}
   ${row('miss','🔁','My misses',nm?`${nm} in the pile`:'Empty so far · wrong answers land here')}
   <div class="lsec">Plan</div>
   ${SCR.focus?row('focus','🎯','What to learn, and how far',`${fs.d} of ${fs.n} topics ticked · her ten cases first`):''}
-  ${row('vid','📺','Videos',`Three shelves · ${DATA.stats.withVideo} questions carry one`)}`;
+  ${row('vid','📺','Videos',`Three shelves · ${DATA.stats.withVideo} questions carry one`)}
+  </details>`;
 }
 const sysLbl = s => { const pool=CLOSED.filter(q=>q.mod===s).length, n=howMany(pool); return n===pool?`all ${n}`:n };
 /* ── ✍️ written answers: her exam-case questions, learned from their short versions (26 Sep 2026) ──────────────
@@ -1156,6 +1196,8 @@ function start(mode,learn=false){
   else if(mode==='full'){deck=dealFull();label='full mock test';timed=true}
   else if(mode==='cases'){deck=CASEQS();label='the 10 cases'}
   else if(mode==='core'){deck=dealCore(15);label='today from the exam core'}
+  else if(mode==='allcase'){const p=ALLCASE();deck=pickN(p,p.length,new Set());label=`every case question · ${deck.length}`}
+  else if(mode==='coreb'){const p=CORE_B();deck=pickN(p,p.length,new Set());label=`the case topics · ${deck.length}`}
   else if(mode==='miss'){deck=dealMisses(learn?CAP():12);label=learn?'my misses':'redo misses'}
   else if(mode==='pick'){deck=dealPick();const k=S.pick.length;
     label=k===1?(DATA.quizzes.find(z=>z.id===S.pick[0])||{}).name||'1 quiz':`${k} quizzes · ${deck.length} Q`}

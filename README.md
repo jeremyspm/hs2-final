@@ -36,6 +36,14 @@ own words (Assessment Overview) "based on the starred *Case studies in your Case
   answers). Their figures are **hot-linked** from the sibling sim (`../hs2-test2/img/…`, same origin on GitHub Pages) —
   the build checks every one exists on disk. Nothing of theirs is copied.
 
+**Home (his pick, 5 Oct 2026 — "strip the home down", from three mockups):** one line — "The exam is the 10 starred cases. Her
+words: 'I am 100% sure.'" — then Next up (Decide for me), **🩺 Every case question**, ✍️ SAQ trainer, ⏱ Mock test; Learn as you
+go, Pick my rep, My misses, What to learn and Videos fold under **More**. A deliberate exception to the four-sim same-rows rule,
+for this sim only, because she says the exam is the cases. **🩺 Every case question** (his ask the same day: "what if a user wants
+perfect marks and needs to rep every single thing to do with the case studies?"): all 140 of her case questions at once, no cap
+— the exam core A + the mock's closed pool — least-seen and misses first; Learn them (each checks itself, place saved) or sit
+them as one untimed test; then the 401 case-topic module questions.
+
 **The triage — "🧭 Decide for me"** (top of home): one button, 15 at a time, least-seen and misses first. It deals **her 84 exam
 questions** first (the 51 written case questions, her formative test, her revision deck — 91 in all) and only once every one has been
 seen once adds the **401 module questions on the case topics**. `content/case-topics.js` names, per case, the module rows a
