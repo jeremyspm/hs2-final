@@ -25,6 +25,13 @@ own words (Assessment Overview) "based on the starred *Case studies in your Case
   Case 14's last rods/cones line is the tool's (photopic / scotopic / peripheral are the question's words) and says so. Plus
   `more` on case 3: her four lung micrographs (workbook table, her "CASE STUDY LUNG HISTOLOGY FOR EXAM" deck that the helpline
   links under case 3), the question worded by the tool around her own table.
+  **6 Oct 2026 — the last two gaps in the final:** case 4's two STARRED acid–base tables (metabolic, respiratory) and the
+  unstarred "compare the tables" under them come in through `more` on case 4: her 2024 deck fills both tables (slides 15–16,
+  one cell per line) and answers the compare question on slide 15 ("CO2 and H+ are linked, whatever happens to one, happens to
+  the other"). Case 13's starred contraception table leaves `held`: her Fertility quiz's matching (condom = barrier, IUD =
+  implantation, hormonal = ovulation), her mini-pill answer (31 May PM, 27:28) and her 31 May morning session (18:26–20:08:
+  only the condom protects against STIs; the pill, the Jadelle implant and the IUD are pregnancy only). Filing the IUD as
+  non-hormonal is the tool's and says so. 66 written case questions now, every one with a short version.
   **5 Oct, later — her other three sessions on that page** (29 May: lymph, panic, asthma, diabetes · 30 May: joints, with her
   exam revision Kahoot · 31 May morning: neurotransmitters and stroke), same recipe: case 3's blood-pressure answer is now HERS
   (`swap`; it was the one tool answer), case 9 gains her synapse labels ("you will get this specific drawing in the exam") and the
@@ -55,7 +62,7 @@ own words (Assessment Overview) "based on the starred *Case studies in your Case
 words: 'I am 100% sure.'" — then Next up (Decide for me), **🩺 Every case question**, ✍️ SAQ trainer, ⏱ Mock test; Learn as you
 go, Pick my rep, My misses, What to learn and Videos fold under **More**. A deliberate exception to the four-sim same-rows rule,
 for this sim only, because she says the exam is the cases. **🩺 Every case question** (his ask the same day: "what if a user wants
-perfect marks and needs to rep every single thing to do with the case studies?"): all 140 of her case questions at once, no cap
+perfect marks and needs to rep every single thing to do with the case studies?"): all of her case questions at once (204 since 6 Oct), no cap
 — the exam core A + the mock's closed pool — least-seen and misses first; Learn them (each checks itself, place saved) or sit
 them as one untimed test; then the 401 case-topic module questions.
 

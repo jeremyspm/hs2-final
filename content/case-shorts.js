@@ -1,7 +1,7 @@
 /* SHORT VERSIONS of her exam-case model answers (26 Sep 2026). His words about the long answers: "very complex… very
    overwhelming… I don't know how anyone just like remembers that." So every written case question gets a short version:
    a few words a line, cut from the answer the bank carries (content/cases.js, or hs2-paper-m1's built cases for 2/3/4) —
-   nothing added. Since 5 Oct 2026 every one of the 62 answers is HERS: the case 3 blood-pressure answer, the tool's until
+   nothing added. Since 5 Oct 2026 every one of the answers (66 since 6 Oct) is HERS: the case 3 blood-pressure answer, the tool's until
    then (from her CVS 4 page), is now hers from her 29 May 2024 session (`swap` in cases.js). Her four recorded May 2024 case
    sessions supply the rest of 5 Oct's additions (case 13's progesterone question, all four of case 14, case 15's modes, case
    8's and case 9's unstarred yellow-case questions, case 9's synapse labels), with case 6's unstarred five from her deck. Lines
@@ -216,6 +216,41 @@ export const CASE_SHORTS = [
       G('Metabolic alkalosis',
         ['**Metabolic alkalosis** (**H⁺ down**): **hypoventilation**', 1],
         ['CO₂ is **kept** and turned back into H⁺ and bicarbonate', 1]),
+    ] },
+  { case: 'c4', k: 'complete the table for metabolic', title: 'Her table: metabolic acid/base',
+    hook: 'ACID → the buffer MAKES CO₂ → breathe FASTER. Alkaline → the reverse.',
+    groups: [
+      G('Acidosis',
+        ['**Acidosis**: **H⁺** has **increased**', 0],
+        ['Buffer **gets rid of H⁺**: **converting** it into **CO₂** and **water**', 1],
+        ['so **CO₂** levels in the blood **increase**', 1],
+        ['**Breathing rate increases**: get rid of that CO₂', 2]),
+      G('Alkalosis',
+        ['**Alkalosis**: **H⁺** has **decreased**', 3],
+        ['Buffer **replaces** the lost H⁺: **CO₂** and **water** → H⁺ and **bicarbonate**', 4],
+        ['so **CO₂** levels in the blood **decrease**', 4],
+        ['**Breathing rate decreases**: **keep** that CO₂ in', 5]),
+    ] },
+  { case: 'c4', k: 'complete the table for respiratory', title: 'Her table: respiratory acid/base',
+    hook: 'Breathing sets CO₂; H⁺ FOLLOWS CO₂; pH goes the OTHER way.',
+    groups: [
+      G('Hyperventilation (Manaia)',
+        ['**Hyperventilation** (Manaia): **CO₂** levels **decrease**', 0],
+        ['Buffer tries to **replace** the lost CO₂, **using up H⁺** and **bicarbonate**', 1],
+        ['so **H⁺** levels **decrease**', 1],
+        ['Blood **pH increases**: **alkalosis**', 2]),
+      G('Hypoventilation (head trauma)',
+        ['**Hypoventilation** (head trauma): **CO₂** levels **increase**', 3],
+        ['Buffer gets rid of excess CO₂: **combining** it with **water**', 4],
+        ['→ **H⁺** and **bicarbonate**, so **H⁺** levels **increase**', 4],
+        ['Blood **pH decreases**: **acidosis**', 5]),
+    ] },
+  { case: 'c4', k: 'compare the tables you', title: 'What the two tables share',
+    hook: 'CO₂ and H⁺ move TOGETHER.',
+    groups: [
+      G('What you notice',
+        ['**Very similar processes**: the **bicarbonate buffer system**', 0],
+        ['**CO₂** and **H⁺** are **linked**: whatever happens to **one** happens to the **other**', 1]),
     ] },
 
   /* ── Exam case 6 · Diabetes ───────────────────────────────────────── */
@@ -530,6 +565,19 @@ export const CASE_SHORTS = [
         ['Prevents **ovulation**: stops the **LH** being released', 0],
         ['Thickens the **cervical mucus**: keeps the **sperm** out', 1],
         ['Imitates **pregnancy**: keeps **progesterone** levels **high**', 2]),
+    ] },
+  { case: 'c13', k: 'contraception can be hormonal', title: 'Her contraception table',
+    hook: 'Hormones STOP OVULATION; a condom is a BARRIER; only the CONDOM stops STIs.',
+    groups: [
+      G('Hormonal methods',
+        ['The **pill**, the **Jadelle implant**: may **prevent ovulation**', 0],
+        ['**Mini pill**: stops **LH**, thickens **cervical mucus**, **imitates pregnancy**', 1],
+        ['STIs? **No**: **pregnancy only**, there is **no barrier**', 2]),
+      G('Non-hormonal methods',
+        ['**Condoms**: a **barrier** keeps the **semen** out', 3],
+        ['Protect against **pregnancy** and **STIs**, but not **pubic lice**', 4],
+        ['**IUD**: may prevent **implantation** in the **endometrium**', 5],
+        ['**Pregnancy only**: **only the condom** also stops STIs', 5]),
     ] },
 
   /* ── Exam case 14 · RG colour blindness (her 2024 session + her 413286 post) ── */
