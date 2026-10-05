@@ -357,7 +357,6 @@ header{border-top:4px solid var(--tool)}
 <header>
   <h1>HS2 Final exam · Paper Sim</h1>
   <span class="d" id="countdown"></span>
-  <a class="btn ghost" href="#vid" title="The three module video playlists">▶</a>
   <button class="btn ghost" id="themeBtn" title="theme">◐</button>
   <button class="btn ghost" id="helpBtn" title="what is this?">?</button>
 </header>
@@ -690,7 +689,33 @@ function allCaseScreen(){
       synapse, pedigrees): on the case topics, but not the booklet’s own questions. Nothing here is off the cases. No cap;
       least-seen and missed questions come first, so another pass starts with whatever you have not nailed. Learn checks each
       answer when you press Check (written ones you mark against her short answer) and saves your place if you stop.</p></details>
+  </div>
+  <div class="card">
+    <p class="lead">Case by case — what each one asks, her tips for it, and only its own questions.</p>
+    ${caseFolds()}
   </div>`;
+}
+/* the ten case rows (moved here from the old checklist when he culled the More section, 5 Oct 2026): what each case asks,
+   how she asks it (her tips from her sessions are in there), what is still held, the Genetics Trainer links for 14 and 15,
+   and a button for just that case's own questions */
+function caseFolds(){
+  const byId=new Map(DATA.questions.map(q=>[q.id,q]));
+  return DATA.focus.filter(f=>/^case-c/.test(f.id)).map(f=>{
+    const qs=(f.qs||[]).map(id=>byId.get(id)).filter(q=>q&&q.mod==='cases'), seen=qs.filter(q=>S.seen[q.id]).length;
+    return `<div class="frow" style="--tc:var(--ok)"><details class="fbody"><summary>
+        <span class="ft">${esc(f.t)}</span>
+        <span class="fmeta"><span class="fchip">${qs.length} questions</span><span class="fchip">${seen} seen</span>${f.held&&f.held.length?`<span class="fchip">${f.held.length} held</span>`:''}</span>
+      </summary>
+      <div class="fdet">
+        <p><b>Done when you can:</b> ${esc(f.done)}</p>
+        <p><b>How she asks it:</b> ${esc(f.ask)}</p>
+        ${f.held&&f.held.length ? `<p><b>Held</b> — no answer of hers can be read yet:${f.held.map(h=>'<br>• '+esc(h)).join('')}</p>` : ''}
+        ${f.cap ? `<p class="fcap"><b>Where it ends:</b> ${esc(f.cap)}</p>` : ''}
+        <div class="aiwrap"><button class="btn primary learnrow" data-go="case:${f.id}" data-learn="1">📖 Learn this case · ${qs.length}</button></div>
+        ${(TRAINER[f.id]||[]).map(([t,href,sub])=>`<div class="aiwrap"><a class="btn learnrow xtool" href="${href}">${esc(t)}</a><span class="refsrc">${esc(sub)} · the charts and keys there are the trainer’s, not hers</span></div>`).join('')}
+        <div class="aiwrap"><button class="btn ghost askai" data-askf="${f.id}">${AI_LBL}</button><span class="refsrc">copies a prompt for Gemini (or any AI) — her level and her words go with it</span></div>
+      </div></details></div>`;
+  }).join('');
 }
 const CORE_B = () => DATA.questions.filter(q=>DATA.core.b.includes(q.id));
 function dealCore(n=15){ return pickN(CASE_CORE(), n, new Set()) }
@@ -707,14 +732,9 @@ function dealCore(n=15){ return pickN(CASE_CORE(), n, new Set()) }
    Learn / Sit the 10 cases buttons were already on Learn and Pick my rep), and Decide for me sits at the top of Learn as
    you go. The old #cases / #core links still land. */
 const SCR = {
-  learn:{t:'📖 Learn as you go',            html:()=>learnScreen()},
-  pick: {t:'🗂 Pick my rep',                html:()=>pickScreen()},
   saq:  {t:'✍️ SAQ trainer',               html:()=>saqCard()},
   mock: {t:'⏱ Mock test',                   html:()=>mockScreen()},
   allcase:{t:'🩺 Every case question',      html:()=>allCaseScreen()},
-  miss: {t:'🔁 My misses',                  html:()=>missScreen()},
-  ...(DATA.focus.length ? {focus:{t:'🎯 What to learn, and how far', html:()=>focusCard()}} : {}),
-  vid:  {t:'📺 Videos',                     html:()=>vidScreen()},
 };
 const curScr = () => { const x = location.hash.slice(1), h = ({cases:'saq', core:'learn'})[x] || x; return SCR[h] ? h : '' };
 let SITTING = '', LEAVING = false;      /* SITTING: 'mock' | 'learn' while one is on screen */
@@ -773,25 +793,18 @@ function launcher(){
   const nL = SAQD.filter(x=>sqS(x.id).lock).length, fs = focusStats(), last = S.scores[S.scores.length-1];
   const row = (scr,ic,t,s) => `<button class="lrow" data-scr="${scr}"><span class="lic" aria-hidden="true">${ic}</span><span class="ltx"><b>${t}</b><small>${s}</small></span><span class="lch" aria-hidden="true">›</span></button>`;
   /* HIS PICK, 5 Oct 2026 ("strip the home down", from three mockups): the exam is the 10 starred cases — her 413286 post, "I am
-     100% sure" — so this home shows only what reps them: Next up (her case questions), the SAQ trainer, the mock. Everything
-     else folds under More, rows and names unchanged. A deliberate exception to the four-sim same-rows rule, for this sim only. */
+     100% sure" — so this home shows only what reps them: Next up (her case questions), Every case question, the SAQ trainer,
+     the mock. His call the same night: "cull everything to do with the More section" — Learn as you go, Pick my rep, My misses,
+     the module checklist and Videos are gone from this sim (the ten case rows moved onto the 🩺 screen). A deliberate exception
+     to the four-sim same-rows rule, for this sim only. */
   const nCaseW = DATA.questions.filter(q=>q.mod==='cases'&&q.saq).length, ALLC = ALLCASE();
   return `${idCard()}
-  <p class="exambar"><b>The exam is the 10 starred cases.</b> Her words: “I am 100% sure.” Rep these; the rest is optional.</p>
+  <p class="exambar"><b>The exam is the 10 starred cases.</b> Her words: “I am 100% sure.” Rep these.</p>
   <button class="hero" data-hero="${up.k}"><span><small>${up.e}</small><b>${up.t}</b></span><span class="go" aria-hidden="true">▶</span></button>
   ${row('allcase','🩺','Every case question',`${ALLC.filter(q=>S.seen[q.id]).length} of ${ALLC.length} seen · all of them at once, no cap`)}
   ${SAQD.length?row('saq','✍️','SAQ trainer',`${nL} of ${SAQD.length} locked · her ${nCaseW} case answers first, short`):''}
   ${row('mock','⏱','Mock test',last?`Last ${last.got}/${last.tot} · ${Math.round(100*last.got/last.tot)}% · ${S.scores.length} sat`:'Built like her exam · mini ~15 min or full 130 min')}
-  <details class="lmore"><summary>More — the whole bank, pick quizzes, misses, checklist, videos</summary>
-  <div class="lsec">Practise</div>
-  ${row('learn','📖','Learn as you go',`${seen} of ${CLOSED.length} seen · the whole course bank, optional`)}
-  ${row('pick','🗂','Pick my rep',`${DATA.quizzes.length} quizzes${S.pick.length?` · ${S.pick.length} ticked`:' · tick any, run them as one'}`)}
-  <div class="lsec">Test yourself</div>
-  ${row('miss','🔁','My misses',nm?`${nm} in the pile`:'Empty so far · wrong answers land here')}
-  <div class="lsec">Plan</div>
-  ${SCR.focus?row('focus','🎯','What to learn, and how far',`${fs.d} of ${fs.n} topics ticked · her ten cases first`):''}
-  ${row('vid','📺','Videos',`Three shelves · ${DATA.stats.withVideo} questions carry one`)}
-  </details>`;
+`;
 }
 const sysLbl = s => { const pool=CLOSED.filter(q=>q.mod===s).length, n=howMany(pool); return n===pool?`all ${n}`:n };
 /* ── ✍️ written answers: her exam-case questions, learned from their short versions (26 Sep 2026) ──────────────
@@ -1191,6 +1204,8 @@ function start(mode,learn=false){
   else if(mode==='full'){deck=dealFull();label='full mock test';timed=true}
   else if(mode==='cases'){deck=CASEQS();label='the 10 cases'}
   else if(mode==='core'){deck=dealCore(15);label='today from the 10 cases'}
+  else if(mode.startsWith('case:')){const f=DATA.focus.find(x=>x.id===mode.slice(5)), byId=new Map(DATA.questions.map(q=>[q.id,q]));
+    deck=((f&&f.qs)||[]).map(id=>byId.get(id)).filter(q=>q&&q.mod==='cases');label=f?f.t:'the case'}
   else if(mode==='allcase'){const p=ALLCASE();deck=pickN(p,p.length,new Set());label=`every case question · ${deck.length}`}
   else if(mode==='miss'){deck=dealMisses(learn?CAP():12);label=learn?'my misses':'redo misses'}
   else if(mode==='pick'){deck=dealPick();const k=S.pick.length;
@@ -1571,8 +1586,7 @@ function weakSpotsHTML(rows){
     <b>Weak spots this mock test</b> — ${missed.length} missed, most in ${SYS[worst[0]]||worst[0]}.
     Watch these before your next sitting:
     ${[...vids.values()].slice(0,4).map(v=>vidRowHTML(v)).join('')}
-    <div class="refsrc">Each video was matched to its question from the video's own captions and checked twice, and the link opens where that point is taught. Where a video and Hannetjie disagree, she wins.
-    <a href="#vid">The three playlists</a></div></div>`;
+    <div class="refsrc">Each video was matched to its question from the video's own captions and checked twice, and the link opens where that point is taught. Where a video and Hannetjie disagree, she wins.</div></div>`;
 }
 /* readable key rendering: matching and cloze get one ROW per part, wrong parts
    annotated with what you picked — never a run-on paragraph */
@@ -1716,21 +1730,20 @@ $('#themeBtn').onclick=()=>{const r=document.documentElement;
 if(LS('theme')==='light')document.documentElement.dataset.theme='light';
 $('#helpBtn').onclick=()=>{$('#help').innerHTML=`
   <h2 style="margin-top:0">What is this?</h2>
-  <p>The HS2 final (Thu 5 Nov, on campus, time to be confirmed — her exam announcement says so; her helpline says 1 pm sharp. Be at your venue 45–60 min early with your MIT ID: 130 min, 32 questions, 80 marks of ½-mark answers, 37% written) — practised from everything she has
-  given you for it. Every practice quiz of Modules 1, 2 and 3, as the three module sims ship them, plus her Case Study
-  Formative Test, plus her ten starred exam cases, written, marked against HER model answers. Her own words: the exam
-  “will be based on the starred *Case studies in your Case Study Booklet A”.</p>
+  <p>The HS2 final (Thu 5 Nov, on campus, time to be confirmed — her exam announcement says so; her helpline says 1 pm sharp. Be at your venue 45–60 min early with your MIT ID: 130 min, 32 questions, 80 marks of ½-mark answers, 37% written) — practised only on what it is built on: her ten yellow, starred
+  cases in Case Study Booklet A, with HER model answers, plus the exam revision she made for them. Her own words: the exam
+  “will be based on the starred *Case studies in your Case Study Booklet A” — “I am 100% sure”.</p>
   <h3>The home page</h3>
-  <p>One row per part of the tool; each opens its own screen, and <b>‹ Home</b> or your phone's back button brings you back.
-  Every screen leads with one line and keeps the full explanation under <b>ⓘ How this works</b>. The blue <b>Next up</b> card at
-  the top is the tool picking for you: a Learn run you stopped partway comes first; otherwise today's 15 from the 10 yellow cases
-  ONLY — the booklet's own questions (starred and the unstarred ones inside the yellow cases) and her closed versions of them —
-  misses and the least-seen first, round and round; it never moves on to module questions. 🩺 Every case question has all of them
-  at once, plus her exam revision on the cases (her deck, her Kahoot, her case quizzes). Leaving a mock test with the back button asks first; a Learn run is saved as you go, so it just stops.</p>
-  <h3>SAQ trainer (the ✍️ row under Write)</h3>
+  <p>Four things, nothing else. <b>Next up</b> (the blue card) picks for you: a case run you stopped partway first, otherwise
+  today's 15 from the 10 yellow cases ONLY — the booklet's own questions (starred, and the unstarred ones inside the yellow cases)
+  and her closed versions of them — misses and the least-seen first, round and round. <b>🩺 Every case question</b> has all of
+  them at once, plus her exam revision on the cases (her deck, her Kahoot, her case quizzes), and below that each case on its own:
+  what it asks, her tips, what is still held, and a button for just that case. <b>✍️ SAQ trainer</b> drills the written answers.
+  <b>⏱ Mock test</b> is a paper shaped like hers. Each opens its own screen; <b>‹ Home</b> or your phone's back button brings
+  you back. Leaving a mock test with the back button asks first; a case run is saved as you go, so it just stops.</p>
+  <h3>SAQ trainer (✍️)</h3>
   <p>The exam is 37% written, and its written questions come from her starred cases. Each written case question with a model
-  answer has a <b>short version</b>: that answer (hers for all but one, which this tool wrote from her CVS page and labels so;
-  one mark per step) cut down to one fact a line, a few words each, the bold words being the ones that earn the mark; the full
+  answer has a <b>short version</b>: that answer (hers; one mark per step) cut down to one fact a line, a few words each, the bold words being the ones that earn the mark; the full
   answer, word for word, folds underneath. The written questions of the three modules
   follow, one module per fold, each with a short version cut from the answer the module sim carries (hers for Modules 1 and 3,
   this tool's, built from her decks, for Module 2). Where her own answer slips, the short line teaches the right fact and a ⚠ line
@@ -1738,7 +1751,7 @@ $('#helpBtn').onclick=()=>{$('#help').innerHTML=`
   <b>Fill the gaps</b> (the whole short answer with 1, then a quarter, half, then every line hidden: say the missing line, tap to
   check, mark yourself honestly; a line you miss stays hidden next round), then <b>Write it</b> from memory: the page ticks every
   line where it finds that line's bold words in what you wrote, you correct the ticks, and 80% locks it. <b>📄 Last-look sheet</b>
-  is every short answer on one page. Wherever a written question is marked elsewhere (Learn as you go, the mock test) you tick the
+  is every short answer on one page. Wherever a written question is marked elsewhere (a case run, the mock test) you tick the
   same short lines, with the full answer under them. Every short version is checked by the build: each bold word must be in
   the step it was cut from (a ⚠ correction line says why it differs instead), and every step must have a line or a stated
   reason it carries no fact (a table header, her sub-question heading, page-capture junk).</p>
@@ -1756,21 +1769,11 @@ $('#helpBtn').onclick=()=>{$('#help').innerHTML=`
   table; her exam helpline links her “lung histology for exam” deck under that case) and case 9’s synapse labels (her figure,
   labelled by her in her session: “you will get this specific drawing in the exam”). ${DATA.held.length} starred or captured questions are held because no answer of hers can be read
   yet; each case row lists its own.</p>
-  <h3>Learn mode</h3>
-  <p><b>Learn as you go</b> (and the <b>Learn</b> button beside each quiz) marks every question the moment you
-  press Check and shows the answer, her slide or notes, the Patton passage and the matched video right there —
-  you can open any of them before answering. Check with nothing picked just shows you. Nothing from Learn mode
-  goes on the score chart; a wrong or skipped question still joins your misses pile, and a right answer after a
-  peek does not clear it. <b>Sit</b> is the test version: the same questions, nothing shown until the end.</p>
-  <p><b>How many at a time</b> (12 · 25 · 50 · 100 · All) sets the size of every dealt Learn set and of the
-  Module 1 / 2 / 3 sets; All hands you the whole pool, least-seen first, misses first. Under <b>Pick my rep</b>
-  tick any quizzes — or a whole module with the All / Cases / Module 1 / 2 / 3 chips — and the bar at the bottom
-  runs them as one deck, Learn or Sit, every question of every ticked quiz. A Learn run saves itself after every
-  Check; stop partway (or lose the tab) and the home page offers to pick it up where you were.</p>
-  <p>Inside the rows of <b>What to learn, and how far</b> that she pointed at herself, <b>📖 Learn her N questions on
-  this</b> deals only her questions on that one topic — sorted by hand, repeats across quizzes merged, one-tap
-  questions first and written ones last. The loop for a topic is: 🤖 to have it explained, this button to see whether
-  her questions agree, then the tick.</p>
+  <h3>Learn or Sit</h3>
+  <p><b>Learn</b> marks every question the moment you press Check and shows the answer, her slide or notes and the
+  matched video right there; written ones you mark against her short answer. A wrong or skipped question joins your misses,
+  which come back first. A Learn run saves itself after every Check; stop partway and Next up offers to pick it up.
+  <b>Sit</b> is the test version: the same questions, nothing shown until the end.</p>
   <h3>Where the explanations come from</h3>
   <p>Every reference under a question was checked to <b>state the keyed fact</b>, not just share its topic: each
   of her slides, learning-page paragraphs, Anatomy Monday answers, the lab workbook, the discussion-board and
@@ -1786,7 +1789,7 @@ $('#helpBtn').onclick=()=>{$('#help').innerHTML=`
   9th ed.</i> (Elsevier, 2016), quoted for study with the page named; the course’s ClinicalKey copy is the 2019
   edition, so figure numbers may differ. Where Patton and Hannetjie disagree, she wins.</p>
   <h3>Ask an AI — the 🤖 buttons</h3>
-  <p>Under every marked question, and inside every row of the focus list, <b>${AI_LBL}</b> copies a
+  <p>Under every marked question, and inside each case on the 🩺 screen, <b>${AI_LBL}</b> copies a
   ready-made prompt to paste into Gemini (or any AI chat). It asks the AI to <b>show it first</b> (a labelled
   sketch, a real image if it can, and what to search for a proper diagram), then one everyday analogy mapped back to the
   real terms, in <b>her</b> words — and to <b>stop there</b> until you type “ready”. Only then does it run a five-question
