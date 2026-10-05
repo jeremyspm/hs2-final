@@ -488,6 +488,19 @@ const NOPTS = [12,25,50,100,'all'];
 const CAP = () => S.n==='all' ? Infinity : S.n;
 const howMany = pool => Math.min(CAP(), pool);
 function dealMini(n=12){ return dealStratified(n) }
+/* A MOCK's closed questions (5 Oct 2026): only her own case questions in closed form (DATA.mock.pool, built from her formative
+   case test, her revision deck, her RG quiz and the case quizzes her exam helpline lists) — her 413286 post: the exam's closed
+   questions ARE her case SAQs converted. Dealt by body-system group in proportion to how many of the ten cases sit on each
+   (DATA.mock.w), least-seen first; a group with too few tops up from the rest. Learn keeps dealing from the whole bank. */
+function dealExamClosed(n){
+  const byId=new Map(DATA.questions.map(q=>[q.id,q])), W=DATA.mock.w, tot=Object.values(W).reduce((a,b)=>a+b,0);
+  const byG={}; for(const p of DATA.mock.pool){ const q=byId.get(p.id); if(q) (byG[p.g]=byG[p.g]||[]).push(q); }
+  const out=[], excl=new Set();
+  for(const g of Object.keys(W)) for(const q of pickN(byG[g]||[], Math.round(n*W[g]/tot), excl)){ out.push(q); excl.add(q.id); }
+  const all=Object.values(byG).flat();
+  while(out.length<n){ const q=pickN(all,1,excl)[0]; if(!q)break; out.push(q); excl.add(q.id); }
+  return shuffle(out).slice(0,n);
+}
 function dealSys(s,n){ return shuffle(pickN(CLOSED.filter(q=>q.mod===s), n, new Set())) }
 /* the ten cases in booklet order: her formative questions on a case first, then its written questions */
 const CASEQS = () => DATA.focus.filter(f=>f.tier===0).flatMap(f=>(f.qs||[]).map(id=>DATA.questions.find(q=>q.id===id)).filter(q=>q&&q.mod==='cases'));
@@ -495,8 +508,9 @@ function dealFull(){
   /* THE EXAM'S OWN SHAPE (her Assessment Overview): 32 questions, 130 min, 37% of the MARKS written, and the written ones
      come from the starred cases. Her closed quiz items often carry several marks (a 4-pair matching = 4), so eight written
      questions can be anywhere from a quarter to half the marks: written questions are added one case at a time — least-sat
-     case first, least-seen question of it — and closed ones dropped, until the written share reaches 37% with 32 questions. */
-  const closed = dealStratified(32);
+     case first, least-seen question of it — and closed ones dropped, until the written share reaches 37% with 32 questions.
+     The closed ones are her case questions in closed form only (dealExamClosed), never the module banks. */
+  const closed = dealExamClosed(32);
   const byCase = {};
   for(const q of DATA.questions) if(q.mod==='cases'&&q.saq) (byCase[q.quiz]=byCase[q.quiz]||[]).push(q);
   const load = c => byCase[c].reduce((a,q)=>a+(S.seen[q.id]||0),0) + Math.random();
@@ -507,8 +521,9 @@ function dealFull(){
   for(let r=0; written.length<16; r++){
     const next = queue[r % queue.length].shift(); if(!next){ if(queue.every(x=>!x.length)) break; continue; }
     written.push(next);
-    const w = marks(written), c = marks(closed.slice(0, 32-written.length));
-    if(w/(w+c)>=0.37) break;      /* stop at the exam's share; the least-sat rotation carries the other cases into the next sitting */
+    const w = marks(written), c = marks(closed.slice(0, 32-written.length)), s = w/(w+c);
+    if(s>0.42){ written.pop(); continue; }      /* a big one (her 10-mark micrographs) would overshoot: it waits for another sitting */
+    if(s>=0.37) break;      /* stop at the exam's share; the least-sat rotation carries the other cases into the next sitting */
   }
   return closed.slice(0, 32-written.length).concat(written);
 }
@@ -1019,8 +1034,8 @@ function pickScreen(){
 function mockScreen(){
   const nm = Object.keys(S.miss).length;
   return `<div class="card">
-    <p class="lead">Practice only — dealt from her quizzes and her case answers. The real exam is on campus: Thu 5 Nov, opens 1 pm sharp (be at your venue by 12:00, with your MIT ID), 130 min, 32 questions, 80 marks, 37% written, built on the starred cases.</p>
-    <button class="btn primary wide" data-go="mini">Sit a mini mock test · 12 questions, ~15 min</button>
+    <p class="lead">Built like her exam: the closed questions are only her own case questions in closed form (${DATA.mock.pool.length} of them — her formative case test, her revision deck, her case quizzes), spread across the ten cases; the written ones are her starred case questions. The real exam is on campus: Thu 5 Nov, opens 1 pm sharp (be at your venue by 12:00, with your MIT ID), 130 min, 32 questions, 80 marks, 37% written, built on the starred cases.</p>
+    <button class="btn primary wide" data-go="mini">Sit a mini mock test · 12 of her closed case questions, ~15 min</button>
     <button class="btn wide" data-go="full">Sit the full mock test · 32 Q, 37% of the marks written from the cases, 130 min — the exam’s shape</button>
     <button class="btn wide" data-go="miss" ${nm?'':'disabled'}>Redo my misses${nm?` · ${nm} in the pile`:''}</button>
   </div>
@@ -1137,7 +1152,7 @@ function start(mode,learn=false){
     if(r&&r.ids&&r.ids.length&&!confirm(`You have a Learn run waiting (Q${Math.min((r.i|0)+1,r.ids.length)} of ${r.ids.length} · ${r.label}). Drop it and start this one?`))return}
   if(mode==='mini'){
     if(learn){deck=dealMini(howMany(CLOSED.length));label=deck.length===CLOSED.length?'the whole bank':`${deck.length} from the bank`}
-    else{deck=dealMini();label='mini mock'}}
+    else{deck=dealExamClosed(12);label='mini mock'}}
   else if(mode==='full'){deck=dealFull();label='full mock test';timed=true}
   else if(mode==='cases'){deck=CASEQS();label='the 10 cases'}
   else if(mode==='core'){deck=dealCore(15);label='today from the exam core'}
@@ -1243,6 +1258,8 @@ function renderQ(){
       <div class="note">Written question · ${q.pts} marks — write ${q.pts} numbered points, one causal step each. You mark yourself against ${q.short?'its short answer (cut from hers, a few words a line) at the end; her full answer sits under it':'the model at the end'}.</div>
       <textarea data-essay placeholder="1. …&#10;2. …">${a&&a.text?esc(a.text):''}</textarea>`;
   }
+  /* a closed case question that names the case's people (her RG quiz: "Simon's mum") carries its scenario */
+  if(q.scenario&&q.type!=='essay') body=`<div class="note">${esc(q.scenario)}</div>`+body;
   /* learn mode: once checked, a wrong/skipped/written question already has its slide and
      video open inside the mark block, so the chips row is only shown while they are not */
   const open=chk&&learnOpen(q,chk);

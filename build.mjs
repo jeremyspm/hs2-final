@@ -21,6 +21,7 @@ import { AUTHORED_STEMS } from './content/authored-stems.js';
 import { CASES } from './content/cases.js';
 import { loadShorts, shortsJSON } from './shorts.mjs';
 import { REVDECK } from './content/revision-deck.js';
+import { RGQUIZ } from './content/rg-quiz.js';
 import { HELPLINE_M1 } from './content/helpline-m1.js';
 import { CASE_TOPICS } from './content/case-topics.js';
 import { HELPLINE } from './content/helpline.js';
@@ -434,6 +435,23 @@ for (const it of REVDECK.items) {
 quizzes.push({ id: REVDECK.quiz, name: REVDECK.name, sys: 'mixed', mod: 'exam', n: revIds.length });
 fs.writeFileSync(path.join(HERE, 'slides-todo.json'), JSON.stringify([...usedSlides].map(s => JSON.parse(s)), null, 1));
 
+/* ── 4b. her RG colour-blindness quiz (content/rg-quiz.js), read off her recorded 2024 session: the questions whose every option
+   was on her screen, keyed by her own answer (10/10). They sit on case 14's row, with its scenario (they name Simon). ── */
+const rgIds = [];
+{
+  const c = CASES.find(x => x.id === RGQUIZ.case);
+  for (const it of RGQUIZ.items) {
+    if (it.key.length !== 1 || !it.opts.includes(it.key[0])) fails2.push(`RG quiz Q${it.n}: key not among its options`);
+    if (!it.said || !it.at) fails2.push(`RG quiz Q${it.n}: no words of hers or no minute`);
+    const q = { id: qid(RGQUIZ.quiz, it.stem, it.key), quiz: RGQUIZ.quiz, sys: c.sys, mod: 'cases', cmod: c.mod, type: 'mcq', pts: 1,
+      q: it.stem, qh: '<p>' + escH(it.stem) + '</p>', qt: it.stem, imgs: [], opts: it.opts, key: it.key, scenario: c.name + ' — ' + c.scenario,
+      refs: [{ k: 'her', t: it.said, src: `her recorded 31 May 2024 case session, ${it.at} — her RG colour-blindness quiz, Q${it.n}, which she answers aloud and scores 10/10` }] };
+    if (questions.some(x => x.id === q.id)) fails2.push(`RG quiz Q${it.n}: the same question twice`);
+    questions.push(q); rgIds.push(q.id);
+  }
+  quizzes.push({ id: RGQUIZ.quiz, name: RGQUIZ.name, sys: c.sys, mod: 'cases', n: rgIds.length });
+}
+
 /* ── the exam checklist: the ten cases on top (HER words), then every module row, re-tiered on its own marks ── */
 const byIdAll = new Map(questions.map(q => [q.id, q]));
 const impRows = {};
@@ -454,7 +472,7 @@ const rowOut = (f, ids) => {
 };
 const FOCUS_OUT = [];
 for (const c of CASES) {
-  const ids = [...(ownByCase[c.id] || []), ...(caseQs[c.id] || [])];
+  const ids = [...(ownByCase[c.id] || []), ...(caseQs[c.id] || []), ...(c.id === RGQUIZ.case ? rgIds : [])];
   for (const p of c.pull || []) {
     const [pm, pid] = p.split(':');
     if (/^\d+$/.test(pid)) { const got = questions.filter(q => q.mod === pm && q.quiz === pid).map(q => q.id); if (!got.length) fails2.push(`case ${c.id}: pull ${p} matched no question`); ids.push(...got); }
@@ -485,10 +503,33 @@ for (const [c, t] of Object.entries(CASE_TOPICS)) {
 }
 /* the exam core: A = the questions she wrote FOR this exam (the cases, her formative test, her revision deck); B = every
    module question on a row a case stands on. The home page deals from A until every A question has been seen once. */
-const coreA = questions.filter(q => /^case-/.test(q.quiz) || q.quiz === '211092' || q.quiz === REVDECK.quiz).map(q => q.id);
+const coreA = questions.filter(q => /^case-/.test(q.quiz) || q.quiz === '211092' || q.quiz === REVDECK.quiz || q.quiz === RGQUIZ.quiz).map(q => q.id);
 const inA = new Set(coreA);
 const coreB = [...new Set(FOCUS_OUT.filter(f => f.tier === 1).flatMap(f => f.qs || []))].filter(id => !inA.has(id));
 console.log(`exam core: ${coreA.length} of her exam questions, then ${coreB.length} module questions on the case topics (of ${questions.length})`);
+
+/* the MOCK's closed half (5 Oct 2026): only her own case questions in closed form. Her “What do we need to study for the exam?”
+   post (413286): the exam's MC / matching / drop-down / T-F questions are her case SAQs converted. Pool = her formative case
+   test, her exam revision deck, her RG quiz, and the case quizzes her EXAM CASE STUDY HELPLINE lists under the cases (Fertility
+   211050 → 13; neuron, AP & synapse 211129 → 9/10; pedigree review 211086 and pedigree pop quiz 211014 → 15). Each item gets a
+   body-system group (her deck's one CVS item = case 3's blood pressure); the page deals the groups in proportion to how many of
+   the ten cases sit on each, least-seen first. The written half is unchanged: her starred case questions. */
+const MOCK_QUIZZES = ['211092', REVDECK.quiz, RGQUIZ.quiz, '211050', '211129', '211086', '211014'];
+const GROUP = { lymph: 'lymph', resp: 'resp', cvs: 'resp', endo: 'endo', ms: 'ms', ns: 'ns', repro: 'repro', gen: 'gen', senses: 'gen' };
+const caseOf = Object.fromEntries(Object.entries(ownByCase).flatMap(([cid, ids]) => ids.map(id => [id, cid])));
+const mockPool = [];
+for (const q of questions) {
+  if (!MOCK_QUIZZES.includes(q.quiz) || q.saq) continue;
+  const sys = q.sys === 'cases' ? (CASES.find(c => c.id === caseOf[q.id]) || {}).sys : q.sys;
+  const g = GROUP[sys];
+  if (!g) { fails2.push(`mock pool: no case group for a ${q.quiz} question (sys ${sys}): "${q.q.slice(0, 50)}"`); continue; }
+  mockPool.push({ id: q.id, g });
+}
+const poolQuizzes = new Set(mockPool.map(p => questions.find(q => q.id === p.id).quiz));
+for (const z of MOCK_QUIZZES) if (!poolQuizzes.has(z)) fails2.push(`mock pool: nothing from ${z} (renamed or dropped?)`);
+const mockW = {};
+for (const c of CASES) { const g = GROUP[c.sys]; if (!g) fails2.push(`case ${c.id}: sys ${c.sys} has no mock group`); else mockW[g] = (mockW[g] || 0) + 1; }
+console.log(`mock closed pool: ${mockPool.length} of her case questions in closed form · cases per group ${JSON.stringify(mockW)} · pool per group ${JSON.stringify(mockPool.reduce((a, p) => (a[p.g] = (a[p.g] || 0) + 1, a), {}))}`);
 /* her MODULE 1 HELPLINE (content/helpline-m1.js): each section under the Module 1 row it answers, and under the questions
    read by hand as answered by it (`pin`) plus the case / revision-deck questions named by stem (`stems`). Gated both ways. */
 let nHlM1 = 0;
@@ -536,6 +577,7 @@ const DATA = {
   quizzes: quizzes.sort((a, b) => a.mod.localeCompare(b.mod) || a.sys.localeCompare(b.sys) || a.name.localeCompare(b.name)),
   questions, chains: CHAINS_ALL, case7: null, focus: FOCUS_OUT, helpline: HELP, held: [...held, ...caseHeld],
   core: { a: coreA, b: coreB },
+  mock: { pool: mockPool, w: mockW, quizzes: MOCK_QUIZZES },
 };
 const tpl = fs.readFileSync(path.join(HERE, 'template.html'), 'utf8');
 /* An unbalanced <details> fails silently: a stray </details> closed the focus checklist right after its intro, so

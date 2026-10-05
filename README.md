@@ -48,9 +48,15 @@ answer, her ventilation table and factors, her CO2 transport, her lymph pointer 
 44 questions read one by one (pneumothorax, gas laws, the bell jar and CO x PR left off), including case 3's baroreflex and
 case 4's breathing questions. Gated both ways.
 
-**The mock exam** (`dealFull` in `template.html`): 32 questions, 130-min clock; closed questions dealt across Modules 1–3 in
-proportion to her banks, then written case questions added one case at a time (least-sat case first) until the written
-share of the MARKS reaches 37% — measured 38–41% over repeated deals (37–43% since 5 Oct: the 10-mark micrograph question). **Learn / Sit the 10 cases** deals her formative items
+**The mock exam** (`dealFull` in `template.html`): 32 questions, 130-min clock. **Since 5 Oct the closed questions are ONLY her
+own case questions in closed form** (`DATA.mock.pool`, 81: her formative case test 211092, her revision deck, her RG quiz read
+off her recorded session, and the case quizzes her exam helpline lists under the cases — Fertility 211050, neuron/AP/synapse
+211129, pedigree 211086 + 211014), because her 413286 post says the exam's closed questions are her case SAQs converted. They
+are dealt by body-system group in proportion to how many of the ten cases sit on each (lymph 1, resp 2, endo 1, ms 1, ns 2,
+repro 1, gen 2; thin groups top up from the rest), least-seen first. Then written case questions are added one case at a time
+(least-sat case first) until the written share of the MARKS reaches 37%; one that would push it past 42% waits for another
+sitting. Measured over 200 deals: always 32, never a module-bank question, written 37–42%, every case 155–178 written
+appearances. The mini mock is 12 from the same pool. Learn as you go still deals from the whole bank. **Learn / Sit the 10 cases** deals her formative items
 and the written case questions in booklet order.
 
 **The checklist:** the ten case rows on top ("The exam is built on these — her words"), then all 123 module rows of the three
@@ -82,5 +88,5 @@ Preview locally by serving the estate ROOT (the figures live in the sibling sims
    ventilation, CO2 transport) under the case 3 / 4 questions.
 3. Her other three 2024 session videos on the same Canvas page (Neurotransmitters & Stroke · Joints · Lymph/Panic/Asthma/
    Diabetes) — same recipe (`D:\hs2-exam-recordings`: download, `transcribe.py`, `frames.py` + `sheets.py`, `crop.py`).
-4. The mock's closed half: her exam's closed questions are her case SAQs converted (413286), but `dealStratified` samples the
-   whole module bank — rebuild it from her own closed case items (211092, her revision deck, her Fertility + RG quizzes).
+4. Her RG quiz's Q1, Q2 and Q5 (drop-downs / genotype grid / pedigree): only some options were on her screen, so they are out;
+   add them when 211016 opens. The musculoskeletal (1) and lymph (2) groups of the mock pool are thin.
