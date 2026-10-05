@@ -381,10 +381,12 @@ for(const q of DATA.questions) if(SHORTS[q.id]){
 }
 /* whose full answer it is: hers (quiz feedback, her decks, her slides) unless the source says the tool wrote it */
 const toolsAns = q => /^Model answer is the tool/.test(q.saq&&q.saq.src||'');
+/* answers taken down from her recorded 2024 case session: her spoken words, tidied into lines — not "word for word" */
+const spokenAns = q => /2024 case-study session/.test(q.saq&&q.saq.src||'');
 /* page-capture junk that rode in with two of her Light & Sound answers (a web font, a hidden-style rule): never shown */
 const junkStep = s => /@font-face|\.sf-hidden\{/.test(s);
 /* the full answer, word for word, folded under a short answer's tick list */
-const herFull = q => q.saq&&q.saq.full ? `<details class="hlans"><summary>📄 ${toolsAns(q)?'The full answer (this tool’s, from her decks)':'Her full answer, word for word'}</summary><div class="hlbody">${q.saq.full.filter(s=>!junkStep(s)).map(s=>esc(s)).join(String.fromCharCode(10))}</div></details>` : '';
+const herFull = q => q.saq&&q.saq.full ? `<details class="hlans"><summary>📄 ${toolsAns(q)?'The full answer (this tool’s, from her decks)':spokenAns(q)?'Her full answer, tidied into lines from her recorded session (its source gives the minute)':'Her full answer, word for word'}</summary><div class="hlbody">${q.saq.full.filter(s=>!junkStep(s)).map(s=>esc(s)).join(String.fromCharCode(10))}</div></details>` : '';
 const REF = {slide:{ic:'📖',lbl:'Her slide'}, her:{ic:'✍',lbl:'Her notes'}, course:{ic:'📄',lbl:'Course file'}, patton:{ic:'📕',lbl:'Patton'}};
 /* ── state ─────────────────────────────────────────────────────────── */
 /* Its own prefix: every tool on jeremyspm.github.io shares ONE localStorage (it is per origin, not per path), so the final keeps
@@ -406,7 +408,7 @@ S.pick = (Array.isArray(S.pick)?S.pick:[]).filter(id=>DATA.quizzes.some(z=>z.id=
    window closes Mon 21 Sep, so a single hard-coded date would mislead whoever it did
    not belong to. Default is his (it is his tool); anyone else taps the countdown and
    sets their own, kept in their own browser. */
-const COHORT_CLOSE = '2026-11-05';      // the HS2 exam: Thu 5 Nov 2026, 12:30, on campus (official timetable; her Canvas page still says 5/06)
+const COHORT_CLOSE = '2026-11-05';      // the HS2 exam: Thu 5 Nov 2026 — opens 1 pm sharp, at the venue 60 min before (her EXAM CASE STUDY HELPLINE, read 5 Oct; the timetable's 12:30 is the room)
 const DEFAULT_SITTING = '2026-11-05';
 const sittingISO = () => LS('testday') || DEFAULT_SITTING;
 const TESTDAY = () => new Date(sittingISO() + 'T12:00:00+12:00');
@@ -584,7 +586,7 @@ function focusCard(){
         ${f.hl ? `<p><b>Her helpline section:</b> “${esc(f.hl)}” — she posts <a href="${esc(f.hlUrl)}" target="_blank" rel="noopener">her own worked answers</a> for it.</p>` : ''}
         ${f.cap ? `<p class="fcap"><b>Where it ends:</b> ${esc(f.cap)}</p>` : ''}
         ${herAnswer(f.id)}
-        ${(TRAINER[f.id]||[]).map(([t,href,sub])=>`<div class="aiwrap"><a class="btn primary learnrow xtool" href="${href}">${esc(t)}</a><span class="refsrc">${esc(sub)} · her own answers are still hidden on Canvas, so the charts and keys there are the trainer’s</span></div>`).join('')}
+        ${(TRAINER[f.id]||[]).map(([t,href,sub])=>`<div class="aiwrap"><a class="btn primary learnrow xtool" href="${href}">${esc(t)}</a><span class="refsrc">${esc(sub)} · the charts and keys there are the trainer’s, not hers</span></div>`).join('')}
         ${f.qs&&f.qs.length?`<div class="aiwrap"><button class="btn primary learnrow" data-learnf="${f.id}">📖 Learn her ${f.qs.length} question${f.qs.length>1?'s':''} on this</button><span class="refsrc">only her questions on this topic, marked one at a time with her answer, slide and video in place — one-tap questions first, written ones last</span></div>`:''}
         <div class="aiwrap"><button class="btn ghost askai" data-askf="${f.id}">${AI_LBL}</button><span class="refsrc">copies a prompt for Gemini (or any AI) — her level, her wording and her “where it ends” line go with it</span></div>
         <div class="refsrc">Focus Points doc: ${esc(f.crit)}</div>
@@ -791,7 +793,7 @@ function saqCard(){
       → <b>3 Write it</b> from memory → the page looks for each line's bold words in what you wrote, you confirm, and it shows what you missed
       → write it again until you get 80% (then it's locked ✓).</p>
       <p>Where her own answer slips (the near-vision pupil, which part of the ear amplifies, what LH makes the Leydig cells produce, what the cilia carry), the short line teaches the right fact and a <b>⚠</b> line under it says why.</p>
-      <p class="refsrc">The model answers are hers, word for word (her case model-answer decks, her quiz feedback, her revision deck), except the ${SAQD.filter(x=>toolsAns(x.q)).length} whose source says this tool wrote them from her decks (most of Module 2, a few of Module 1, and one case question: ${SAQD.filter(x=>x.mod==='cases'&&toolsAns(x.q)).map(x=>esc(x.title)).join(', ')||'none'}); each of those says so on its full answer. Each short version is cut from its answer line by line, and the build checks every bold word against the step it came from. Progress is saved in this browser only.</p>
+      <p class="refsrc">The model answers are hers, word for word (her case model-answer decks, her quiz feedback, her revision deck) or, for ${SAQD.filter(x=>spokenAns(x.q)).length} case questions, as she says them in her recorded 2024 case session (tidied into lines; each source gives the minute), except the ${SAQD.filter(x=>toolsAns(x.q)).length} whose source says this tool wrote them from her decks (most of Module 2, a few of Module 1, and one case question: ${SAQD.filter(x=>x.mod==='cases'&&toolsAns(x.q)).map(x=>esc(x.title)).join(', ')||'none'}); each of those says so on its full answer. Each short version is cut from its answer line by line, and the build checks every bold word against the step it came from. Progress is saved in this browser only.</p>
     </details>
     ${nx?`<button class="btn primary wide" data-sqgo="${nx.id}">▶ ${sqS(nx.id).read?'Continue':'Start'}: ${esc(nx.title)}</button>`
        :`<p style="margin:.4rem 0"><b>All ${SAQD.length} locked.</b> Keep them warm with the last-look sheet.</p>`}
@@ -858,7 +860,7 @@ function sqReadShort(){
     ${sqShortHTML(x, i=>`<li value="${i+1}">${mdB(P[i])}${sqFix(F[i])}</li>`)}
     <button class="btn primary wide" id="sqGaps" style="margin-top:14px">🕳 Fill the gaps →</button>
     <button class="btn wide" id="sqGo">✍️ Write it from memory</button>
-    <details class="how sfull"><summary>${tool?'The full answer (this tool’s, from her decks)':'Her full answer, word for word'}</summary>
+    <details class="how sfull"><summary>${tool?'The full answer (this tool’s, from her decks)':spokenAns(x.q)?'Her full answer, tidied into lines from her recorded session (its source gives the minute)':'Her full answer, word for word'}</summary>
       <ol class="ssteps">${x.steps.map(t=>`<li>${esc(t)}</li>`).join('')}</ol>
       ${x.q.hl&&hasHer(x.q)?herAnswer(x.q.hl):''}
       <div class="src">${esc(x.src)}. The short version is cut from it line by line; the build checks every bold word against the step it came from${F.some(f=>f.fix)?', except the ⚠ correction lines, which say why they differ':''}.</div>
@@ -1017,7 +1019,7 @@ function pickScreen(){
 function mockScreen(){
   const nm = Object.keys(S.miss).length;
   return `<div class="card">
-    <p class="lead">Practice only — dealt from her quizzes and her case answers. The real exam is on campus: Thu 5 Nov, 12:30, 130 min, 32 questions, 37% written, built on the starred cases.</p>
+    <p class="lead">Practice only — dealt from her quizzes and her case answers. The real exam is on campus: Thu 5 Nov, opens 1 pm sharp (be at your venue by 12:00, with your MIT ID), 130 min, 32 questions, 80 marks, 37% written, built on the starred cases.</p>
     <button class="btn primary wide" data-go="mini">Sit a mini mock test · 12 questions, ~15 min</button>
     <button class="btn wide" data-go="full">Sit the full mock test · 32 Q, 37% of the marks written from the cases, 130 min — the exam’s shape</button>
     <button class="btn wide" data-go="miss" ${nm?'':'disabled'}>Redo my misses${nm?` · ${nm} in the pile`:''}</button>
@@ -1661,7 +1663,7 @@ $('#themeBtn').onclick=()=>{const r=document.documentElement;
 if(LS('theme')==='light')document.documentElement.dataset.theme='light';
 $('#helpBtn').onclick=()=>{$('#help').innerHTML=`
   <h2 style="margin-top:0">What is this?</h2>
-  <p>The HS2 final (Thu 5 Nov, 12:30, on campus: 130 min, 32 questions, 37% written) — practised from everything she has
+  <p>The HS2 final (Thu 5 Nov, on campus, opens 1 pm sharp — be at your venue by 12:00 with your MIT ID: 130 min, 32 questions, 80 marks of ½-mark answers, 37% written) — practised from everything she has
   given you for it. Every practice quiz of Modules 1, 2 and 3, as the three module sims ship them, plus her Case Study
   Formative Test, plus her ten starred exam cases, written, marked against HER model answers. Her own words: the exam
   “will be based on the starred *Case studies in your Case Study Booklet A”.</p>
@@ -1689,9 +1691,12 @@ $('#helpBtn').onclick=()=>{$('#help').innerHTML=`
   <h3>Where the questions come from</h3>
   <p>${DATA.stats.n} questions from ${DATA.quizzes.length} quizzes: her own Canvas quizzes (answer keys taken from his graded
   pages — nothing invented) and the ten cases. A case question and its scenario are hers, word for word from the Case Study
-  Workbook; its model answer is hers too — her 2024 case-study answer decks, her NS1 deck, her Fertility quiz — split one
-  marking point per line, and each names its deck and slide. Where a line is the tool’s reading (the “damage →” half of the
-  stroke answer), it says so. ${DATA.held.length} starred or captured questions are held because no answer of hers can be read
+  Workbook; its model answer is hers too — her 2024 case-study answer decks, her NS1 deck, her Fertility quiz, and (cases 13, 14
+  and 15) her recorded 31 May 2024 case-study session, where she talks her colour-blindness quiz through and keys it on screen —
+  split one marking point per line, and each names its deck and slide or the minute of the recording. Where a line is the tool’s
+  reading (the “damage →” half of the stroke answer, the photopic / scotopic line of case 14), it says so; and one case 3
+  question — her four lung micrographs — is worded by this tool around her own workbook table (not starred, but her exam
+  helpline links her “lung histology for exam” deck under that case), and says so. ${DATA.held.length} starred or captured questions are held because no answer of hers can be read
   yet; each case row lists its own.</p>
   <h3>Learn mode</h3>
   <p><b>Learn as you go</b> (and the <b>Learn</b> button beside each quiz) marks every question the moment you
@@ -1736,7 +1741,8 @@ $('#helpBtn').onclick=()=>{$('#help').innerHTML=`
   earn marks — come back and sit them.</p>
   <h3>What’s held out</h3>
   <p>${DATA.held.length} questions are held: starred case questions whose answer she has not posted where it can be read
-  (case 14’s answer is in her colour-blindness quiz and case 15’s on its board, both hidden on Canvas today), and
+  (case 15’s whānau charts are worked on its board, still hidden on Canvas; four of case 13’s are answered nowhere she has
+  posted), and
   any capture that did not survive. Her EXAM CASE STUDY HELPLINE opens Mon 19 Oct; it joins this tool when it does.</p>
   <h3>Your data</h3>
   <p>Scores and misses live in this browser only. Nothing is sent anywhere. Clearing site data wipes them.</p>

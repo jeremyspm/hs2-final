@@ -359,7 +359,8 @@ console.log(`structured stems: ${questions.filter(q => q.qh).length}/${questions
 
 /* ── 2. the three module sims, imported AS BUILT ───────────────────── */
 const readData = (dir) => { const h = fs.readFileSync(path.join(GH, dir, 'index.html'), 'utf8'); const i = h.indexOf('const DATA = ');
-  if (i < 0) throw new Error('no DATA in ' + dir + '/index.html'); return JSON.parse(h.slice(i + 13, h.indexOf('\n', i) - 1)); };
+  if (i < 0) throw new Error('no DATA in ' + dir + '/index.html');
+  return JSON.parse(h.slice(i + 13, h.indexOf('\n', i)).trimEnd().replace(/;$/, '')); };     // a CRLF checkout (autocrlf) ends the line ";\r"
 const SIMDATA = Object.fromEntries(SIMS.map(([m, dir]) => [m, readData(dir)]));
 const fails2 = [], hotMissing = [];
 /* a figure stays where its sim ships it: `../<sim>/img/<file>` from this page (same origin on GitHub Pages, and the same when
@@ -388,7 +389,9 @@ const caseQs = {}, caseHeld = [];
 const escH = t => t.replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
 for (const c of CASES) {
   let from = c;
-  if (c.from) { const m = m1cases[c.from.split(':')[1]]; if (!m) { fails2.push(`case ${c.id}: ${c.from} is not in hs2-paper-m1's built cases`); continue; } from = { ...c, scenario: m.scenario, questions: m.questions }; }
+  if (c.from) { const m = m1cases[c.from.split(':')[1]]; if (!m) { fails2.push(`case ${c.id}: ${c.from} is not in hs2-paper-m1's built cases`); continue; }
+    from = { ...c, scenario: m.scenario, questions: [...m.questions, ...(c.more || [])] }; }      // `more` = this sim's own additions to an imported case
+  else if (c.more) fails2.push(`case ${c.id}: 'more' is only for a case imported with 'from' (put the question in 'questions')`);
   const qz = 'case-' + c.id; caseQs[c.id] = [];
   for (const cq of from.questions || []) {
     if (!cq.steps || !cq.steps.length || !cq.src) { fails2.push(`case ${c.id}: a question with no steps or no source: "${cq.q.slice(0, 50)}"`); continue; }

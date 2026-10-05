@@ -3,6 +3,23 @@
  "docx": "C:/Users/USER/Desktop/github/canvas-harvest/CanvasArchive/2026/Health Science 2 (722.541-26-MC-21) - Health Science 2 (61986)/files/Case Study Workbook 2026 S2.docx",
  "workbook": [
   {
+   "out": "wb26-lung4.png",
+   "media": [
+    "image1.jpeg",
+    "image2.jpeg",
+    "image3.jpeg",
+    "image4.jpeg"
+   ],
+   "letters": [
+    "A",
+    "B",
+    "C",
+    "D"
+   ],
+   "for": "case 3, her four lung micrographs (trachea, bronchus, bronchiole, alveoli), lettered by the tool",
+   "cols": 2
+  },
+  {
    "out": "wb26-joint.png",
    "media": "image7.png",
    "for": "case 8, the lettered joint"
@@ -21,6 +38,11 @@
    "out": "wb26-cycle.png",
    "media": "image13.png",
    "for": "case 13, the cycle and hormone graph"
+  },
+  {
+   "out": "wb26-retina.png",
+   "media": "image14.JPG",
+   "for": "case 14, the retina: rods and cone photoreceptors"
   }
  ]
 }

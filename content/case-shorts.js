@@ -1,8 +1,11 @@
 /* SHORT VERSIONS of her exam-case model answers (26 Sep 2026). His words about the long answers: "very complex… very
    overwhelming… I don't know how anyone just like remembers that." So every written case question gets a short version:
    a few words a line, cut from the answer the bank carries (content/cases.js, or hs2-paper-m1's built cases for 2/3/4) —
-   nothing added. That answer is HERS for 43 of the 44; the case 3 blood-pressure question's is the tool's, from her CVS 4
-   page (its src says so, and the page labels it). One mark per step; a line is one step, or one fact of a step that carries two.
+   nothing added. That answer is HERS for 50 of the 51; the case 3 blood-pressure question's is the tool's, from her CVS 4
+   page (its src says so, and the page labels it). Six (5 Oct 2026: case 13's progesterone question, all four of case 14,
+   case 15's modes of inheritance) are taken down from her recorded 31 May 2024 case session; case 14's last rods/cones line
+   puts her words into the question's terms and its src says so. Case 3's lung-micrograph question (5 Oct) is worded by the
+   tool around her own workbook table, which is its answer. One mark per step; a line is one step, or one fact of a step that carries two.
      case  = the case id ('c2' = quiz case-c2) · k = the normalised opening of her question (must match exactly one)
      title = the trainer list's name for it · hook = one line to remember it by
      groups = the question's own parts; each line: [text, of] — of = the index of HER step the line is cut from.
@@ -113,6 +116,25 @@ export const CASE_SHORTS = [
       G('Widen the vessels',
         ['**Vasomotor centre** inhibited: less **sympathetic** tone, **arterioles dilate**', 3],
         ['**Peripheral resistance** falls: BP returns to the **set point**', 3]),
+    ] },
+  { case: 'c3', k: 'her four lung micrographs', title: 'Four lung micrographs, A to D',
+    hook: 'Cartilage stops at the bronchiole; muscle stops at the alveoli.',
+    groups: [
+      G('A · Trachea',
+        ['**Trachea**: **ciliated pseudostratified columnar** epithelium', 0],
+        ['**Cartilage** present; **smooth muscles** present', 1]),
+      G('B · Bronchus',
+        ['**Bronchus**: **ciliated pseudostratified columnar** epithelium (1)', 2],
+        ['**Smooth muscles** (2) and **cartilage** (3) present', 3]),
+      G('C · Bronchiole',
+        ['**Bronchiole**: **cuboidal** epithelium', 4],
+        ['Cartilage **absent**; **smooth muscles** present', 5]),
+      G('D · Alveoli',
+        ['**Type 1 pneumocytes**: **squamous** epithelium for **gaseous exchange**', 6],
+        ['**Type 2** for **surfactant**; **macrophages** keep them clean', 7],
+        ['**No cartilage** or **muscles**', 8]),
+      G('The inhalers',
+        ['**Bronchodilators** relax the muscle (**reliever**); **cortisol** daily (**preventer**)', 9]),
     ] },
 
   /* ── Exam case 4 · Panic attacks ──────────────────────────────────── */
@@ -408,5 +430,75 @@ export const CASE_SHORTS = [
       G('The change',
         ['The **hormone drop** at about **day 21** does not happen', 0],
         ['**Estrogen** and **progesterone** keep **rising**', 1]),
+    ] },
+  { case: 'c13', k: 'hormonal methods of contraception', title: 'How progesterone contraception works',
+    hook: 'STOP ovulation, BLOCK the sperm, FAKE a pregnancy.',
+    groups: [
+      G('What progesterone does',
+        ['Prevents **ovulation**: stops the **LH** being released', 0],
+        ['Thickens the **cervical mucus**: keeps the **sperm** out', 1],
+        ['Imitates **pregnancy**: keeps **progesterone** levels **high**', 2]),
+    ] },
+
+  /* ── Exam case 14 · RG colour blindness (her 2024 session + her 413286 post) ── */
+  { case: 'c14', k: 'what is red green colour', title: 'Rods, cones and RG colour blindness',
+    hook: 'Cones see COLOUR; RG = faulty L (red) and M (green) cones.',
+    groups: [
+      G('Cones and rods',
+        ['**Cones**: **colour**, **central** vision, in **good light**, more **detailed**', 0],
+        ['**Rods**: **grey scale**, more **sensitive** to light, work in **dim light**', 1],
+        ['**Macula**: cones and rods; **fovea**: **only cones**', 2]),
+      G('What RG colour blindness is',
+        ['A **genetic defect** (an anomaly) of the **cones** of the **retina**', 3],
+        ['Faulty **L cones** (**red**, long wavelength) and **M cones** (**green**, medium)', 4],
+        ['Detected with a **colour-blindness test**', 5]),
+      G('In the question’s words',
+        ['Cones = **photopic**, colour, central; rods = **scotopic**, **peripheral**', 6]),
+    ] },
+  { case: 'c14', k: 'draw a pedigree chart', title: 'Every relative’s genotype',
+    hook: 'Grandad’s Xb → carrier MUM → Simon XbY; his dad gives only a Y.',
+    groups: [
+      G('Mum’s side',
+        ['**Grandfather**: **XbY** (a colour-blind man)', 0],
+        ['**Grandmother**: **XBXb**, a **carrier** (she has a colour-blind daughter)', 1],
+        ['**Aunt**: **XbXb** (the defect on **both** X chromosomes)', 2],
+        ['**Uncle**: **XBY** (not colour-blind)', 5]),
+      G('Simon’s family',
+        ['**Mum**: **XBXb**, a **carrier**; her **XB** gives **normal vision**', 3],
+        ['**Dad**: **XBY**, he has the **normal X**', 4],
+        ['**Simon**: **XbY**; Xb from his **mum**, only a **Y** from dad', 6]),
+    ] },
+  { case: 'c14', k: 'given the above and', title: 'How RG colour blindness is inherited',
+    hook: 'X-linked RECESSIVE: carrier mums, affected sons; dads never to sons.',
+    groups: [
+      G('The pattern',
+        ['**X-linked recessive**: the **L** and **M** cone genes are on the **X**', 0],
+        ['Carried by **mothers**, shows in **50%** of their **sons**', 1],
+        ['Shows only when **all X** chromosomes are affected: a woman needs **both**', 2],
+        ['Can **skip a generation**', 5]),
+      G('Fathers',
+        ['**Never** to their **sons**: sons get only a **Y**', 3],
+        ['**Always** the affected X to **all** their **daughters**', 4]),
+    ] },
+  { case: 'c14', k: 'will simon pass on', title: 'Will Simon pass it on?',
+    hook: 'Sons get his Y (clear); daughters get his Xb (carriers).',
+    groups: [
+      G('His children',
+        ['**None** of his **sons**: they get his **Y**', 0],
+        ['**All** his **daughters**, as **unaffected carriers**: they get his **X**', 1]),
+    ] },
+
+  /* ── Exam case 15 · Genetic diseases (her 2024 session) ──────────────── */
+  { case: 'c15', k: 'what are the modes', title: 'CF and Huntington’s: modes of inheritance',
+    hook: 'CF: autosomal RECESSIVE, rr, skips generations. HD: autosomal DOMINANT, every generation.',
+    groups: [
+      G('Cystic fibrosis',
+        ['**Autosomal recessive**, on **chromosome 7**', 0],
+        ['**Skips generations**; people can be **carriers**', 1],
+        ['Affected person: **rr**', 2]),
+      G('Huntington’s disease',
+        ['**Autosomal dominant**, on **chromosome 4**', 3],
+        ['Shows whenever the **dominant allele** is present: **every generation**', 4],
+        ['Affected person: **Rr** or **RR**', 5]),
     ] },
 ];
