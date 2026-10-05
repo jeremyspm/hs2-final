@@ -664,49 +664,36 @@ function bindFocus(){
    practice. So: her own exam questions first (A), least-seen and misses first; once every one has been seen, the module
    questions on the case topics (B) join. Nothing to choose, nothing to plan. */
 const CORE_A = () => DATA.questions.filter(q=>DATA.core.a.includes(q.id));
+/* THE 10 CASES THEMSELVES (his ask, 5 Oct 2026: "are you sure [Next up] is only repping starred yellow exam questions?" — it
+   was not: it dealt her revision deck and Kahoot too, then the 401 module questions). Now Next up deals ONLY these: the
+   booklet's own questions in the ten yellow cases (starred and the yellow unstarred ones) and her closed versions of them
+   (her case formative test, her RG quiz) — every question whose mod is 'cases'. Least-seen and misses first, forever: it
+   never moves on to module questions. */
+const CASE_CORE = () => DATA.questions.filter(q=>q.mod==='cases');
 /* EVERY case question at once (his ask, 5 Oct 2026: "what happens if a user wants to aim for perfect marks and therefore needs
    to rep every single thing to do with the case studies?"). The mock caps at 32 / 12; this does not: her exam questions (the
    ten cases' written questions, her formative case test, her revision deck, her RG quiz) + the mock's closed pool (adds the
    case quizzes her exam helpline lists). Least-seen and misses first, so a second sweep starts with what is not nailed yet. */
 const ALLCASE = () => { const ids=new Set([...DATA.core.a, ...DATA.mock.pool.map(p=>p.id)]); return DATA.questions.filter(q=>ids.has(q.id)) };
 function allCaseScreen(){
-  const A=ALLCASE(), seen=A.filter(q=>S.seen[q.id]).length, nW=A.filter(q=>q.saq).length, B=DATA.core.b.length;
+  const A=ALLCASE(), C=CASE_CORE(), seen=A.filter(q=>S.seen[q.id]).length, seenC=C.filter(q=>S.seen[q.id]).length, R=A.length-C.length;
   return `<div class="card">
-    <p class="lead">Every question she has written on the ten starred cases: <b>${A.length}</b>, ${nW} of them written. ${seen} of ${A.length} seen so far.</p>
-    <button class="btn primary wide" data-go="allcase" data-learn="1">📖 Learn all ${A.length} · each one marks itself as you go, your place is saved</button>
+    <p class="lead"><b>${A.length}</b> questions, ${seen} seen: the 10 cases themselves (<b>${C.length}</b>), and her exam revision on them (<b>${R}</b>).</p>
+    <button class="btn primary wide" data-go="cases" data-learn="1">📖 The 10 cases only · ${C.length} · ${seenC} seen · the booklet’s own questions</button>
+    <button class="btn wide" data-go="allcase" data-learn="1">📖 All ${A.length} · the cases + her exam revision on them</button>
     <button class="btn wide" data-go="allcase">⏱ Sit all ${A.length} as one test · no clock, scored at the end</button>
-    <button class="btn ghost wide" data-go="coreb" data-learn="1">Then the ${B} module questions on the case topics</button>
-    <details class="how"><summary>ⓘ How this works</summary>
-      <p>The mock test is the exam’s size (32 questions, or 12 in the mini), so it never shows you everything. This does: the
-      ten cases’ written questions (the starred ones and the unstarred ones inside her yellow cases), her case formative test, her exam
-      revision deck, her exam revision Kahoot, her red-green colour-blindness quiz, and the case quizzes her exam helpline lists under
-      the cases (fertility, neuron and synapse, pedigrees) — nothing off the cases. There
-      is no cap and it deals least-seen and missed questions first, so going through it again starts with whatever you have not
-      nailed. Learn checks each answer the moment you press Check (written ones you mark against her short answer) and saves your
-      place if you stop. When all of these are solid, the ${B} module questions that sit on a case topic are the next layer —
-      the background her case answers lean on.</p></details>
+    <details class="how"><summary>How this works</summary>
+      <p><b>The 10 cases (${C.length})</b> are the booklet’s own questions in her ten yellow exam cases — the starred ones and the
+      unstarred ones inside them — plus her closed versions of them (her case formative test, her colour-blindness quiz). This is
+      exactly what <b>Next up</b> deals, 15 at a time. <b>Her exam revision (${R})</b> is what she made to revise those cases —
+      her exam revision deck, her exam revision Kahoot, and the case quizzes her exam helpline lists (fertility, neuron and
+      synapse, pedigrees): on the case topics, but not the booklet’s own questions. Nothing here is off the cases. No cap;
+      least-seen and missed questions come first, so another pass starts with whatever you have not nailed. Learn checks each
+      answer when you press Check (written ones you mark against her short answer) and saves your place if you stop.</p></details>
   </div>`;
 }
 const CORE_B = () => DATA.questions.filter(q=>DATA.core.b.includes(q.id));
-function dealCore(n=15){
-  const A = CORE_A(), allSeen = A.every(q=>S.seen[q.id]);
-  return pickN(allSeen ? A.concat(CORE_B()) : A, n, new Set());
-}
-function coreCard(){
-  const A = CORE_A(), B = CORE_B();
-  const seenA = A.filter(q=>S.seen[q.id]).length, missA = A.filter(q=>S.miss[q.id]).length;
-  const seenB = B.filter(q=>S.seen[q.id]).length;
-  const pA = Math.round(100*seenA/Math.max(1,A.length)), pB = Math.round(100*seenB/Math.max(1,B.length));
-  return `<div class="card door" style="border-left:4px solid var(--ok)">
-    <h3 style="margin:0 0 6px">🧭 Decide for me</h3>
-    <p>You do <b>not</b> have to do ${DATA.stats.n} questions. The exam is 32 questions on her ten starred cases. <b>${A.length}</b> questions here are hers, written for it — the cases, her formative test, her revision deck. That is the job. Behind them sit <b>${B.length}</b> module questions on the same topics, for once the ${A.length} are done. Everything else is optional.</p>
-    <button class="btn primary wide" data-go="core" data-learn="1">▶ Today’s 15 — ${seenA<A.length?'from her exam questions':'her exam questions + the case topics'}</button>
-    <div class="hist" style="margin-top:8px">Her exam questions: ${seenA} of ${A.length} seen${missA?` · ${missA} in your misses pile (they come back first)`:''}</div>
-    <div class="fbar"><i style="width:${pA}%"></i></div>
-    <div class="hist" style="margin-top:6px">Case-topic questions: ${seenB} of ${B.length} seen${seenA<A.length?' · they join once all '+A.length+' have been seen once':''}</div>
-    <div class="fbar"><i style="width:${pB}%"></i></div>
-  </div>`;
-}
+function dealCore(n=15){ return pickN(CASE_CORE(), n, new Set()) }
 /* ── home: a launcher of row cards; each door is its own screen ───────
    Until 26 Sep 2026 every door sat on one page, 14.5 phone screens tall (a stray unclosed <div>
    on the video card also put the mock test and Pick my rep INSIDE it). Now home is one screen of
@@ -720,7 +707,7 @@ function coreCard(){
    Learn / Sit the 10 cases buttons were already on Learn and Pick my rep), and Decide for me sits at the top of Learn as
    you go. The old #cases / #core links still land. */
 const SCR = {
-  learn:{t:'📖 Learn as you go',            html:()=>coreCard()+learnScreen()},
+  learn:{t:'📖 Learn as you go',            html:()=>learnScreen()},
   pick: {t:'🗂 Pick my rep',                html:()=>pickScreen()},
   saq:  {t:'✍️ SAQ trainer',               html:()=>saqCard()},
   mock: {t:'⏱ Mock test',                   html:()=>mockScreen()},
@@ -764,17 +751,21 @@ function render(scr){
     : launcher();
   bindView();
 }
-/* the one thing to do next: a Learn run you stopped, otherwise Decide for me (her exam questions
-   first, least-seen and misses first; the case-topic questions join once all of hers are seen) */
+/* the one thing to do next: a Learn run you stopped, otherwise 15 from the 10 yellow cases only (CASE_CORE), least-seen and
+   misses first */
 function nextUp(){
-  const r = LS('resume');
-  if(r && r.ids && r.ids.length) return {k:'resume', e:'Next up · the Learn run you stopped', t:`${esc(r.label)} · Q${Math.min((r.i|0)+1,r.ids.length)} of ${r.ids.length}`};
-  const A = CORE_A(), seenA = A.filter(q=>S.seen[q.id]).length;
-  return {k:'core', e:`Next up · decide for me · ${seenA} of ${A.length} seen`, t:`Today’s 15 — ${seenA<A.length?'her case questions':'her case questions + the case topics'}`};
+  const r = LS('resume'), A = CASE_CORE(), inCases = new Set(A.map(q=>q.id));
+  /* only a stopped run made purely of case questions comes back here (an older whole-bank or revision run stays in Learn) */
+  if(r && r.ids && r.ids.length && r.ids.every(id=>inCases.has(id))) return {k:'resume', e:'Next up · the case run you stopped', t:`${esc(r.label)} · Q${Math.min((r.i|0)+1,r.ids.length)} of ${r.ids.length}`};
+  const seenA = A.filter(q=>S.seen[q.id]).length;
+  return {k:'core', e:`Next up · the 10 yellow cases only · ${seenA} of ${A.length} seen`, t:'Today’s 15 — from the 10 cases'};
 }
 const HERO = {
-  resume: () => { nav('learn'); resumeLearn() },
-  core:   () => { nav('learn'); start('core', true) },
+  resume: () => resumeLearn(),
+  core:   () => {      /* an old run that is not case-only is not worth a "drop it?" dialog here: its answers stay in your history */
+    const r = LS('resume'), inCases = new Set(CASE_CORE().map(q=>q.id));
+    if(r && r.ids && !r.ids.every(id=>inCases.has(id))) SV('resume', null);
+    start('core', true) },
 };
 function launcher(){
   const up = nextUp(), r = LS('resume');
@@ -793,7 +784,7 @@ function launcher(){
   ${row('mock','⏱','Mock test',last?`Last ${last.got}/${last.tot} · ${Math.round(100*last.got/last.tot)}% · ${S.scores.length} sat`:'Built like her exam · mini ~15 min or full 130 min')}
   <details class="lmore"><summary>More — the whole bank, pick quizzes, misses, checklist, videos</summary>
   <div class="lsec">Practise</div>
-  ${row('learn','📖','Learn as you go',`${seen} of ${CLOSED.length} seen${r&&r.ids&&r.ids.length?' · a run is waiting':' · Decide for me is in here'}`)}
+  ${row('learn','📖','Learn as you go',`${seen} of ${CLOSED.length} seen · the whole course bank, optional`)}
   ${row('pick','🗂','Pick my rep',`${DATA.quizzes.length} quizzes${S.pick.length?` · ${S.pick.length} ticked`:' · tick any, run them as one'}`)}
   <div class="lsec">Test yourself</div>
   ${row('miss','🔁','My misses',nm?`${nm} in the pile`:'Empty so far · wrong answers land here')}
@@ -1199,9 +1190,8 @@ function start(mode,learn=false){
     else{deck=dealExamClosed(12);label='mini mock'}}
   else if(mode==='full'){deck=dealFull();label='full mock test';timed=true}
   else if(mode==='cases'){deck=CASEQS();label='the 10 cases'}
-  else if(mode==='core'){deck=dealCore(15);label='today from the exam core'}
+  else if(mode==='core'){deck=dealCore(15);label='today from the 10 cases'}
   else if(mode==='allcase'){const p=ALLCASE();deck=pickN(p,p.length,new Set());label=`every case question · ${deck.length}`}
-  else if(mode==='coreb'){const p=CORE_B();deck=pickN(p,p.length,new Set());label=`the case topics · ${deck.length}`}
   else if(mode==='miss'){deck=dealMisses(learn?CAP():12);label=learn?'my misses':'redo misses'}
   else if(mode==='pick'){deck=dealPick();const k=S.pick.length;
     label=k===1?(DATA.quizzes.find(z=>z.id===S.pick[0])||{}).name||'1 quiz':`${k} quizzes · ${deck.length} Q`}
@@ -1733,9 +1723,10 @@ $('#helpBtn').onclick=()=>{$('#help').innerHTML=`
   <h3>The home page</h3>
   <p>One row per part of the tool; each opens its own screen, and <b>‹ Home</b> or your phone's back button brings you back.
   Every screen leads with one line and keeps the full explanation under <b>ⓘ How this works</b>. The blue <b>Next up</b> card at
-  the top is the tool picking for you: a Learn run you stopped partway comes first; otherwise <b>Decide for me</b> (it also heads Learn as you go), today's 15
-  from her exam questions (misses and the least-seen first), with the case-topic questions joining once all of hers have been
-  seen. Leaving a mock test with the back button asks first; a Learn run is saved as you go, so it just stops.</p>
+  the top is the tool picking for you: a Learn run you stopped partway comes first; otherwise today's 15 from the 10 yellow cases
+  ONLY — the booklet's own questions (starred and the unstarred ones inside the yellow cases) and her closed versions of them —
+  misses and the least-seen first, round and round; it never moves on to module questions. 🩺 Every case question has all of them
+  at once, plus her exam revision on the cases (her deck, her Kahoot, her case quizzes). Leaving a mock test with the back button asks first; a Learn run is saved as you go, so it just stops.</p>
   <h3>SAQ trainer (the ✍️ row under Write)</h3>
   <p>The exam is 37% written, and its written questions come from her starred cases. Each written case question with a model
   answer has a <b>short version</b>: that answer (hers for all but one, which this tool wrote from her CVS page and labels so;
