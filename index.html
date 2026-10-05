@@ -802,7 +802,7 @@ function launcher(){
   <p class="exambar"><b>The exam is the 10 starred cases.</b> Her words: “I am 100% sure.” Rep these.</p>
   <button class="hero" data-hero="${up.k}"><span><small>${up.e}</small><b>${up.t}</b></span><span class="go" aria-hidden="true">▶</span></button>
   ${row('allcase','🩺','Every case question',`${ALLC.filter(q=>S.seen[q.id]).length} of ${ALLC.length} seen · all of them at once, no cap`)}
-  ${SAQD.length?row('saq','✍️','SAQ trainer',`${nL} of ${SAQD.length} locked · her ${nCaseW} case answers first, short`):''}
+  ${SAQD.length?row('saq','✍️','SAQ trainer',`${nL} of ${SAQD.length} locked · her case answers, short`):''}
   ${row('mock','⏱','Mock test',last?`Last ${last.got}/${last.tot} · ${Math.round(100*last.got/last.tot)}% · ${S.scores.length} sat`:'Built like her exam · mini ~15 min or full 130 min')}
 `;
 }
@@ -814,13 +814,15 @@ const sysLbl = s => { const pool=CLOSED.filter(q=>q.mod===s).length, n=howMany(p
    in what he wrote, he confirms, 80% locks it). No multiple-choice drill: none exists for the cases. Progress lives in
    this browser under this sim's own prefix ('saqd'). */
 const CASEN = id => (DATA.quizzes.find(z=>z.id===id)||{}).name||id;
-/* one row per short version (a question set in two quizzes shares one), her exam cases first, then Modules 1, 2, 3 */
+/* one row per short version — her ten yellow cases ONLY (his call, 5 Oct 2026: "cut those too, cases only, if they're not going
+   to be covered in the exam, they are useless"); the module written questions are no longer in this trainer */
 const MODORD = ['cases','m1','m2','m3'], qzIx = id => DATA.quizzes.findIndex(z=>z.id===id);
 const SAQD = (() => { const seen = new Set(), out = [];
-  for(const q of DATA.questions) if(q.short && !seen.has(q.short.id)){ seen.add(q.short.id);
+  for(const q of DATA.questions) if(q.short && q.mod==='cases' && !seen.has(q.short.id)){ seen.add(q.short.id);
     out.push({id:q.id, q, title:q.short.title, cse:CASEN(q.quiz), quiz:q.quiz, mod:q.mod, marks:q.pts, ask:q.qt||q.q,
       steps:q.saq.full.filter(s=>!junkStep(s)), src:q.saq.src, short:q.short}); }
-  return out.sort((a,b)=>MODORD.indexOf(a.mod)-MODORD.indexOf(b.mod) || qzIx(a.quiz)-qzIx(b.quiz)); })();
+  const caseN = x => +((x.quiz.match(/^case-c(\d+)$/)||[])[1]||99);      /* booklet order: case 2, 3, 4 … 15 */
+  return out.sort((a,b)=>caseN(a)-caseN(b) || qzIx(a.quiz)-qzIx(b.quiz)); })();
 let SQ = LS('saqd') || {};            /* saq id -> {read, gaps, best (0..1), lock, tries, last} */
 const sqS = id => SQ[id] || (SQ[id] = {});
 const sqSave = () => SV('saqd', SQ);
@@ -843,20 +845,17 @@ const sqRows = xs => { let h='', cur='';
   return h; };
 function saqCard(){
   if(!SAQD.length) return '';
-  const cs = SAQD.filter(x=>x.mod==='cases'), ms = SAQD.filter(x=>x.mod!=='cases');
+  const cs = SAQD;
   const nL = SAQD.filter(x=>sqS(x.id).lock).length, nx = sqNext(), nC = new Set(cs.map(x=>x.quiz)).size;
-  const modSec = m => { const xs=ms.filter(x=>x.mod===m); if(!xs.length) return '';
-    return `<details class="smod"><summary>${esc(MODN[m]||m)} · ${xs.length} · ${xs.filter(x=>sqS(x.id).lock).length} locked</summary><div class="slist">${sqRows(xs)}</div></details>`; };
   return `<div class="card door sdoor" id="saqCard">
-    <p class="lead">The exam is <b>37% written</b>, from these cases. Every written question has a <b>short version</b>: its answer, a few words a line. Her ${cs.length} case questions first; the module ones below.</p>
+    <p class="lead">The exam is <b>37% written</b>, from these cases. Every written question has a <b>short version</b>: its answer, a few words a line. Her ${cs.length} case questions — nothing else.</p>
     <details class="how"><summary>How this works</summary>
-      <p>First the ${cs.length} written case questions she has answered, in ${nC} of her ten starred cases (the other cases' answers were not readable when this was built); her answers give one mark per step. Below them, ${ms.length} written questions from the three modules, one row each even where two quizzes set the same one. Every answer has a short version cut from it, one fact a line.
+      <p>The ${cs.length} written questions of her ten yellow cases that she has answered (the starred ones, and the unstarred ones inside the yellow cases, which say so); one mark per step. Every answer has a short version cut from it, one fact a line.
       For each one: <b>1 Read</b> the short version (the <b style="color:var(--warn)">bold</b> words are the mark words; the full answer folds away underneath)
       → <b>2 Fill the gaps</b>: the lines disappear a round at a time, 1, then a quarter, half, then all of them; say each one, tap to check
       → <b>3 Write it</b> from memory → the page looks for each line's bold words in what you wrote, you confirm, and it shows what you missed
       → write it again until you get 80% (then it's locked ✓).</p>
-      <p>Where her own answer slips (the near-vision pupil, which part of the ear amplifies, what LH makes the Leydig cells produce, what the cilia carry), the short line teaches the right fact and a <b>⚠</b> line under it says why.</p>
-      <p class="refsrc">The model answers are hers, word for word (her case model-answer decks, her quiz feedback, her revision deck) or, for ${SAQD.filter(x=>spokenAns(x.q)).length} case questions, as she says them in her recorded 2024 case session (tidied into lines; each source gives the minute), except the ${SAQD.filter(x=>toolsAns(x.q)).length} whose source says this tool wrote them from her decks (most of Module 2, a few of Module 1, and one case question: ${SAQD.filter(x=>x.mod==='cases'&&toolsAns(x.q)).map(x=>esc(x.title)).join(', ')||'none'}); each of those says so on its full answer. Each short version is cut from its answer line by line, and the build checks every bold word against the step it came from. Progress is saved in this browser only.</p>
+      <p class="refsrc">Every model answer is hers — her case model-answer decks, her quizzes, her Kahoot, and for ${SAQD.filter(x=>spokenAns(x.q)).length} questions her recorded 2024 case sessions (tidied into lines; each source gives the minute). The few lines that are this tool's reading say so in their source. Each short version is cut from its answer line by line, and the build checks every bold word against the step it came from. Progress is saved in this browser only.</p>
     </details>
     ${nx?`<button class="btn primary wide" data-sqgo="${nx.id}">▶ ${sqS(nx.id).read?'Continue':'Start'}: ${esc(nx.title)}</button>`
        :`<p style="margin:.4rem 0"><b>All ${SAQD.length} locked.</b> Keep them warm with the last-look sheet.</p>`}
@@ -864,7 +863,6 @@ function saqCard(){
     <div class="hist" style="margin-top:10px">${nL} of ${SAQD.length} locked</div>
     <div class="ssec">Her exam cases · ${cs.length}</div>
     <div class="slist">${sqRows(cs)}</div>
-    ${ms.length?`<div class="ssec">The modules · ${ms.length} · after the cases</div>${['m1','m2','m3'].map(modSec).join('')}`:''}
   </div>`;
 }
 function bindSaq(){
@@ -1744,10 +1742,7 @@ $('#helpBtn').onclick=()=>{$('#help').innerHTML=`
   <h3>SAQ trainer (✍️)</h3>
   <p>The exam is 37% written, and its written questions come from her starred cases. Each written case question with a model
   answer has a <b>short version</b>: that answer (hers; one mark per step) cut down to one fact a line, a few words each, the bold words being the ones that earn the mark; the full
-  answer, word for word, folds underneath. The written questions of the three modules
-  follow, one module per fold, each with a short version cut from the answer the module sim carries (hers for Modules 1 and 3,
-  this tool's, built from her decks, for Module 2). Where her own answer slips, the short line teaches the right fact and a ⚠ line
-  says why. Learn one at a time: <b>Read</b> it, then
+  answer folds underneath. Only the ten cases' questions are in it. Learn one at a time: <b>Read</b> it, then
   <b>Fill the gaps</b> (the whole short answer with 1, then a quarter, half, then every line hidden: say the missing line, tap to
   check, mark yourself honestly; a line you miss stays hidden next round), then <b>Write it</b> from memory: the page ticks every
   line where it finds that line's bold words in what you wrote, you correct the ticks, and 80% locks it. <b>📄 Last-look sheet</b>
