@@ -1,4 +1,4 @@
-/* Assemble the HS2 FINAL EXAM sim (Thu 5 Nov 2026: 130 min, 32 questions, 37% written, Modules 1–3, "based on the starred
+/* Assemble the HS2 FINAL EXAM sim (Wed 4 Nov 2026, moved from Thu 5 Nov: 130 min, 90 marks, 32 questions, 37% written, Modules 1–3, "based on the starred
    case studies in Case Study Booklet A"). Pipeline ported from hs2-test3 (itself from hs2-test2 @255d89b). Three sources:
    1. its OWN capture bank (_inbox/HS2 Final Capture → hs2-anki/final): quizzes that belong to no module — today only the
       CASE STUDY FORMATIVE TEST MODULE 1-2 (211092) — run through the same stem / key / gate pipeline as every sim;

@@ -417,8 +417,8 @@ S.pick = (Array.isArray(S.pick)?S.pick:[]).filter(id=>DATA.quizzes.some(z=>z.id=
    window closes Mon 21 Sep, so a single hard-coded date would mislead whoever it did
    not belong to. Default is his (it is his tool); anyone else taps the countdown and
    sets their own, kept in their own browser. */
-const COHORT_CLOSE = '2026-11-05';      // the HS2 exam: Thu 5 Nov 2026, time TO BE CONFIRMED (her FINAL HS2 EXAM announcement 413237, 5 Oct: "at a time that will be confirmed", be there 45 min before) — her helpline still says 1 pm sharp, 60 min before
-const DEFAULT_SITTING = '2026-11-05';
+const COHORT_CLOSE = '2026-11-04';      // the HS2 exam: MOVED to Wed 4 Nov 2026 (Hannetjie in her 7 Oct lecture: "initially it was communicated that it was on the 5th of November. It's on the 4th"; Joan's Pharm post the same day: HS2 moved so there are no clashes). Time TO BE CONFIRMED, two sittings; her 5 Oct announcement 413237 still read 5 Nov
+const DEFAULT_SITTING = '2026-11-04';
 const sittingISO = () => LS('testday') || DEFAULT_SITTING;
 const TESTDAY = () => new Date(sittingISO() + 'T12:00:00+12:00');
 const daysLeft = () => Math.max(0, Math.ceil((TESTDAY() - Date.now())/864e5));
@@ -431,7 +431,7 @@ function askSitting(){
   if(!v) return;
   const t = v.trim();
   if(!/^\d{4}-\d{2}-\d{2}$/.test(t) || isNaN(new Date(t + 'T12:00:00+12:00'))){
-    alert('Use the form YYYY-MM-DD, e.g. 2026-11-05.'); return;
+    alert('Use the form YYYY-MM-DD, e.g. 2026-11-04.'); return;
   }
   SV('testday', t); paintCountdown();
   if(document.querySelector('#fhead')) home();
@@ -1728,7 +1728,7 @@ $('#themeBtn').onclick=()=>{const r=document.documentElement;
 if(LS('theme')==='light')document.documentElement.dataset.theme='light';
 $('#helpBtn').onclick=()=>{$('#help').innerHTML=`
   <h2 style="margin-top:0">What is this?</h2>
-  <p>The HS2 final (Thu 5 Nov, on campus, time to be confirmed — her exam announcement says so; her helpline says 1 pm sharp. Be at your venue 45–60 min early with your MIT ID: 130 min, 32 questions, 80 marks of ½-mark answers, 37% written) — practised only on what it is built on: her ten yellow, starred
+  <p>The HS2 final (<b>Wed 4 Nov</b> — moved from Thu 5 Nov, she said so in her 7 Oct lecture; on campus in the computer labs, in two sittings, time to be confirmed. Be at your venue 45–60 min early with your MIT ID: 2 h 10 min, <b>90 marks</b>, 32 questions, 37% written. ECHO gives no half marks, so half marks exist only in the written answers; multiple choice and matching are all-or-nothing) — practised only on what it is built on: her ten yellow, starred
   cases in Case Study Booklet A, with HER model answers, plus the exam revision she made for them. Her own words: the exam
   “will be based on the starred *Case studies in your Case Study Booklet A” — “I am 100% sure”.</p>
   <h3>The home page</h3>
