@@ -121,3 +121,13 @@ Preview locally by serving the estate ROOT (the figures live in the sibling sims
    Module 2's) are public too and could join the same way.
 4. Her RG quiz's Q1, Q2 and Q5 (drop-downs / genotype grid / pedigree): only some options were on her screen, so they are out;
    add them when 211016 opens. The musculoskeletal (1) and lymph (2) groups of the mock pool are thin.
+
+## Kahoots are their own lower-yield section (12 Oct 2026)
+
+His rule ("give it its own category … I feel like it's lower yield"). Her exam revision Kahoot (49 questions) is flagged `kh`:
+out of the exam core, the mock's closed pool (130 → 81: her formative case test, revision deck, RG quiz and the helpline case
+quizzes) and Every case question; a case row only counts it ("🎮 N in her Kahoots"). It runs from its own 🎮 button inside
+Every case question (Learn only, never the misses pile or the score chart), each card tagged 🎮 Kahoot. A module sim's own
+Kahoots (hs2-test3's 116) are never imported. Checked: 1,000 mock deals all 32 questions, 0 Kahoot, 0 module-bank, written
+share 37–42% in 98.8% (max 44%, the existing take-back rule). Same day: the mock screen's stale "Thu 5 Nov … 80 marks" now
+reads Wed 4 Nov, 2 h 10 min, 90 marks.

@@ -107,6 +107,8 @@ a.btn.xtool{background:#db2777;border-color:#db2777;color:#fff;text-decoration:n
 .fwhy{font-size:.8rem;line-height:1.5;color:var(--muted-fg);margin:0 0 4px}
 @media(max-width:400px){ .ft{font-size:.88rem} .fdet{font-size:.82rem} }
 .tag{font-size:.72rem;padding:2px 8px;border-radius:99px;background:var(--accent);color:var(--muted-fg)}
+.tag.kh{background:hsl(280 60% 60% / .16);color:hsl(280 70% 72%)}
+.khsrc{font-size:.78rem;color:var(--muted-fg);margin:2px 0 6px}
 .tag.repro{color:hsl(335 85% 72%)}.tag.gen{color:hsl(268 80% 74%)}.tag.senses{color:hsl(38 92% 62%)}
 .tag.cvs{color:hsl(0 84% 70%)}.tag.resp{color:hsl(199 89% 64%)}.tag.lymph{color:hsl(140 55% 58%)}
 .tag.ms{color:hsl(28 90% 62%)}.tag.ns{color:hsl(268 80% 74%)}.tag.endo{color:hsl(158 64% 52%)}
@@ -467,6 +469,8 @@ const slideU = f => f.includes('/') ? f : 'img/slides/'+f;
 
 /* ── dealing ───────────────────────────────────────────────────────── */
 const CLOSED = DATA.questions.filter(q=>!q.saq);
+/* her exam revision Kahoot (q.kh) is its own lower-yield section since 12 Oct 2026: out of the core, the mock and Every case question */
+const KHQ = DATA.questions.filter(q=>q.kh);
 function pickN(pool, n, excl){
   const fresh = pool.filter(q=>!excl.has(q.id));
   /* Least-seen first: rank = times dealt, so nothing repeats an (n+1)th time
@@ -681,12 +685,14 @@ function allCaseScreen(){
     <button class="btn primary wide" data-go="cases" data-learn="1">📖 The 10 cases only · ${C.length} · ${seenC} seen · the booklet’s own questions</button>
     <button class="btn wide" data-go="allcase" data-learn="1">📖 All ${A.length} · the cases + her exam revision on them</button>
     <button class="btn wide" data-go="allcase">⏱ Sit all ${A.length} as one test · no clock, scored at the end</button>
+    ${KHQ.length?`<button class="btn ghost wide" data-go="kh" data-learn="1">🎮 Her exam revision Kahoot · ${KHQ.length} · lower yield, after the cases</button>`:''}
     <details class="how"><summary>How this works</summary>
       <p><b>The 10 cases (${C.length})</b> are the booklet’s own questions in her ten yellow exam cases — the starred ones and the
       unstarred ones inside them — plus her closed versions of them (her case formative test, her colour-blindness quiz). This is
       exactly what <b>Next up</b> deals, 15 at a time. <b>Her exam revision (${R})</b> is what she made to revise those cases —
-      her exam revision deck, her exam revision Kahoot, and the case quizzes her exam helpline lists (fertility, neuron and
-      synapse, pedigrees): on the case topics, but not the booklet’s own questions. Nothing here is off the cases. No cap;
+      her exam revision deck and the case quizzes her exam helpline lists (fertility, neuron and
+      synapse, pedigrees): on the case topics, but not the booklet’s own questions. Her exam revision <b>Kahoot</b> is kept apart
+      (the 🎮 button below): Kahoots are quick one-mark recall, lower yield, so they are in none of these counts and not in the mock. Nothing here is off the cases. No cap;
       least-seen and missed questions come first, so another pass starts with whatever you have not nailed. Learn checks each
       answer when you press Check (written ones you mark against her short answer) and saves your place if you stop.</p></details>
   </div>
@@ -1080,7 +1086,7 @@ function pickScreen(){
 function mockScreen(){
   const nm = Object.keys(S.miss).length;
   return `<div class="card">
-    <p class="lead">Built like her exam: the closed questions are only her own case questions in closed form (${DATA.mock.pool.length} of them — her formative case test, her revision deck, her exam revision Kahoot, her case quizzes), spread across the ten cases; the written ones are her starred case questions. The real exam is on campus: Thu 5 Nov, time to be confirmed (her exam announcement; her helpline says 1 pm sharp) — be at your venue 45–60 min early with your MIT ID. 130 min, 32 questions, 80 marks, 37% written, built on the ten yellow, starred cases.</p>
+    <p class="lead">Built like her exam: the closed questions are only her own case questions in closed form (${DATA.mock.pool.length} of them — her formative case test, her revision deck, her case quizzes; her Kahoot is kept out as lower yield), spread across the ten cases; the written ones are her starred case questions. The real exam is on campus: Wed 4 Nov, time to be confirmed (moved from 5 Nov in her 7 Oct lecture) — be at your venue 45–60 min early with your MIT ID. 2 h 10 min, 32 questions, 90 marks, 37% written, built on the ten yellow, starred cases.</p>
     <button class="btn primary wide" data-go="mini">Sit a mini mock test · 12 of her closed case questions, ~15 min</button>
     <button class="btn wide" data-go="full">Sit the full mock test · 32 Q, 37% of the marks written from the cases, 130 min — the exam’s shape</button>
     <button class="btn wide" data-go="miss" ${nm?'':'disabled'}>Redo my misses${nm?` · ${nm} in the pile`:''}</button>
@@ -1205,6 +1211,7 @@ function start(mode,learn=false){
   else if(mode.startsWith('case:')){const f=DATA.focus.find(x=>x.id===mode.slice(5)), byId=new Map(DATA.questions.map(q=>[q.id,q]));
     deck=((f&&f.qs)||[]).map(id=>byId.get(id)).filter(q=>q&&q.mod==='cases');label=f?f.t:'the case'}
   else if(mode==='allcase'){const p=ALLCASE();deck=pickN(p,p.length,new Set());label=`every case question · ${deck.length}`}
+  else if(mode==='kh'){const rank=q=>(S.seen[q.id]||0)+Math.random();deck=KHQ.map(q=>[q,rank(q)]).sort((a,b)=>a[1]-b[1]).map(x=>x[0]);label=`her exam revision Kahoot · ${deck.length}`}
   else if(mode==='miss'){deck=dealMisses(learn?CAP():12);label=learn?'my misses':'redo misses'}
   else if(mode==='pick'){deck=dealPick();const k=S.pick.length;
     label=k===1?(DATA.quizzes.find(z=>z.id===S.pick[0])||{}).name||'1 quiz':`${k} quizzes · ${deck.length} Q`}
@@ -1314,9 +1321,10 @@ function renderQ(){
   const open=chk&&learnOpen(q,chk);
   $('#view').innerHTML=`<div class="card">
     <div class="qhead"><span class="n">Q${SIT.i+1}/${SIT.deck.length}</span>
-      <span class="tag ${q.sys}">${q.sys}</span><span class="tag">${q.pts} mk</span>${SIT.learn?'<span class="tag" style="color:var(--ok)">learn</span>':''}
+      <span class="tag ${q.sys}">${q.sys}</span>${q.kh?'<span class="tag kh">🎮 Kahoot</span>':`<span class="tag">${q.pts} mk</span>`}${SIT.learn?'<span class="tag" style="color:var(--ok)">learn</span>':''}
       <span class="timer" id="timer"></span>
       <button class="btn ghost" id="exitB" title="${SIT.learn?'stop learning':'abandon mock test'}" style="padding:2px 10px">✕</button></div>
+    ${q.kh?`<div class="khsrc">${esc(q.khSrc)} · lower yield, kept apart from the case questions</div>`:''}
     ${inlineBlanks?body:''}<div class="stem${q.qh?' rich':''}">${stemHTML}</div>${imgs}${inlineBlanks?'':body}
     ${chk?learnMkHTML(q,chk):''}${SIT.learn&&!open?learnChipsHTML(q):''}
     <div class="pips">${SIT.deck.map((_,i)=>{const id=SIT.deck[i].id,c=SIT.learn&&SIT.chk[id];
@@ -1360,6 +1368,7 @@ function learnChipsHTML(q){
   for(const r of q.refs)chips.push(`<button class="qa" data-act="${r.k}">${REF[r.k].ic} ${REF[r.k].lbl}${r.k==='patton'?' p. '+r.pp:''}</button>`);
   if(hasHer(q))chips.push('<button class="qa" data-act="hl">✅ Her worked answer</button>');
   const hint=chips.length?(SIT.chk[q.id]?'':'<span class="hint">open before or after you answer</span>')
+    :q.kh?(SIT.chk[q.id]?'':'<span class="hint">a Kahoot question: the answer shows on Check</span>')
     :(DATA.questions.some(x=>x.vid||(x.refs&&x.refs.length))
       ?'<span class="hint">nothing of hers or Patton’s states this one outright — the answer shows on Check</span>'
       :'<span class="hint">her slides and the videos have not been matched to this module yet — the answer shows on Check</span>');
@@ -1373,7 +1382,7 @@ function learnCheck(){
   const r=markQ(q,a), peeked=!!SIT.peek[q.id];
   SIT.chk[q.id]={r,peeked,ticks:[]};
   S.seen[q.id]=(S.seen[q.id]||0)+1;
-  if(r){ if(!a||r.got<r.tot)S.miss[q.id]=(S.miss[q.id]||0)+1; else if(!peeked&&S.miss[q.id])delete S.miss[q.id]; }
+  if(r&&!q.kh){ if(!a||r.got<r.tot)S.miss[q.id]=(S.miss[q.id]||0)+1; else if(!peeked&&S.miss[q.id])delete S.miss[q.id]; }
   SV('miss',S.miss);SV('seen',S.seen);
   renderQ();
   const m=document.querySelector('.mk');if(m)window.scrollTo({top:m.getBoundingClientRect().top+window.scrollY-64,behavior:'smooth'});
@@ -1418,7 +1427,7 @@ function learnDone(){
   const closed=rows.filter(x=>x.chk&&x.chk.r);
   const first=closed.filter(x=>SIT.ans[x.q.id]&&x.chk.r.got>=x.chk.r.tot&&!x.chk.peeked);
   const peek=closed.filter(x=>SIT.ans[x.q.id]&&x.chk.r.got>=x.chk.r.tot&&x.chk.peeked);
-  const missed=closed.filter(x=>!SIT.ans[x.q.id]||x.chk.r.got<x.chk.r.tot);
+  const missed=closed.filter(x=>!SIT.ans[x.q.id]||x.chk.r.got<x.chk.r.tot), khOnly=SIT.deck.every(q=>q.kh);
   const saqs=rows.filter(x=>x.chk&&!x.chk.r);
   const skipped=rows.filter(x=>!x.chk).length;
   const btn=(k,lbl)=>`<button class="qa" data-act="${k}">${lbl}</button>`;
@@ -1434,7 +1443,7 @@ function learnDone(){
       ${saqs.length?`<span class="tag">${saqs.length} written, self-marked</span>`:''}
       ${skipped?`<span class="tag">${skipped} not checked</span>`:''}
     </div>
-    <div class="note">Learn mode never goes on the score chart — that line is for mock tests sat without help. ${missed.length?`The ${missed.length} you missed or skipped ${missed.length===1?'is':'are'} in your misses pile now (“Learn my misses” / “Redo my misses”); `:''}a right answer after a peek leaves the pile as it was.</div>
+    <div class="note">Learn mode never goes on the score chart — that line is for mock tests sat without help. ${khOnly?`Kahoot questions stay out of your misses pile (they are the lower-yield extra), so run the Kahoot again to retry ${missed.length?'the ones you missed':'it'}.`:missed.length?`The ${missed.length} you missed or skipped ${missed.length===1?'is':'are'} in your misses pile now (“Learn my misses” / “Redo my misses”); `:''}a right answer after a peek leaves the pile as it was.</div>
     ${missed.map(({q,chk})=>row(q,chk.r.got>0&&SIT.ans[q.id]?'partial':'wrong',SIT.ans[q.id]?`${+chk.r.got.toFixed(1)}/${chk.r.tot}`:'skip')).join('')}
     ${peek.map(({q})=>row(q,'partial','peek')).join('')}
     ${saqs.map(({q,chk})=>row(q,'saq',`✍ ${+(chk.ticks.length*q.pts/q.saq.steps.length).toFixed(1)}/${q.pts}`)).join('')}
@@ -1475,7 +1484,7 @@ function mark(){
     const r=markQ(q,SIT.ans[q.id]);
     S.seen[q.id]=(S.seen[q.id]||0)+1;
     if(r){got+=r.got;tot+=r.tot;
-      if(r.got<r.tot)S.miss[q.id]=(S.miss[q.id]||0)+1;
+      if(q.kh){}else if(r.got<r.tot)S.miss[q.id]=(S.miss[q.id]||0)+1;
       else if(S.miss[q.id])delete S.miss[q.id];
       rows.push({q,r})}
     else rows.push({q,r:null,saq:true});
@@ -1735,7 +1744,7 @@ $('#helpBtn').onclick=()=>{$('#help').innerHTML=`
   <p>Four things, nothing else. <b>Next up</b> (the blue card) picks for you: a case run you stopped partway first, otherwise
   today's 15 from the 10 yellow cases ONLY — the booklet's own questions (starred, and the unstarred ones inside the yellow cases)
   and her closed versions of them — misses and the least-seen first, round and round. <b>🩺 Every case question</b> has all of
-  them at once, plus her exam revision on the cases (her deck, her Kahoot, her case quizzes), and below that each case on its own:
+  them at once, plus her exam revision on the cases (her deck, her case quizzes; her Kahoot sits apart as a 🎮 lower-yield button), and below that each case on its own:
   what it asks, her tips, what is still held, and a button for just that case. <b>✍️ SAQ trainer</b> drills the written answers.
   <b>⏱ Mock test</b> is a paper shaped like hers. Each opens its own screen; <b>‹ Home</b> or your phone's back button brings
   you back. Leaving a mock test with the back button asks first; a case run is saved as you go, so it just stops.</p>

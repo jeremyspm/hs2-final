@@ -373,6 +373,7 @@ let nImported = 0;
 for (const [mod, dir] of SIMS) {
   const D = SIMDATA[mod];
   for (const q0 of D.questions) {
+    if (q0.kh) continue;      /* a module sim's Kahoots are its own lower-yield section (his rule, 12 Oct 2026): never imported here */
     if (ownIds.has(q0.id)) { fails2.push(`${dir} question ${q0.id} has the same id as one of the final's own`); continue; }
     const q = JSON.parse(JSON.stringify(q0));
     q.mod = mod;
@@ -459,19 +460,20 @@ const caseExtra = {};      // case id -> ids of her closed questions that sit on
   caseExtra[c.id] = [...(caseExtra[c.id] || []), ...rgIds];
 }
 
-/* ── 4c. her exam revision Kahoot (content/kahoot-exam.js): 49 of her 50, keys as she marked them; each on its case's row,
-   in its case's module (like her revision deck), so Learn by module and the mock's body-system groups see it ── */
-const kahIds = [];
+/* ── 4c. her exam revision Kahoot (content/kahoot-exam.js): 49 of her 50, keys as she marked them. Since 12 Oct 2026 (his rule:
+   "give it its own category … lower yield") it is its OWN 🎮 section: flagged `kh`, out of the exam core, the mock pool and
+   Every case question, never on a case row's questions; a case row only counts it (f.kh, the "🎮 N in her Kahoots" chip). ── */
+const kahIds = [], khByCase = {};
 for (const it of KAHOOT.items) {
   const c = CASES.find(x => x.id === it.case);
   if (!c) { fails2.push(`Kahoot Q${it.n}: no case ${it.case}`); continue; }
   if (it.key.length !== 1 || !it.opts.includes(it.key[0])) fails2.push(`Kahoot Q${it.n}: key not among its options`);
   const q = { id: qid(KAHOOT.quiz, it.q, it.key), quiz: KAHOOT.quiz, sys: c.sys, mod: c.mod, type: it.type, pts: 1, q: it.q,
-    qh: '<p>' + escH(it.q) + '</p>', qt: it.q, imgs: [], opts: it.opts, key: it.key, refs: [] };
+    qh: '<p>' + escH(it.q) + '</p>', qt: it.q, imgs: [], opts: it.opts, key: it.key, refs: [], kh: 1, khSrc: `Her exam revision Kahoot, Q${it.n} · case ${c.n}` };
   if (questions.some(x => x.id === q.id)) fails2.push(`Kahoot Q${it.n}: the same question twice`);
-  questions.push(q); kahIds.push(q.id); (caseExtra[c.id] = caseExtra[c.id] || []).push(q.id);
+  questions.push(q); kahIds.push(q.id); khByCase[c.id] = (khByCase[c.id] || 0) + 1;
 }
-quizzes.push({ id: KAHOOT.quiz, name: KAHOOT.name, sys: 'mixed', mod: 'exam', n: kahIds.length });
+quizzes.push({ id: KAHOOT.quiz, name: KAHOOT.name, sys: 'mixed', mod: 'exam', n: kahIds.length, kh: 1 });
 
 /* ── the exam checklist: the ten cases on top (HER words), then every module row, re-tiered on its own marks ── */
 const byIdAll = new Map(questions.map(q => [q.id, q]));
@@ -500,7 +502,7 @@ for (const c of CASES) {
     else { const r = impRows[p]; if (!r) fails2.push(`case ${c.id}: pull row ${p} is not a module checklist row`); else ids.push(...(r.qs || [])); }
   }
   FOCUS_OUT.push(rowOut({ id: 'case-' + c.id, sys: c.sys, mod: c.mod, tier: 0, flag: 'S', crit: `Case Study Booklet A · case ${c.n}, starred`, t: c.name,
-    done: c.done, ask: c.ask, cap: c.cap, held: (c.held || []).map(h => h.q), pull: c.pull || [] }, ids));
+    done: c.done, ask: c.ask, cap: c.cap, held: (c.held || []).map(h => h.q), pull: c.pull || [], ...(khByCase[c.id] ? { kh: khByCase[c.id] } : {}) }, ids));
 }
 FOCUS_OUT.push(rowOut({ id: 'rev-exam', sys: 'mixed', mod: 'exam', tier: 0, flag: 'X', crit: 'Her “Exam Revision ppt for Hs2 Final”, linked from her Module 3 Completion page',
   t: 'Her exam revision deck — the questions she chose for the final',
@@ -524,7 +526,7 @@ for (const [c, t] of Object.entries(CASE_TOPICS)) {
 }
 /* the exam core: A = the questions she wrote FOR this exam (the cases, her formative test, her revision deck); B = every
    module question on a row a case stands on. The home page deals from A until every A question has been seen once. */
-const coreA = questions.filter(q => /^case-/.test(q.quiz) || [ '211092', REVDECK.quiz, RGQUIZ.quiz, KAHOOT.quiz ].includes(q.quiz)).map(q => q.id);
+const coreA = questions.filter(q => /^case-/.test(q.quiz) || [ '211092', REVDECK.quiz, RGQUIZ.quiz ].includes(q.quiz)).map(q => q.id);
 const inA = new Set(coreA);
 const coreB = [...new Set(FOCUS_OUT.filter(f => f.tier === 1).flatMap(f => f.qs || []))].filter(id => !inA.has(id));
 console.log(`exam core: ${coreA.length} of her exam questions, then ${coreB.length} module questions on the case topics (of ${questions.length})`);
@@ -535,7 +537,7 @@ console.log(`exam core: ${coreA.length} of her exam questions, then ${coreB.leng
    211050 → 13; neuron, AP & synapse 211129 → 9/10; pedigree review 211086 and pedigree pop quiz 211014 → 15). Each item gets a
    body-system group (her deck's one CVS item = case 3's blood pressure); the page deals the groups in proportion to how many of
    the ten cases sit on each, least-seen first. The written half is unchanged: her starred case questions. */
-const MOCK_QUIZZES = ['211092', REVDECK.quiz, RGQUIZ.quiz, KAHOOT.quiz, '211050', '211129', '211086', '211014'];
+const MOCK_QUIZZES = ['211092', REVDECK.quiz, RGQUIZ.quiz, '211050', '211129', '211086', '211014'];      /* her Kahoot left 12 Oct: Kahoots are their own lower-yield section */
 const GROUP = { lymph: 'lymph', resp: 'resp', cvs: 'resp', endo: 'endo', ms: 'ms', ns: 'ns', repro: 'repro', gen: 'gen', senses: 'gen' };
 const caseOf = Object.fromEntries(Object.entries(ownByCase).flatMap(([cid, ids]) => ids.map(id => [id, cid])));
 const mockPool = [];
