@@ -8,7 +8,7 @@
 <style>
 /* ── estate tokens (house.css contract, dark default) ─────────────── */
 :root{
-  --bg:hsl(225 33% 5%); --fg:hsl(225 31% 95%); --card:hsl(224 44% 10%);
+  --bg0:hsl(225 33% 5%); --fg:hsl(225 31% 95%); --card:hsl(224 44% 10%);
   --primary:hsl(218 91% 64%); --onprimary:hsl(225 33% 5%);
   --muted:hsl(220 38% 13%); --muted-fg:hsl(218 19% 67%);
   --accent:hsl(219 40% 18%); --danger:hsl(0 84% 60%); --ok:hsl(158 64% 42%);
@@ -16,7 +16,7 @@
   --dur:200ms; --ease:cubic-bezier(.4,0,.2,1);
 }
 :root[data-theme=light]{
-  --bg:hsl(214 47% 97%); --fg:hsl(222 47% 11%); --card:hsl(0 0% 100%);
+  --bg0:hsl(214 47% 97%); --fg:hsl(222 47% 11%); --card:hsl(0 0% 100%);
   --onprimary:#fff; --muted:hsl(215 40% 93%); --muted-fg:hsl(220 12% 40%);
   --accent:hsl(216 45% 91%); --border:hsl(215 33% 89%); --warn:hsl(38 92% 40%);
 }
@@ -37,6 +37,20 @@ header .back{text-decoration:none;white-space:nowrap}
   header .d{grid-area:2/2;white-space:normal;font-size:.76rem;line-height:1.3}
   header .btn{grid-row:1/span 2;padding:8px 10px;min-width:40px}
 }
+/* ── the paper's colour (15 Oct 2026: "it should SCREAM Test 3, not look like INP"). --tool is the PAPER's colour,
+   the same one jeremyspm.github.io uses (HS2 blue, INP green, Pharm purple), set from TOOL at load. The header bar
+   wears it solid, the page a soft tint (--bg is mixed from --bg0), buttons and links take it as --primary, and the
+   home banner says the tool's name in giant type. ── */
+:root{--bg:color-mix(in srgb,var(--tool,var(--bg0)) 7%,var(--bg0));
+  --tool-deep:color-mix(in srgb,var(--tool,#4f46e5) 72%,#000);
+  --primary:color-mix(in srgb,var(--tool,hsl(218 91% 64%)) 70%,#fff)}
+:root[data-theme=light]{--primary:color-mix(in srgb,var(--tool,hsl(218 91% 64%)) 88%,#000)}
+header{background:linear-gradient(100deg,var(--tool-deep),color-mix(in srgb,var(--tool,#4f46e5) 88%,#000));color:#fff;
+  border-bottom:0;box-shadow:0 4px 18px -8px color-mix(in srgb,var(--tool,#4f46e5) 60%,transparent)}
+header h1{color:#fff;letter-spacing:-.01em}
+header .d,header a.d{color:rgb(255 255 255 / .85)}
+header .btn{color:#fff;border-color:rgb(255 255 255 / .3);background:rgb(255 255 255 / .1)}
+header .btn:hover{background:rgb(255 255 255 / .2)}
 main{max-width:720px;margin:0 auto;padding:14px 14px 90px}
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
   padding:14px;margin:0 0 12px}
@@ -275,22 +289,26 @@ a{color:var(--primary)}
 .lmore>summary::before{content:'▸';transition:transform var(--dur) var(--ease)}
 .lmore[open]>summary::before{transform:rotate(90deg)}
 .lmore[open]>summary{margin-bottom:4px}
-/* the tool's own name and colour (26 Sep 2026): four Paper Sims share one layout, so the title card on home, the stripe
-   along the header and the tab icon are what tell them apart. --tool is set from TOOL at load. */
-header{border-top:4px solid var(--tool)}
-.idcard{display:flex;align-items:center;gap:12px;margin:0 0 12px;padding:12px 14px;border-radius:var(--radius);
-  background:color-mix(in srgb,var(--tool) 15%,var(--card));border:1px solid color-mix(in srgb,var(--tool) 45%,var(--border))}
-.idic{flex:0 0 48px;height:48px;border-radius:12px;background:var(--tool);display:flex;align-items:center;justify-content:center;font-size:1.55rem}
-.idtx{min-width:0}
-.idtx small{display:block;font-size:.7rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:color-mix(in srgb,var(--tool) 62%,var(--fg))}
-.idtx b{display:block;font-size:1.45rem;line-height:1.15;margin:2px 0 3px;font-weight:800}
-.idtx>span{display:block;font-size:.8rem;color:var(--muted-fg);line-height:1.3}
-/* phone: the title card and the rows tighten so home still fits one 375x812 screen */
+/* the tool's own name (26 Sep 2026; loud since 15 Oct): four Paper Sims share one layout, so the home banner says
+   which one this is in giant type on the paper's colour, with the tool's emoji as a watermark and the countdown. */
+.idcard{position:relative;overflow:hidden;display:flex;align-items:center;margin:0 0 14px;padding:20px 22px;border-radius:18px;color:#fff;
+  background:radial-gradient(90% 130% at 100% 0%,rgb(255 255 255 / .2),transparent 60%),
+    linear-gradient(135deg,color-mix(in srgb,var(--tool) 94%,#fff),var(--tool-deep));
+  box-shadow:0 14px 34px -16px color-mix(in srgb,var(--tool) 80%,transparent)}
+.idic{position:absolute;right:-8px;bottom:-30px;font-size:7.5rem;line-height:1;opacity:.22;transform:rotate(-14deg);pointer-events:none}
+.idtx{position:relative;min-width:0}
+.idtx small{display:block;font-size:.72rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgb(255 255 255 / .86)}
+.idtx b{display:block;font-size:clamp(2.3rem,7vw,3.4rem);line-height:.95;margin:6px 0 8px;font-weight:900;letter-spacing:-.03em;text-transform:uppercase}
+.idtx>span{display:block;font-size:.88rem;color:rgb(255 255 255 / .9);line-height:1.35}
+.idtx .idwhen{display:inline-flex;margin-top:12px;padding:5px 12px;border-radius:999px;background:rgb(255 255 255 / .18);
+  border:1px solid rgb(255 255 255 / .32);font-size:.8rem;font-weight:700;color:#fff}
+/* phone: the banner and the rows tighten so home still fits one 375x812 screen as near as it can */
 @media(max-width:560px){
-  .idcard{padding:9px 12px;gap:10px;margin-bottom:8px}
-  .idic{flex-basis:40px;height:40px;border-radius:10px;font-size:1.3rem}
-  .idtx b{font-size:1.25rem;margin:1px 0 2px}
-  .idtx small,.idtx>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .idcard{padding:14px 16px;margin-bottom:10px;border-radius:14px}
+  .idic{font-size:5.5rem;bottom:-20px}
+  .idtx b{font-size:2.1rem;margin:4px 0 6px}
+  .idtx>span{font-size:.8rem}
+  .idtx .idwhen{margin-top:8px;font-size:.76rem}
   .lrow{padding:6px 12px;margin-bottom:5px}
   .lic{flex-basis:36px;height:36px}
   .lsec{margin:8px 4px 4px}
@@ -452,7 +470,7 @@ function paintCountdown(){
 }
 const $ = s => document.querySelector(s);
 /* this tool's identity: the four Paper Sims share one layout, so the name, colour and tab icon are what tell them apart */
-const TOOL = {kick:'Health Science 2 · 722.541', name:'HS2 Final exam', sub:'Her 10 starred cases · 32 questions · 130 min', icon:'🫀', hue:'#7c3aed'};
+const TOOL = {kick:'Health Science 2 · 722.541', name:'HS2 Final exam', sub:'Her 10 starred cases · 32 questions · 130 min', icon:'🫀', hue:'#2563eb'};   /* HS2's blue, as on the hub */
 function paintTool(){
   document.documentElement.style.setProperty('--tool', TOOL.hue);
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="${TOOL.hue}"/><text x="32" y="45" font-size="38" text-anchor="middle">${TOOL.icon}</text></svg>`;
@@ -460,7 +478,8 @@ function paintTool(){
   if(!l){ l = document.createElement('link'); l.rel = 'icon'; document.head.appendChild(l); }
   l.href = 'data:image/svg+xml,' + encodeURIComponent(svg);
 }
-const idCard = () => `<div class="idcard"><span class="idic" aria-hidden="true">${TOOL.icon}</span><span class="idtx"><small>${TOOL.kick}</small><b>${TOOL.name}</b><span>${TOOL.sub}</span></span></div>`;
+const idWhen = () => { const n = daysLeft(); return n > 0 ? `${n} day${n === 1 ? '' : 's'} to your sitting · ${sittingLabel()}` : `Your sitting · ${sittingLabel()}`; };
+const idCard = () => `<div class="idcard"><span class="idic" aria-hidden="true">${TOOL.icon}</span><span class="idtx"><small>${TOOL.kick}</small><b>${TOOL.name}</b><span>${TOOL.sub}</span><span class="idwhen">${idWhen()}</span></span></div>`;
 const esc = s => String(s??'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const shuffle = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]} return a };
 const SYS = {cvs:'Cardiovascular', resp:'Respiratory', lymph:'Lymphatic', ms:'Musculoskeletal', ns:'Nervous', endo:'Endocrine',
