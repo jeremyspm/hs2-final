@@ -137,6 +137,7 @@ a.btn.xtool{background:#db2777;border-color:#db2777;color:#fff;text-decoration:n
 .qhead .timer.low{color:var(--danger);font-weight:700}
 .stem{white-space:pre-wrap;margin-bottom:10px}
 .stem img,.qimg{max-width:100%;border-radius:8px;background:#fff;display:block;margin:8px 0}
+.fignote{font-size:.78rem;color:var(--muted-fg);margin:2px 0 8px}
 /* structured stem: her paragraphs, lists and table rows survive; a Canvas layout
    table becomes stacked cells at phone width and side-by-side from 560px */
 .stem.rich{white-space:normal;line-height:1.5}
@@ -1348,7 +1349,7 @@ function renderQ(){
       <span class="timer" id="timer"></span>
       <button class="btn ghost" id="exitB" title="${SIT.learn?'stop learning':'abandon mock test'}" style="padding:2px 10px">✕</button></div>
     ${q.kh?`<div class="khsrc">${esc(q.khSrc)} · lower yield, kept apart from the case questions</div>`:''}
-    ${inlineBlanks?body:''}<div class="stem${q.qh?' rich':''}">${stemHTML}</div>${imgs}${inlineBlanks?'':body}
+    ${inlineBlanks?body:''}<div class="stem${q.qh?' rich':''}">${stemHTML}</div>${imgs}${q.fignote?`<div class="fignote">${esc(q.fignote)}</div>`:''}${inlineBlanks?'':body}
     ${chk?learnMkHTML(q,chk):''}${SIT.learn&&!open?learnChipsHTML(q):''}
     <div class="pips">${SIT.deck.map((_,i)=>{const id=SIT.deck[i].id,c=SIT.learn&&SIT.chk[id];
       const cls=c?(c.r?(c.r.got>=c.r.tot&&SIT.ans[id]?'ok':'bad'):'done'):(SIT.ans[id]?'done':'');
@@ -1692,6 +1693,7 @@ function aiQuestionPrompt(q,withFig){
   if(q.saq)L.push('Her model answer, one mark per step: '+(q.saq.full||q.saq.steps).map((s,i)=>`(${i+1}) ${s}`).join(' '));
   else L.push(`Correct answer: ${keyText(q)}`);
   L.push(`My answer: ${you||'(none — I didn’t know)'}`);
+  if(q.fignote)L.push('About the figure: '+q.fignote.replace(/^\S+\s/,''));
   if(q.imgs&&q.imgs.length)L.push(withFig?'The question’s figure is pasted with this message. Read it before answering — the question is about it.':'This question has a diagram I can’t paste. Don’t guess what it shows; work from the text.');
   for(const r of q.refs||[]){
     if(r.t)L.push(`${r.k==='patton'?'The textbook says':r.k==='course'?'A file posted in my course (not by my lecturer) says':'My lecturer’s notes say'} (verbatim): “${r.t}” — ${r.src}`);
@@ -1717,7 +1719,7 @@ function aiTopicPrompt(f){
    paste lands every picture the AI needs. Same-origin images, so the canvas stays clean. */
 function aiFigures(q){
   const f=[];
-  for(const n of q.imgs||[])f.push({src:imgU(n),label:q.imgs.length>1?'Question figure '+(f.length+1):'Question figure'});
+  for(const n of q.imgs||[])f.push({src:imgU(n),label:/\/img\/slides\//.test(n)?'My lecturer’s slide (stands in for the quiz’s own picture, which is gone)':q.imgs.length>1?'Question figure '+(f.length+1):'Question figure'});
   for(const r of q.refs||[])if(r.k==='slide'&&r.slide)f.push({src:slideU(r.slide),label:'My lecturer’s slide — '+r.src});
   return f;
 }
