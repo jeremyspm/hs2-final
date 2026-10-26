@@ -1,11 +1,41 @@
 # HS2 Paper Sim — Final exam
 
-The HS2 (722.541) final: **Thu 5 Nov 2026, time TO BE CONFIRMED** (her FINAL HS2 EXAM announcement 413237, 5 Oct: "at a time that
-will be confirmed", gather 45 min before; her helpline still says "opens 1 pm sharp", 60 min before) — **on campus, 130 min, 32
-questions / 80 marks (160 answers at ½ mark), 37% written, Modules 1–3**. Her announcement: "Exam case studies are marked in
+The HS2 (722.541) final is **Wed 4 Nov 2026, 130 minutes, 90 marks**, on campus in Echoexam. Session times are
+09:30–11:40 or 12:30–14:40 (Jeremy's current standing instructions, 27 Oct; supersedes the older announcement date).
+The Paper Sim's older 32-question/80-mark mock structure is a practice format, not a statement of the current exam format.
+Her announcement: "Exam case studies are marked in
 yellow and starred (test case studies are marked in blue, not starred and are not in the exam)" — and in her
 own words (Assessment Overview) "based on the starred *Case studies in your Case Study Booklet A". Same format as
 `hs2-test2`, `hs2-paper-m1` and `hs2-test3`; own storage prefix `hs2f.`; `noindex`.
+
+## Guided recall — 27 Oct 2026
+
+`rep.html` is linked prominently from home. One queue teaches the ten cases with a connected explanation,
+short answer pieces, missing-word rehearsal, independent recall, point-by-point self-checks and spaced returns.
+No speech recording or AI marking is used: say the answer or type it, then honestly tick the facts recalled.
+Long answers unlock a complete-answer check after their pieces have been recalled independently.
+
+The build derives its coverage from the existing core and mock pool: **155 original questions**, plus **nine
+compiled study answers** (eight held questions and the workbook's male-pill research prompt). Sources and
+authorship are labelled on every supplement. All original short-answer fact lines are retained; the levodopa
+BBB line is explicitly corrected to amino-acid transport while the original key remains in the source panel.
+The Harris and Anderson pedigrees are the workbook's original figures, with independently worked solutions.
+
+Supported attempts and misses return after three intervening checks. Independent successes return after one,
+then two, then three days; repeats on the same day do not count as separate retention days. Failures reopen
+missed components. Two new pieces alternate with one due review while unseen material remains. This is a
+simple short-horizon spaced-retrieval queue, not FSRS. “Recalled on 2+ days” is a progress measure, not an exam prediction.
+
+Progress lives separately in `hs2f.relearn.v1`, with pause/resume and JSON export/import. Original Paper Sim
+scores are untouched. `rep.template.html`, `rep.css`, `rep.js`, `rep-engine.mjs` and `content/rep-lessons.mjs`
+are the sources; **do not edit generated `rep.html`**. Both `build.mjs` and `resplice.mjs` regenerate it.
+
+    node resplice.mjs       # preserve the existing bank; regenerate both pages
+    node rep.build.mjs      # rebuild only the guided page
+    node rep.check.mjs      # full fact coverage, scheduling, complete checks, pedigree solutions
+
+Use the estate as the HTTP root because original figures also link to sibling sims. Check the flow at 375px,
+including hints vs independent recall, partial self-marking, figures, closed questions and pause/resume.
 
 ## What is in it (built 2026-09-21)
 

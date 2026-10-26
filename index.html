@@ -830,6 +830,7 @@ function launcher(){
   const nCaseW = DATA.questions.filter(q=>q.mod==='cases'&&q.saq).length, ALLC = ALLCASE();
   return `${idCard()}
   <p class="exambar"><b>The exam is the 10 starred cases.</b> Her words: “I am 100% sure.” Rep these.</p>
+  <a class="hero" href="rep.html" style="text-decoration:none"><span><small>Learn → rebuild → recall → spaced review</small><b>Learn all ten cases</b></span><span class="go" aria-hidden="true">▶</span></a>
   <button class="hero" data-hero="${up.k}"><span><small>${up.e}</small><b>${up.t}</b></span><span class="go" aria-hidden="true">▶</span></button>
   ${row('allcase','🩺','Every case question',`${ALLC.filter(q=>S.seen[q.id]).length} of ${ALLC.length} seen · all of them at once, no cap`)}
   ${SAQD.length?row('saq','✍️','SAQ trainer',`${nL} of ${SAQD.length} locked · her case answers, short`):''}

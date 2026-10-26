@@ -12,7 +12,7 @@ import { loadShorts, shortsJSON } from './shorts.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const html = fs.readFileSync(path.join(HERE, 'index.html'), 'utf8');
-const m = html.match(/const DATA = (\{[\s\S]*?\});\n/);
+const m = html.match(/const DATA = (\{[\s\S]*?\});\r?\n/);
 if (!m) { console.error('RESPLICE FAILED: no bank found in index.html'); process.exit(1); }
 const D = JSON.parse(m[1]);
 const tpl = fs.readFileSync(path.join(HERE, 'template.html'), 'utf8');
@@ -29,3 +29,4 @@ if (!script) { console.error('RESPLICE FAILED: no <script> block'); process.exit
 try { new Function(script); } catch (e) { console.error('RESPLICE FAILED: page script does not parse — ' + e.message); process.exit(1); }
 fs.writeFileSync(path.join(HERE, 'index.html'), out);
 console.log(`index.html re-spliced: ${m[1].length / 1024 | 0} KB bank · ${fs.statSync(path.join(HERE, 'index.html')).size / 1024 | 0} KB total · script parses`);
+await import('./rep.build.mjs');
