@@ -24,10 +24,11 @@ typed?"):
   a one-letter typo; strict on numbers, genotype capitals, and first letters, so hyper/hypo and afferent/efferent never
   pass). A missed point can be counted with a deliberate "I wrote it differently" click.
 - **A ladder, not a cliff** (the ask: "shouldn't it be gradual occlusion?", and the blank write-out "should be the
-  final stage"). A new piece climbs in one visit: 1 read · 2 one key word a line hidden · 3 every key word hidden ·
-  4 first letters only, each point typed. Step 5, the blank write-out, comes a few pieces later and is only ever the
-  last step. A missed step is retried or left there (`items[id].rung` is where the next visit starts); a missed
-  write-out climbs back from step 3, never from blank.
+  final stage"), then **key words, not sentences** (same evening: nothing asks for a sentence). A new piece climbs
+  in one visit: 1 read it (key words highlighted, the rest quiet) · 2 one key word a line hidden · 3 every key word
+  hidden. Step 4, key words from memory (typed in any order, marked by `markFacts`), comes a few pieces later and is
+  only ever the last step. A missed step is retried or left there (`items[id].rung` is where the next visit starts);
+  a miss from memory comes back at step 3, never blank. `state.lv` 2 maps the morning's 5-step rungs onto these.
 - **Written questions only.** 111 pieces: her case questions and the compiled answers first, then her revision deck's
   written ones. The 81 that mark themselves (MCQ, T/F, matching, blanks) are the sim's `#rep` screen (⚡ Rep
   questions, `REPQS` in template.html), which the hub's HS2 Final Rep tab opens. The mini mock test was culled the
