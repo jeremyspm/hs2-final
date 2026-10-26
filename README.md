@@ -23,6 +23,11 @@ typed?"):
   `markFacts` counts a point when all its key words are in the answer (`termFound`: forgiving on endings, plurals and
   a one-letter typo; strict on numbers, genotype capitals, and first letters, so hyper/hypo and afferent/efferent never
   pass). A missed point can be counted with a deliberate "I wrote it differently" click.
+- **A ladder, not a cliff** (the ask: "shouldn't it be gradual occlusion?", and the blank write-out "should be the
+  final stage"). A new piece climbs in one visit: 1 read · 2 one key word a line hidden · 3 every key word hidden ·
+  4 first letters only, each point typed. Step 5, the blank write-out, comes a few pieces later and is only ever the
+  last step. A missed step is retried or left there (`items[id].rung` is where the next visit starts); a missed
+  write-out climbs back from step 3, never from blank.
 - **Written questions only.** 111 pieces: her case questions and the compiled answers first, then her revision deck's
   written ones. The 81 that mark themselves (MCQ, T/F, matching, blanks) are the sim's `#rep` screen (⚡ Rep
   questions, `REPQS` in template.html), which the hub's HS2 Final Rep tab opens. The mini mock test was culled the

@@ -15,9 +15,10 @@ let storeError=false,state;
 try{state=JSON.parse(localStorage.getItem(KEY))}catch{}
 if(!state||state.version!==1||typeof state.items!=='object'||typeof state.facts!=='object')state={version:1,items:{},facts:{},turn:0,intros:{},filter:'all',active:null};
 state.intros ||= {};state.turn ||= 0;state.filter ||= 'all';delete state.extras;
-/* a run saved by the first version: its say-the-gaps stage is now typed blanks, its self-ticked check restarts at the prompt */
-if(state.active?.stage==='gaps')state.active.stage='cloze';
-if(state.active?.stage==='mark'&&!state.active.marks)state.active.stage='recall';
+/* a run saved before the ladder (stages learn / gaps / cloze / recall / mark) picks up on the matching step */
+if(state.active&&state.active.rung===undefined){const a=state.active;
+  a.rung=a.stage==='learn'?0:a.stage==='gaps'||a.stage==='cloze'?2:4;
+  if(!(a.stage==='mark'&&a.marks))a.stage='do';}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state));storeError=false}catch{storeError=true;}};
 const $=s=>document.querySelector(s),app=$('#app');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -68,9 +69,9 @@ function home(){
  ${D.cases.map(c=>{const sub=U.filter(u=>u.caseId===c.id),v=snapshot(sub,state);return `<button class="lrow${v.seen===v.total?' done':''}" data-case="${c.id}" style="--cc:${CC[c.id]}"><span class="lic">${c.id.slice(1)}</span><span class="ltx"><b>${esc(caseTitle(c))}</b><small>${v.seen}/${v.total} met · ${v.retained} kept${v.due?` · ${v.due} back`:''}</small><span class="bar"><i style="width:${v.total?100*v.seen/v.total:0}%"></i></span></span><span class="lch">›</span></button>`}).join('')}
  <div class="tools">${btn('reviewOnly',`Reviews only${s.due?` · ${s.due}`:''}`,'ghost sm')}${btn('export','Export progress','ghost sm')}${btn('import','Import progress','ghost sm')}<input id="importFile" type="file" accept="application/json" hidden></div>
  <details class="fold"><summary>How this works</summary>
-  <p><b>New piece:</b> read her answer and why it works, then type the key words into the blanks. The page marks them.</p>
-  <p><b>A few pieces later</b> it comes back blank: write the whole thing from memory, the way you will in Echoexam. A point counts when its key words are in your answer. Spelling slips and word endings are fine; hyper/hypo, afferent/efferent, numbers and genotype capitals are not.</p>
-  <p><b>Got it with no help:</b> back tomorrow, then in 2 days, then 3. <b>Missed it:</b> back in a few pieces. Long answers are learned in pieces of four points, then written out whole.</p>
+  <p><b>A new piece climbs a ladder,</b> each step hiding more of her answer: 1 read it · 2 one key word a line hidden · 3 every key word hidden · 4 first letters only, type each point · 5 from memory. Steps 2–4 happen in one go; get a step right and the next one hides more. Miss one and you try that step again, or leave it there and it comes back at that step.</p>
+  <p><b>Step 5 comes a few pieces later:</b> write it from memory, the way you will in Echoexam. It's only ever the last step: miss it and it climbs back up from step 3, never from a blank page. A point counts when its key words are in your answer. Spelling slips and word endings are fine; hyper/hypo, afferent/efferent, numbers and genotype capitals are not.</p>
+  <p><b>Got it from memory:</b> back tomorrow, then in 2 days, then 3. Long answers are learned in pieces of four points, then written out whole.</p>
   <p class="source">${D.originalCount} of her questions plus ${D.questions.filter(q=>q.supplement).length} compiled study answers (the held questions and the male-pill research prompt), ${D.facts} marking points. “Kept” means written from memory on 2+ different days; it isn’t an exam mark. Progress is separate from your Paper Sim scores.</p>
  </details>`);
  $('#begin').onclick=()=>{sessionCount=0;if(active){run={...state.active};render()}else{state.filter='all';save();next()}};
@@ -93,9 +94,12 @@ function next(){
  mount(`<div class="card"><h2 style="margin:0 0 6px;font-size:1.15rem">${state.filter==='all'?'All caught up':`${esc(caseName(state.filter))}: all caught up`}</h2><p class="muted">${later?'Everything here is waiting for its next day. Going early works, but a day’s gap is the real test.':'Nothing to learn in this selection.'}</p><div class="row2">${btn('back','Back to the cases','primary')}${later?btn('early','Go early',''):''}</div></div>`);
  $('#back').onclick=()=>{state.filter='all';save();home()};if(later)$('#early').onclick=()=>open(later);
 }
-function open(u){const q=Q.get(u.qid),seen=!!state.items[u.id]?.seen;
- run={id:u.id,stage:u.kind==='whole'||seen?'recall':'learn',assisted:false,text:'',started:Date.now()};persist();
- if(!state.intros[u.caseId]&&run.stage==='learn'&&caseOf(u.caseId))intro(u);else render();}
+/* a piece starts where its ladder left it (state.items[id].rung); one seen before the ladder existed restarts at step 3 of 5
+   if it was missed, else at the write-out. A whole answer is only ever a write-out. */
+function open(u){const it=state.items[u.id];
+ const r=u.kind==='whole'?4:it?.rung??(!it?.seen?0:it.miss?.length?2:4);
+ run={id:u.id,rung:r,stage:'do',assisted:r<4,text:'',started:Date.now()};persist();
+ if(!state.intros[u.caseId]&&r===0&&caseOf(u.caseId))intro(u);else render();}
 function intro(u){const c=caseOf(u.caseId);
  mount(`<div class="card piece" style="--cc:${CC[c.id]}"><div class="where"><span class="tag">${esc(caseName(c.id))}</span><span class="tag plain">First time in</span></div><h2>${esc(caseTitle(c))}</h2><p class="step">The idea behind the case</p><ol class="map">${c.map.map(t=>`<li>${esc(t)}</li>`).join('')}</ol>${btn('introGo','Start the case')}${btn('pause','Back to the cases','ghost wide')}</div>`);
  $('#introGo').onclick=()=>{state.intros[c.id]=true;save();render()};$('#pause').onclick=home;}
@@ -114,32 +118,70 @@ const factList=facts=>`<ol class="facts">${facts.map(f=>`<li>${bold(f.t)}${f.fix
 /* a fact with its key words coloured: hit (in your answer) or miss */
 const marked=(f,terms)=>{let k=0;return esc(f.t).replace(/\*\*(.+?)\*\*/g,(_,t)=>`<b class="${terms[k++]?.found?'hit':'miss'}">${t}</b>`);};
 
+/* ── the ladder (27 Oct 2026: "shouldn't it be gradual occlusion?") ──
+   A new piece climbs it in one visit, each step hiding more of her answer: 0 read it · 1 one key word a line hidden ·
+   2 every key word hidden · 3 first letters only, each point typed in full. Then it leaves, and comes back a few pieces
+   later as 4, a blank write-out. A miss never sends it back to blank: a missed step is tried again (or left at that
+   step), and a missed write-out climbs back up from 2 next time. state.items[id].rung is where the next visit starts. */
+const STEPS=['Read it','One word a line hidden','Every key word hidden','First letters only','From memory'];
+const ladder=r=>`<div class="ladder" aria-label="Step ${r+1} of ${STEPS.length}">${STEPS.map((s,i)=>`<span class="${i<r?'done':i===r?'on':''}" title="${s}">${i+1}</span>`).join('<i></i>')}</div>`;
+const stepLabel=r=>`${r+1} · ${STEPS[r]}`;
+/* a line as first letters: "Spread of cancer = metastasis" → "S_____ o_ c_____ = m_________" */
+const skeleton=t=>esc(t.replace(/\*\*/g,'')).replace(/[\p{L}\p{N}][\p{L}\p{N}'’-]*/gu,w=>`<b>${w[0]}</b>${'_'.repeat(Math.min(w.length-1,9))}`);
+
 function render(){
  if(!run)return home();const u=ALL.find(u=>u.id===run.id);if(!u){state.active=null;save();return home()}const q=Q.get(u.qid);
- if(run.stage==='learn'){
-  shell(u,q,'1 · Read it',`<p class="stem">${esc(q.qt||q.q)}</p><div class="why"><b>Why it works</b>${esc(q.note)}</div>${figures(q)}${q.short.hook?`<div class="hook">${esc(q.short.hook)}</div>`:''}${factList(u.facts)}${btn('cloze','Hide the key words ›')}${btn('know','I’ve got it, let me write it all','ghost wide')}${q.scenario?`<details class="fold"><summary>The case</summary><p>${esc(q.scenario)}</p></details>`:''}${source(q)}`);
-  $('#cloze').onclick=()=>{run.stage='cloze';run.assisted=true;persist();render()};
-  $('#know').onclick=()=>{run.stage='recall';run.assisted=true;persist();render()};return;
- }
- if(run.stage==='cloze')return cloze(u,q);
  if(run.stage==='mark')return markScreen(u,q);
- shell(u,q,u.kind==='whole'?'Write the whole answer from memory':'Write it from memory',`${prompt(u,q)}<p class="say">Type it the way you would in the exam.</p><textarea id="typed" placeholder="Your answer…" spellcheck="false">${esc(run.text)}</textarea><p class="small muted">Marked on her key words. Ctrl+Enter checks.</p>${btn('check','Check my answer')}${support(q)}`);
+ if(run.stage==='checked')return checked(u,q);
+ const r=run.rung;
+ if(r===0){
+  shell(u,q,stepLabel(0),`${ladder(0)}<p class="stem">${esc(q.qt||q.q)}</p><div class="why"><b>Why it works</b>${esc(q.note)}</div>${figures(q)}${q.short.hook?`<div class="hook">${esc(q.short.hook)}</div>`:''}${factList(u.facts)}${btn('climb','Start hiding it ›')}${btn('know','I know it, straight to memory','ghost wide')}${q.scenario?`<details class="fold"><summary>The case</summary><p>${esc(q.scenario)}</p></details>`:''}${source(q)}`);
+  $('#climb').onclick=()=>{run.rung=1;persist();render()};
+  $('#know').onclick=()=>{run.rung=4;run.assisted=true;persist();render()};return;
+ }
+ if(r<=2)return cloze(u,q,r);
+ if(r===3)return letters(u,q);
+ shell(u,q,u.kind==='whole'?'Write the whole answer from memory':stepLabel(4),`${u.kind==='whole'?'':ladder(4)}${prompt(u,q)}<p class="say">Type it the way you would in the exam.</p><textarea id="typed" placeholder="Your answer…" spellcheck="false">${esc(run.text)}</textarea><p class="small muted">Marked on her key words. Ctrl+Enter checks.</p>${btn('check','Check my answer')}${support(q)}`);
  const ta=$('#typed'),go=$('#check');go.disabled=!run.text.trim();ta.focus();
  ta.oninput=()=>{run.text=ta.value;go.disabled=!ta.value.trim();persist()};
  ta.onkeydown=e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)&&!go.disabled){e.preventDefault();go.click()}};
  go.onclick=()=>{run.marks=markFacts(u.facts,run.text);run.over=u.facts.map(()=>false);run.stage='mark';persist();render()};hookHelp();
 }
-/* step 2 of a new piece: every key word becomes a blank to type */
-function cloze(u,q){
- let n=0;const rows=u.facts.map((f,fi)=>{let k=0;return `<li>${esc(f.t).replace(/\*\*(.+?)\*\*/g,(_,t)=>`<input class="blank" data-f="${fi}" data-k="${k++}" data-i="${n++}" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="missing key word" style="width:${Math.min(22,Math.max(5,t.length+2))}ch">`)}</li>`;}).join('');
- shell(u,q,'2 · Type the key words',`${prompt(u,q)}<ol class="facts cloze">${rows}</ol>${btn('checkCloze','Check')}`);
+/* steps 1 and 2: key words become blanks to type. Step 1 hides the last key word of each line, step 2 every one. */
+function cloze(u,q,r){
+ let n=0;const rows=u.facts.map((f,fi)=>{const K=keyTerms(f).length;let k=0;return `<li>${esc(f.t).replace(/\*\*(.+?)\*\*/g,(_,t)=>{const i=k++;return r===2||i===K-1?`<input class="blank" data-f="${fi}" data-k="${i}" data-i="${n++}" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="missing key word" style="width:${Math.min(22,Math.max(5,t.length+2))}ch">`:`<b>${t}</b>`})}</li>`;}).join('');
+ shell(u,q,stepLabel(r),`${ladder(r)}${prompt(u,q)}<ol class="facts cloze">${rows}</ol>${btn('checkStep','Check')}`);
  const ins=[...document.querySelectorAll('.blank')];ins[0]?.focus();
- ins.forEach((e,i)=>e.onkeydown=ev=>{if(ev.key==='Enter'){ev.preventDefault();ins[i+1]?ins[i+1].focus():$('#checkCloze').click()}});
- $('#checkCloze').onclick=()=>{
-  const got=u.facts.map((f,fi)=>keyTerms(f).map((t,k)=>{const v=ins.find(e=>e.dataset.f==fi&&e.dataset.k==k)?.value||'';return {t,v,found:!!v.trim()&&termFound(t,v)}}));
-  const html=`<ol class="facts">${u.facts.map((f,fi)=>{let k=0;return `<li>${esc(f.t).replace(/\*\*(.+?)\*\*/g,()=>{const g=got[fi][k++];return g.found?`<b class="hit">${esc(g.t)}</b>`:`<b class="miss">${esc(g.t)}</b>${g.v.trim()?` <s class="small muted">${esc(g.v)}</s>`:''}`})}</li>`}).join('')}</ol>`;
-  finish(u,got.map(g=>g.every(x=>x.found)),html);
+ ins.forEach((e,i)=>e.onkeydown=ev=>{if(ev.key==='Enter'){ev.preventDefault();ins[i+1]?ins[i+1].focus():$('#checkStep').click()}});
+ $('#checkStep').onclick=()=>{
+  const got=u.facts.map((f,fi)=>keyTerms(f).map((t,k)=>{const e=ins.find(e=>e.dataset.f==fi&&e.dataset.k==k);if(!e)return {t,given:true,found:true};const v=e.value;return {t,v,found:!!v.trim()&&termFound(t,v)}}));
+  run.ok=got.map(g=>g.every(x=>x.found));
+  run.html=`<ol class="facts">${u.facts.map((f,fi)=>{let k=0;return `<li>${esc(f.t).replace(/\*\*(.+?)\*\*/g,()=>{const g=got[fi][k++];return g.given?`<b>${esc(g.t)}</b>`:g.found?`<b class="hit">${esc(g.t)}</b>`:`<b class="miss">${esc(g.t)}</b>${g.v.trim()?` <s class="small muted">${esc(g.v)}</s>`:''}`})}</li>`}).join('')}</ol>`;
+  run.stage='checked';persist();render();
  };
+}
+/* step 3: each point as its first letters; type the whole line */
+function letters(u,q){
+ shell(u,q,stepLabel(3),`${ladder(3)}${prompt(u,q)}<p class="say">Type each point in full.</p><ol class="facts lines">${u.facts.map((f,i)=>`<li><div class="skel">${skeleton(f.t)}</div><input class="line" data-l="${i}" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="point ${i+1}"></li>`).join('')}</ol>${btn('checkStep','Check')}`);
+ const ins=[...document.querySelectorAll('.line')];ins[0]?.focus();
+ ins.forEach((e,i)=>e.onkeydown=ev=>{if(ev.key==='Enter'){ev.preventDefault();ins[i+1]?ins[i+1].focus():$('#checkStep').click()}});
+ $('#checkStep').onclick=()=>{
+  const marks=u.facts.map((f,i)=>markFacts([f],ins[i].value)[0]);
+  run.ok=marks.map(m=>m.ok);
+  run.html=`<ol class="facts">${u.facts.map((f,i)=>`<li>${marked(f,marks[i].terms)}${!marks[i].ok&&ins[i].value.trim()?`<span class="fix">You put: ${esc(ins[i].value)}</span>`:''}</li>`).join('')}</ol>`;
+  run.stage='checked';persist();render();
+ };
+}
+/* after a step: all right climbs on (step 3 ends the visit); a miss tries the step again or leaves it there */
+function checked(u,q){
+ const r=run.rung,miss=run.ok.filter(x=>!x).length,top=r===3;
+ shell(u,q,stepLabel(r),`${ladder(r)}<p class="verdict ${miss?'no':'ok'}">${miss?`${miss} to fix`:top?'Climbed it':'All right'}</p>${run.html}
+  ${miss?`${btn('again','Try this step again')}${btn('leave','Leave it here, bring it back later','ghost wide')}`
+   :btn('up',top?'Done, it comes back blank later ›':`Next: ${STEPS[r+1].toLowerCase()} ›`)}`);
+ const a=$('#again'),l=$('#leave'),up=$('#up');
+ if(a)a.onclick=()=>{run.stage='do';persist();render()};
+ if(l)l.onclick=()=>finish(u,run.ok,run.html);
+ if(up)up.onclick=()=>{if(top)finish(u,run.ok,run.html);else{run.rung++;run.stage='do';persist();render()}};
 }
 /* after a write-out: the page's marking, key words coloured, a deliberate override for a right answer in other words */
 function markScreen(u,q){
@@ -151,10 +193,14 @@ function markScreen(u,q){
  $('#save').onclick=()=>finish(u,marks.map((m,i)=>m.ok||over[i]));
 }
 function finish(u,correct,detail=''){
- const back=!!state.items[u.id]?.seen,result=record(u,state,correct,{supported:run.assisted});state.active=null;sessionCount++;save();
+ const back=!!state.items[u.id]?.seen,result=record(u,state,correct,{supported:run.assisted});
+ /* where the next visit starts: climbed or written out → a blank write-out; a missed step → that step; a missed write-out → step 3 of 5 (every key word hidden) */
+ const wrote=run.rung>=4;state.items[u.id].rung=result.pass?4:wrote?2:Math.max(1,run.rung);
+ if(u.kind==='whole'&&!result.pass)for(const id of u.requires)if(state.items[id]&&!state.items[id].wins)state.items[id].rung=2;
+ state.active=null;sessionCount++;save();
  const q=Q.get(u.qid),miss=correct.filter(x=>!x).length;
- const [cls,head,line]=!result.pass?['no',`${miss} point${miss===1?'':'s'} to fix`,'They come back in a few pieces.']
-   :run.assisted?['help','Got it with help','It comes back in a few pieces, blank this time.']
+ const [cls,head,line]=!result.pass?['no',`${miss} point${miss===1?'':'s'} to fix`,wrote?'It comes back in a few pieces and climbs back up from the key words, not from blank.':'It comes back in a few pieces at this step.']
+   :run.assisted?['help',wrote?'Got it with help':'Climbed it','It comes back in a few pieces, blank this time.']
    :['ok','Got it from memory','Back in a day to see if it stuck.'];
  shell(u,q,'Saved',`<p class="verdict ${cls}">${head}</p><p class="small muted">${line}</p>${detail||(miss?factList(u.facts.filter((_,i)=>!correct[i])):'')}${btn('next','Next piece ›')}`,back);
  $('#pause').onclick=home;$('#next').onclick=next;$('#next').focus();run=null;
