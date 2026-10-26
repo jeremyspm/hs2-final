@@ -1,4 +1,4 @@
-import {makeUnits,selectNext,record,snapshot,ready,keyTerms,markFacts,termFound,pace} from './rep-engine.mjs?v=20261027c';
+import {makeUnits,selectNext,record,snapshot,ready,keyTerms,markFacts,termFound,pace,DAY_HITS,SOLID} from './rep-engine.mjs?v=20261027g';
 /* Learn the cases (27 Oct 2026). Everything is typed and marked by the page, never ticked on trust, and only ever key
    words, never sentences: a new piece climbs a ladder of hidden key words, then comes back a few pieces later for its key
    words from memory (see "the ladder" below). Written questions only: the ones that mark themselves (MCQ, matching,
@@ -38,6 +38,7 @@ const caseTitle=c=>c.title.replace(/^Exam case \d+ · /,'');
 const title=q=>q.short.title;
 const ladder=r=>`<div class="ladder" aria-label="Step ${r+1} of ${STEPS.length}">${STEPS.map((s,i)=>`<span class="${i<r?'done':i===r?'on':''}" title="${s}">${i+1}</span>`).join('<i></i>')}</div>`;
 const stepLabel=r=>`${r+1} · ${STEPS[r]}`;
+const dots=(k,of)=>`<b class="dots" aria-label="${k} of ${of}">${Array.from({length:of},(_,i)=>`<i class="${i<k?'on':''}"></i>`).join('')}</b>`;
 const day=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
 const daysTo=s=>{const t=new Date();t.setHours(0,0,0,0);return Math.round((day(s)-t)/864e5)};
 let run=null,sessionCount=0;
@@ -68,20 +69,21 @@ function home(){
    :`<b>${p.target} new a day</b> meets all ${s.total} by Tue 3 Nov.${p.left<s.total?` ${p.left} still to meet.`:''}`;
  mount(`<div class="idcard"><span class="idic" aria-hidden="true">🧠</span><span class="idtx"><small>Health Science 2 · 722.541</small><b>Learn the cases</b><span>Her 10 starred cases · read it, type it, it comes back</span>${n>=0?`<span class="idwhen">${n===0?'Your sitting is today':`${n} day${n===1?'':'s'} to your sitting · 4 Nov`}</span>`:''}</span></div>
  <div class="card today"><div class="k">Today</div>
-  <div class="nums"><div><strong>${p.done}<i>/${p.target}</i></strong><span>new pieces</span></div><div><strong>${s.due}</strong><span>back for review</span></div><div><strong>${s.retained}<i>/${s.total}</i></strong><span>kept 2+ days</span></div></div>
+  <div class="nums"><div><strong>${p.done}<i>/${p.target}</i></strong><span>new pieces</span></div><div><strong>${s.due}</strong><span>back for review</span></div><div><strong>${s.retained}<i>/${s.total}</i></strong><span>solid (${SOLID} days)</span></div></div>
   <div class="bar"><i style="width:${p.target?Math.min(100,100*p.done/p.target):100}%"></i></div>
   <p class="pace">${paceLine}</p>
   ${btn('begin',active?'Carry on where you stopped':'Start a round of 12')}
  </div>
  <p class="small muted">Her written questions on the cases. The ones that mark themselves (multiple choice, matching, blanks) are in <a href="./#rep">⚡ Rep questions</a>.</p>
  <div class="lsec">The ten cases</div>
- ${D.cases.map(c=>{const sub=U.filter(u=>u.caseId===c.id),v=snapshot(sub,state);return `<button class="lrow${v.seen===v.total?' done':''}" data-case="${c.id}" style="--cc:${CC[c.id]}"><span class="lic">${c.id.slice(1)}</span><span class="ltx"><b>${esc(caseTitle(c))}</b><small>${v.seen}/${v.total} met · ${v.retained} kept${v.due?` · ${v.due} back`:''}</small><span class="bar"><i style="width:${v.total?100*v.seen/v.total:0}%"></i></span></span><span class="lch">›</span></button>`}).join('')}
+ ${D.cases.map(c=>{const sub=U.filter(u=>u.caseId===c.id),v=snapshot(sub,state);return `<button class="lrow${v.seen===v.total?' done':''}" data-case="${c.id}" style="--cc:${CC[c.id]}"><span class="lic">${c.id.slice(1)}</span><span class="ltx"><b>${esc(caseTitle(c))}</b><small>${v.seen}/${v.total} met · ${v.retained} solid${v.due?` · ${v.due} back`:''}</small><span class="bar"><i style="width:${v.total?100*v.seen/v.total:0}%"></i></span></span><span class="lch">›</span></button>`}).join('')}
  <div class="tools">${btn('reviewOnly',`Reviews only${s.due?` · ${s.due}`:''}`,'ghost sm')}${btn('export','Export progress','ghost sm')}${btn('import','Import progress','ghost sm')}<input id="importFile" type="file" accept="application/json" hidden></div>
  <details class="fold"><summary>How this works</summary>
   <p><b>You learn her key words, not her sentences.</b> The highlighted words are what the marker looks for, about 2 a line. You never have to type a sentence here.</p>
   <p><b>A new piece climbs a ladder:</b> 1 read it · 2 one key word a line hidden · 3 every key word hidden. Get a step right and the next one hides more. Miss one and you try that step again, or leave it there and it comes back at that step.</p>
-  <p><b>Step 4 comes a few pieces later:</b> type her key words from memory, any order. It's only ever the last step: miss it and it comes back at step 3, never blank. Spelling slips and word endings are fine; hyper/hypo, afferent/efferent, numbers and genotype capitals are not.</p>
-  <p><b>Got it from memory:</b> back tomorrow, then in 2 days, then 3. Long answers are learned in pieces of four points, then all their key words together.</p>
+  <p><b>Step 4 comes a few pieces later:</b> type her key words from memory, any order. It's only ever the last step: miss it and it comes back at step 3, never blank. Spelling slips, swapped letters, British/US spellings and word endings are fine; hyper/hypo, intra/inter, afferent/efferent, numbers and genotype capitals are not.</p>
+  <p><b>Then it gets drilled.</b> A day only counts after ${DAY_HITS} from-memory hits in a row, a few pieces apart. Then it's back tomorrow, then in 2 days, then 3, and each of those days needs its ${DAY_HITS} in a row too. <b>Solid</b> means ${SOLID} days running. Any miss wipes the streak and it starts again.</p>
+  <p>Long answers are learned in pieces of four points, then all their key words together.</p>
   <p class="source">${D.originalCount} of her questions plus ${D.questions.filter(q=>q.supplement).length} compiled study answers (the held questions and the male-pill research prompt), ${D.facts} marking points. “Kept” means written from memory on 2+ different days; it isn’t an exam mark. Progress is separate from your Paper Sim scores.</p>
  </details>`);
  $('#begin').onclick=()=>{sessionCount=0;if(active){run={...state.active};render()}else{state.filter='all';save();next()}};
@@ -191,11 +193,16 @@ function finish(u,correct,detail=''){
  const mem=run.rung>=MEM;state.items[u.id].rung=result.pass?MEM:mem?2:Math.max(1,run.rung);
  if(u.kind==='whole'&&!result.pass)for(const id of u.requires)if(state.items[id]&&!state.items[id].wins)state.items[id].rung=2;
  state.active=null;sessionCount++;save();
- const q=Q.get(u.qid),miss=correct.filter(x=>!x).length;
- const [cls,head,line]=!result.pass?['no',`${miss} point${miss===1?'':'s'} to fix`,mem?'It comes back in a few pieces with its key words hidden, not blank.':'It comes back in a few pieces at this step.']
-   :run.assisted?['help',mem?'Got it with help':'Climbed it','It comes back in a few pieces: key words from memory.']
-   :['ok','Got it from memory','Back in a day to see if it stuck.'];
- shell(u,q,'Saved',`<p class="verdict ${cls}">${head}</p><p class="small muted">${line}</p>${detail||(miss?factList(u.facts.filter((_,i)=>!correct[i])):'')}${btn('next','Next piece ›')}`,back);
+ const q=Q.get(u.qid),miss=correct.filter(x=>!x).length,n=result.days;
+ const gap=result.interval>=3*864e5?'in 3 days':result.interval>=2*864e5?'in 2 days':'tomorrow';
+ const [cls,head,line]=!result.pass?['no',`${miss} point${miss===1?'':'s'} to fix`,mem?`Streak wiped. It comes back in a few pieces with its key words hidden, and needs ${DAY_HITS} in a row again.`:'It comes back in a few pieces at this step.']
+   :run.assisted?['help',mem?'Got it with help':'Climbed it',mem?'Help doesn’t count as a hit. It comes back in a few pieces, from memory.':`Now the drilling: key words from memory, a few pieces from now. It needs ${DAY_HITS} in a row today.`]
+   :!result.locked?['ok',`Hit ${result.hits} of ${DAY_HITS} today`,'Once more from memory in a few pieces to lock today in.']
+   :n>=SOLID?['ok','Solid',`From memory ${SOLID} days running. It still comes back every 3 days to stay that way.`]
+   :['ok',`Day ${n} of ${SOLID} locked in`,`Back ${gap} for ${DAY_HITS} more in a row.`];
+ const today=result.locked?DAY_HITS:result.hits;
+ const drill=`<div class="drill"><div><span>Today</span>${dots(today,DAY_HITS)}</div><div><span>Days in a row</span>${dots(Math.min(n,SOLID),SOLID)}</div></div>`;
+ shell(u,q,'Saved',`<p class="verdict ${cls}">${head}</p><p class="small muted">${line}</p>${drill}${detail||(miss?factList(u.facts.filter((_,i)=>!correct[i])):'')}${btn('next','Next piece ›')}`,back);
  $('#pause').onclick=home;$('#next').onclick=next;$('#next').focus();run=null;
 }
 

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {makeUnits,selectNext,record,ready,snapshot,typedMatch,keyTerms,termFound,markFacts,pace} from './rep-engine.mjs';
+import {makeUnits,selectNext,record,ready,snapshot,typedMatch,keyTerms,termFound,markFacts,pace,DAY_HITS} from './rep-engine.mjs';
 const html=fs.readFileSync(new URL('./rep.html',import.meta.url),'utf8');
 const d=JSON.parse(html.match(/window.REP_DATA = (\{[\s\S]*?\});<\/script>/)[1]);
 const units=makeUnits(d.questions);const fresh=()=>({items:{},facts:{},turn:0});
@@ -21,14 +21,24 @@ record(part,s,part.facts.map(()=>true),{now:at,supported:true});
 assert.equal(s.items[part.id].wins,0,'supported rehearsal never counts as independent recall');
 assert.deepEqual(s.items[part.id].days,[]);
 assert.notEqual(selectNext(units,s,at).id,part.id,'no immediate same-piece repeat');
-record(part,s,part.facts.map(()=>true),{now:at+100000});
-assert.equal(s.items[part.id].days.length,1);assert.ok(s.items[part.id].due>at+100000);
-record(part,s,part.facts.map(()=>true),{now:at+200000});
-assert.equal(s.items[part.id].days.length,1,'same-day repeats do not create retained status');
-record(part,s,part.facts.map(()=>true),{now:at+864e5});
-assert.equal(s.items[part.id].days.length,2);
-record(part,s,part.facts.map((_,i)=>i!==0),{now:at+2*864e5});
-assert.equal(s.items[part.id].days.length,0,'failure removes retained status');
+// Drilled: a day counts only after DAY_HITS from-memory passes in a row; then 1, 2, 3 days apart; a miss wipes both.
+const all=()=>part.facts.map(()=>true),oneMiss=()=>part.facts.map((_,i)=>i!==0);
+let r=record(part,s,all(),{now:at+100000});
+assert.equal(DAY_HITS,2);assert.equal(r.locked,false,'one hit does not lock the day');assert.equal(s.items[part.id].days.length,0);
+assert.equal(s.items[part.id].due,at+100000,'back today, a few pieces later');assert.equal(s.items[part.id].after,s.turn+3);
+record(part,s,all(),{now:at+150000,supported:true});
+assert.equal(s.items[part.id].hits,1,'help is neither a hit nor a miss');
+r=record(part,s,all(),{now:at+200000});
+assert.equal(r.locked,true,'two in a row lock the day');assert.equal(s.items[part.id].days.length,1);assert.equal(s.items[part.id].due,at+200000+864e5);
+record(part,s,all(),{now:at+250000});record(part,s,all(),{now:at+260000});
+assert.equal(s.items[part.id].days.length,1,'same-day repeats do not add a day');
+r=record(part,s,all(),{now:at+864e5});assert.equal(r.locked,false,'every day needs its two');assert.equal(s.items[part.id].days.length,1);
+r=record(part,s,all(),{now:at+864e5+1000});assert.equal(s.items[part.id].days.length,2);assert.equal(s.items[part.id].due,at+864e5+1000+2*864e5);
+record(part,s,all(),{now:at+3*864e5});record(part,s,oneMiss(),{now:at+3*864e5+1000});
+assert.equal(s.items[part.id].days.length,0,'a miss wipes the run of days');assert.equal(s.items[part.id].hits,0,'and the day\'s hits');
+record(part,s,all(),{now:at+3*864e5+2000});record(part,s,oneMiss(),{now:at+3*864e5+3000});record(part,s,all(),{now:at+3*864e5+4000});
+assert.equal(s.items[part.id].days.length,0,'hits must be in a row');
+record(part,s,oneMiss(),{now:at+3*864e5+5000});
 assert.equal(s.facts[part.facts[0].key].ok,false);assert.equal(s.facts[part.facts[1].key].ok,true);
 const whole=units.find(u=>u.kind==='whole'),w=fresh();assert.equal(ready(whole,w),false);
 for(const id of whole.requires){const p=units.find(u=>u.id===id);record(p,w,p.facts.map(()=>true),{now:at});}
@@ -47,9 +57,15 @@ const allFacts=units.filter(u=>u.kind==='part').flatMap(u=>u.facts);
 for(const f of allFacts){assert.ok(keyTerms(f).length,`no key words: ${f.t}`);assert.ok(markFacts([f],f.t.replace(/\*\*/g,''))[0].ok,`own words fail: ${f.t}`);}
 assert.equal(markFacts([allFacts[0]],'')[0].ok,false,'an empty answer marks nothing');
 for(const [t,x,want] of [['hyperventilation','hypoventilation',false],['afferent','efferent nerves',false],['increase','decrease',false],['abduction','adduction',false],
-  ['7.35','7.53',false],['Hh','she is hh',false],['XbY','he is XBY',false],['excess tissue fluid','drains extra tissue fluid',false],
+  ['7.35','7.53',false],['Hh','she is hh',false],['XbY','he is XBY',false],['excess tissue fluid','drains extra fluid',false],
   ['lacteals','the lacteal absorbs',true],['Hh','she is Hh, a carrier',true],['metastasis','it metastasises',true],['sentinel node','the sentinal node',true],
-  ['cells','a cell',true],['H⁺','H+ falls',true],['7.35','7.35-7.45',true]])
+  ['cells','a cell',true],['H⁺','H+ falls',true],['7.35','7.35-7.45',true],
+  // spelling leniency, and the pairs it must never cross
+  ['excess tissue fluid','drains extra tissue fluid',true],['immune response','immune responce',true],['lymphoedema','lymphedema',true],
+  ['oesophagus','esophagus',true],['hypothalamus','hypothalmus',true],['ovulation','ovualtion',true],['acetylcholine','acetycholine',true],
+  ['hyperventilation','hypoventilation',false],['ilium','ileum',false],['intracellular','intercellular',false],['inhalation','exhalation',false],
+  ['glycogenesis','glycogen',false],['gluconeogenesis','glucose',false],['neurotransmitter','neuron',false],['inhibin','inhibited',false],
+  ['grandfather','grandmother',false],['7.35–7.45','7.35-7.46',false],['sympathetic','parasympathetic',false]])
   assert.equal(termFound(t,x),want,`termFound(${t}, ${x})`);
 // Pace: today's target counts today's new pieces back in, so it holds still through the day.
 const pc=fresh(),cs=units.filter(u=>u.kind!=='whole');let p0=pace(units,pc,at,'2026-11-03');

@@ -195,6 +195,13 @@ b.miss{color:var(--danger);text-decoration:underline wavy;text-decoration-thickn
 .ticks li.mk{display:flex;flex-direction:column;gap:4px;padding:10px 12px;line-height:1.5}
 .ticks li.mk .btn{align-self:flex-start;margin-top:2px}
 
+/* the drill after saving: today's hits in a row, and the run of days */
+.drill{display:flex;gap:18px;flex-wrap:wrap;margin:6px 0 10px;padding:8px 12px;border-radius:var(--radius);background:var(--muted)}
+.drill div{display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--muted-fg)}
+.dots{display:inline-flex;gap:4px}
+.dots i{width:12px;height:12px;border-radius:50%;background:var(--accent);border:1px solid var(--border)}
+.dots i.on{background:var(--ok);border-color:var(--ok)}
+
 /* the verdict after saving */
 .verdict{font-size:1.25rem;font-weight:800;margin:4px 0 6px;letter-spacing:-.01em}
 .verdict.ok{color:var(--ok)} .verdict.help{color:var(--primary)} .verdict.no{color:var(--danger)}

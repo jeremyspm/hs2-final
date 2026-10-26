@@ -29,6 +29,15 @@ typed?"):
   hidden. Step 4, key words from memory (typed in any order, marked by `markFacts`), comes a few pieces later and is
   only ever the last step. A missed step is retried or left there (`items[id].rung` is where the next visit starts);
   a miss from memory comes back at step 3, never blank. `state.lv` 2 maps the morning's 5-step rungs onto these.
+- **Drilled, in two layers** ("it needs multiple consecutive correct hits over a single session or day … then a
+  bigger meta layer where multiple days need to be consecutively correct"; "this needs to be DRILLED into our
+  heads"). `record` counts a day only after `DAY_HITS` (2) from-memory passes in a row that day, a few pieces apart;
+  counted days space out 1, 2, 3 days; `SOLID` (3) days running is solid; any miss empties both. The queue serves
+  due pieces first (Anki's order), still three pieces apart. Each save shows today's hits and the run of days.
+- **Spelling leniency** with guards: British/US spellings, swapped letters, one slip (two in long words), a
+  dropped or extra letter in short words, word endings by suffix (not by a shared start, which had let glycogen
+  pass for glycogenesis), a three-word term may miss one word. `OPPOSITES` (hyper/hypo, intra/inter, af/ef,
+  ilium/ileum, inhibin/inhibit …), numbers and genotypes stay exact; `rep.check.mjs` lists both sides.
 - **Written questions only.** 111 pieces: her case questions and the compiled answers first, then her revision deck's
   written ones. The 81 that mark themselves (MCQ, T/F, matching, blanks) are the sim's `#rep` screen (⚡ Rep
   questions, `REPQS` in template.html), which the hub's HS2 Final Rep tab opens. The mini mock test was culled the
