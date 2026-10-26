@@ -10,10 +10,22 @@ own words (Assessment Overview) "based on the starred *Case studies in your Case
 
 ## Guided recall — 27 Oct 2026
 
-`rep.html` is linked prominently from home. One queue teaches the ten cases with a connected explanation,
-short answer pieces, missing-word rehearsal, independent recall, point-by-point self-checks and spaced returns.
-No speech recording or AI marking is used: say the answer or type it, then honestly tick the facts recalled.
+`rep.html` is linked prominently from home, and the hub's HS2 Final card opens on it (its Learn side). One queue
+teaches the ten cases with a connected explanation, short answer pieces, typed recall and spaced returns.
 Long answers unlock a complete-answer check after their pieces have been recalled independently.
+
+**Second pass, same day** (his words: "it looks so GPT coded, I want it estate looking", and "shouldn't it all be
+typed?"):
+- **The Paper Sim's skin.** `rep.css` uses template.html's tokens (dark default, `data-theme=light`, theme shared via
+  `hs2f.theme`), the HS2-blue header bar, the giant-name banner and the sim's rows; each case wears its system's colour.
+- **Typed, and marked by the page.** No ticking on trust. A new piece is read, then every **bold** key word becomes a
+  blank to type (`2 · Type the key words`, the supported attempt). When it comes back it is written out whole and
+  `markFacts` counts a point when all its key words are in the answer (`termFound`: forgiving on endings, plurals and
+  a one-letter typo; strict on numbers, genotype capitals, and first letters, so hyper/hypo and afferent/efferent never
+  pass). A missed point can be counted with a deliberate "I wrote it differently" click.
+- **Her case questions first, the rest opt-in.** The default queue is her starred-case questions plus the compiled
+  answers (112 pieces). Her exam revision deck and quizzes (80) are a chip on home.
+- **A pace.** Home shows today's new pieces against `pace()`: new a day to have met every piece by Tue 3 Nov.
 
 The build derives its coverage from the existing core and mock pool: **155 original questions**, plus **nine
 compiled study answers** (eight held questions and the workbook's male-pill research prompt). Sources and
@@ -35,7 +47,8 @@ are the sources; **do not edit generated `rep.html`**. Both `build.mjs` and `res
     node rep.check.mjs      # full fact coverage, scheduling, complete checks, pedigree solutions
 
 Use the estate as the HTTP root because original figures also link to sibling sims. Check the flow at 375px,
-including hints vs independent recall, partial self-marking, figures, closed questions and pause/resume.
+including hints vs independent recall, typed blanks, the key-word marking and its override, figures, closed
+questions and pause/resume.
 
 ## What is in it (built 2026-09-21)
 

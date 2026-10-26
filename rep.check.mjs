@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {makeUnits,selectNext,record,ready,snapshot,typedMatch} from './rep-engine.mjs';
+import {makeUnits,selectNext,record,ready,snapshot,typedMatch,keyTerms,termFound,markFacts,pace} from './rep-engine.mjs';
 const html=fs.readFileSync(new URL('./rep.html',import.meta.url),'utf8');
 const d=JSON.parse(html.match(/window.REP_DATA = (\{[\s\S]*?\});<\/script>/)[1]);
 const units=makeUnits(d.questions);const fresh=()=>({items:{},facts:{},turn:0});
@@ -42,6 +42,21 @@ assert.ok(exhausted,'queue terminates for the day');
 const snap=snapshot(units,sim,clock);assert.equal(snap.seen,snap.total,'all material reached, reviews cannot starve new learning');
 assert.equal(snap.retained,0,'one-day pass is not multi-day retention');
 assert.ok(units.filter(u=>u.kind==='whole').every(u=>sim.items[u.id]?.wins),'complete-answer checks reached');
+// Typed marking: every point has key words, and its own words mark it right.
+const allFacts=units.filter(u=>u.kind==='part').flatMap(u=>u.facts);
+for(const f of allFacts){assert.ok(keyTerms(f).length,`no key words: ${f.t}`);assert.ok(markFacts([f],f.t.replace(/\*\*/g,''))[0].ok,`own words fail: ${f.t}`);}
+assert.equal(markFacts([allFacts[0]],'')[0].ok,false,'an empty answer marks nothing');
+for(const [t,x,want] of [['hyperventilation','hypoventilation',false],['afferent','efferent nerves',false],['increase','decrease',false],['abduction','adduction',false],
+  ['7.35','7.53',false],['Hh','she is hh',false],['XbY','he is XBY',false],['excess tissue fluid','drains extra tissue fluid',false],
+  ['lacteals','the lacteal absorbs',true],['Hh','she is Hh, a carrier',true],['metastasis','it metastasises',true],['sentinel node','the sentinal node',true],
+  ['cells','a cell',true],['H⁺','H+ falls',true],['7.35','7.35-7.45',true]])
+  assert.equal(termFound(t,x),want,`termFound(${t}, ${x})`);
+// Pace: today's target counts today's new pieces back in, so it holds still through the day.
+const pc=fresh(),cs=units.filter(u=>u.kind!=='whole');let p0=pace(units,pc,at,'2026-11-03');
+assert.equal(p0.days,8);assert.equal(p0.left,cs.length);assert.equal(p0.target,Math.ceil(cs.length/8));
+for(const u of cs.slice(0,5))record(u,pc,u.kind==='closed'?[true]:u.facts.map(()=>true),{now:at,supported:true});
+const p1=pace(units,pc,at,'2026-11-03');assert.equal(p1.done,5);assert.equal(p1.target,p0.target);
+assert.equal(pace(units,pc,at+864e5,'2026-11-03').done,0,'a new day starts at nothing');
 // Confirm source-sized inheritance assignments independently by brute-force segregation.
 function possibilities(parents,affected,dominant){const ids=Object.keys(affected),out=[];function visit(i,assigned){if(i===ids.length){out.push({...assigned});return}const id=ids[i];for(const value of [0,1,2]){if((dominant?value>0:value===2)!==affected[id])continue;const p=parents[id];if(p){const alleles=n=>n===0?[0]:n===1?[0,1]:[1];if(!alleles(assigned[p[0]]).some(a=>alleles(assigned[p[1]]).some(b=>a+b===value)))continue;}assigned[id]=value;visit(i+1,assigned);}}visit(0,{});return Object.fromEntries(ids.map(id=>[id,[...new Set(out.map(o=>o[id]))].sort()]));}
 const harris=possibilities({'II1':['I1','I2'],'II2':['I1','I2'],'II3':['I1','I2'],'II4':['I3','I4'],'II5':['I3','I4'],'II6':['I3','I4'],'II7':['I3','I4'],'III1':['II3','II4'],'III2':['II3','II4']},{I1:false,I2:true,I3:false,I4:false,II1:false,II2:false,II3:false,II4:false,II5:true,II6:true,II7:false,III1:false,III2:true},false);
