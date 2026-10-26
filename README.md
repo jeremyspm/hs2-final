@@ -14,7 +14,7 @@ own words (Assessment Overview) "based on the starred *Case studies in your Case
 teaches the ten cases with a connected explanation, short answer pieces, typed recall and spaced returns.
 Long answers unlock a complete-answer check after their pieces have been recalled independently.
 
-**Second pass, same day** (his words: "it looks so GPT coded, I want it estate looking", and "shouldn't it all be
+**Second pass, same day** (the asks: "it looks so GPT coded, I want it estate looking", and "shouldn't it all be
 typed?"):
 - **The Paper Sim's skin.** `rep.css` uses template.html's tokens (dark default, `data-theme=light`, theme shared via
   `hs2f.theme`), the HS2-blue header bar, the giant-name banner and the sim's rows; each case wears its system's colour.
@@ -23,8 +23,10 @@ typed?"):
   `markFacts` counts a point when all its key words are in the answer (`termFound`: forgiving on endings, plurals and
   a one-letter typo; strict on numbers, genotype capitals, and first letters, so hyper/hypo and afferent/efferent never
   pass). A missed point can be counted with a deliberate "I wrote it differently" click.
-- **Her case questions first, the rest opt-in.** The default queue is her starred-case questions plus the compiled
-  answers (112 pieces). Her exam revision deck and quizzes (80) are a chip on home.
+- **Written questions only.** 111 pieces: her case questions and the compiled answers first, then her revision deck's
+  written ones. The 81 that mark themselves (MCQ, T/F, matching, blanks) are the sim's `#rep` screen (⚡ Rep
+  questions, `REPQS` in template.html), which the hub's HS2 Final Rep tab opens. The mini mock test was culled the
+  same day; `#mock` is the full 130-minute sitting only.
 - **A pace.** Home shows today's new pieces against `pace()`: new a day to have met every piece by Tue 3 Nov.
 
 The build derives its coverage from the existing core and mock pool: **155 original questions**, plus **nine

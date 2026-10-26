@@ -702,6 +702,19 @@ const CASE_CORE = () => DATA.questions.filter(q=>q.mod==='cases');
    ten cases' written questions, her formative case test, her revision deck, her RG quiz) + the mock's closed pool (adds the
    case quizzes her exam helpline lists). Least-seen and misses first, so a second sweep starts with what is not nailed yet. */
 const ALLCASE = () => { const ids=new Set([...DATA.core.a, ...DATA.mock.pool.map(p=>p.id)]); return DATA.questions.filter(q=>ids.has(q.id)) };
+/* ⚡ Rep (27 Oct 2026, the ask: "add back in all the reppable questions that aren't typed SAQs"). The written case
+   questions are learned in rep.html (typed, page-marked, spaced), so this is the rest of every case question: the ones
+   that mark themselves (MCQ, true/false, matching, dropdowns, typed blanks). The hub's HS2 Final Rep tab lands here. */
+const REPQS = () => ALLCASE().filter(q=>q.type!=='essay');
+function repScreen(){
+  const P=REPQS(), seen=P.filter(q=>S.seen[q.id]).length, nm=P.filter(q=>S.miss[q.id]).length;
+  return `<div class="card">
+    <p class="lead"><b>${P.length}</b> questions on the ten cases that mark themselves the moment you answer, ${seen} seen: her case questions in closed form, her revision deck and the case quizzes. The written ones are in <a href="rep.html">Learn the cases</a>.</p>
+    <button class="btn primary wide" data-go="rep" data-learn="1">⚡ Rep all ${P.length} · least-seen and misses first</button>
+    <button class="btn wide" data-go="miss" data-learn="1" ${Object.keys(S.miss).length?'':'disabled'}>Redo my misses${nm?` · ${nm} from here`:''}</button>
+    ${KHQ.length?`<button class="btn ghost wide" data-go="kh" data-learn="1">🎮 Her exam revision Kahoot · ${KHQ.length} · lower yield, after these</button>`:''}
+  </div>`;
+}
 function allCaseScreen(){
   const A=ALLCASE(), C=CASE_CORE(), seen=A.filter(q=>S.seen[q.id]).length, seenC=C.filter(q=>S.seen[q.id]).length, R=A.length-C.length;
   return `<div class="card">
@@ -763,6 +776,7 @@ function dealCore(n=15){ return pickN(CASE_CORE(), n, new Set()) }
    you go. The old #cases / #core links still land. */
 const SCR = {
   saq:  {t:'✍️ SAQ trainer',               html:()=>saqCard()},
+  rep:  {t:'⚡ Rep questions',               html:()=>repScreen()},
   mock: {t:'⏱ Mock test',                   html:()=>mockScreen()},
   allcase:{t:'🩺 Every case question',      html:()=>allCaseScreen()},
 };
@@ -832,9 +846,10 @@ function launcher(){
   <p class="exambar"><b>The exam is the 10 starred cases.</b> Her words: “I am 100% sure.” Rep these.</p>
   <a class="hero" href="rep.html" style="text-decoration:none"><span><small>Learn → rebuild → recall → spaced review</small><b>Learn all ten cases</b></span><span class="go" aria-hidden="true">▶</span></a>
   <button class="hero" data-hero="${up.k}"><span><small>${up.e}</small><b>${up.t}</b></span><span class="go" aria-hidden="true">▶</span></button>
+  ${row('rep','⚡','Rep questions',`${REPQS().filter(q=>S.seen[q.id]).length} of ${REPQS().length} seen · they mark themselves`)}
   ${row('allcase','🩺','Every case question',`${ALLC.filter(q=>S.seen[q.id]).length} of ${ALLC.length} seen · all of them at once, no cap`)}
   ${SAQD.length?row('saq','✍️','SAQ trainer',`${nL} of ${SAQD.length} locked · her case answers, short`):''}
-  ${row('mock','⏱','Mock test',last?`Last ${last.got}/${last.tot} · ${Math.round(100*last.got/last.tot)}% · ${S.scores.length} sat`:'Built like her exam · mini ~15 min or full 130 min')}
+  ${row('mock','⏱','Mock test',last?`Last ${last.got}/${last.tot} · ${Math.round(100*last.got/last.tot)}% · ${S.scores.length} sat`:'Built like her exam · 32 questions, 130 min')}
 `;
 }
 const sysLbl = s => { const pool=CLOSED.filter(q=>q.mod===s).length, n=howMany(pool); return n===pool?`all ${n}`:n };
@@ -1112,8 +1127,7 @@ function mockScreen(){
   const nm = Object.keys(S.miss).length;
   return `<div class="card">
     <p class="lead">Built like her exam: the closed questions are only her own case questions in closed form (${DATA.mock.pool.length} of them — her formative case test, her revision deck, her case quizzes; her Kahoot is kept out as lower yield), spread across the ten cases; the written ones are her starred case questions. The real exam is on campus: Wed 4 Nov, time to be confirmed (moved from 5 Nov in her 7 Oct lecture) — be at your venue 45–60 min early with your MIT ID. 2 h 10 min, 32 questions, 90 marks, 37% written, built on the ten yellow, starred cases.</p>
-    <button class="btn primary wide" data-go="mini">Sit a mini mock test · 12 of her closed case questions, ~15 min</button>
-    <button class="btn wide" data-go="full">Sit the full mock test · 32 Q, 37% of the marks written from the cases, 130 min — the exam’s shape</button>
+    <button class="btn primary wide" data-go="full">Sit the mock test · 32 Q, 37% of the marks written from the cases, 130 min — the exam’s shape</button>
     <button class="btn wide" data-go="miss" ${nm?'':'disabled'}>Redo my misses${nm?` · ${nm} in the pile`:''}</button>
   </div>
   <div class="lsec">Your sittings</div>
@@ -1230,15 +1244,15 @@ function start(mode,learn=false){
   let deck,label,timed=false;
   if(learn){const r=LS('resume');
     if(r&&r.ids&&r.ids.length&&!confirm(`You have a Learn run waiting (Q${Math.min((r.i|0)+1,r.ids.length)} of ${r.ids.length} · ${r.label}). Drop it and start this one?`))return}
-  if(mode==='mini'){
-    if(learn){deck=dealMini(howMany(CLOSED.length));label=deck.length===CLOSED.length?'the whole bank':`${deck.length} from the bank`}
-    else{deck=dealExamClosed(12);label='mini mock'}}
+  /* the mini mock test (12 closed, ~15 min) was culled 27 Oct 2026, on request: 'mini' is only the whole-bank Learn run now */
+  if(mode==='mini'){deck=dealMini(howMany(CLOSED.length));label=deck.length===CLOSED.length?'the whole bank':`${deck.length} from the bank`}
   else if(mode==='full'){deck=dealFull();label='full mock test';timed=true}
   else if(mode==='cases'){deck=CASEQS();label='the 10 cases'}
   else if(mode==='core'){deck=dealCore(15);label='today from the 10 cases'}
   else if(mode.startsWith('case:')){const f=DATA.focus.find(x=>x.id===mode.slice(5)), byId=new Map(DATA.questions.map(q=>[q.id,q]));
     deck=((f&&f.qs)||[]).map(id=>byId.get(id)).filter(q=>q&&q.mod==='cases');label=f?f.t:'the case'}
   else if(mode==='allcase'){const p=ALLCASE();deck=pickN(p,p.length,new Set());label=`every case question · ${deck.length}`}
+  else if(mode==='rep'){const p=REPQS();deck=pickN(p,p.length,new Set());label=`rep questions · ${deck.length}`}
   else if(mode==='kh'){const rank=q=>(S.seen[q.id]||0)+Math.random();deck=KHQ.map(q=>[q,rank(q)]).sort((a,b)=>a[1]-b[1]).map(x=>x[0]);label=`her exam revision Kahoot · ${deck.length}`}
   else if(mode==='miss'){deck=dealMisses(learn?CAP():12);label=learn?'my misses':'redo misses'}
   else if(mode==='pick'){deck=dealPick();const k=S.pick.length;
