@@ -580,6 +580,16 @@ console.log(`revision deck: ${revIds.length} questions from ${new Set(REVDECK.it
 console.log(`checklist: ${FOCUS_OUT.length} rows — ${FOCUS_OUT.filter(f => f.tier === 0).length} on top (10 cases + her revision deck)`);
 
 /* ── emit ──────────────────────────────────────────────────────────── */
+/* videos YouTube has taken down (27 Oct 2026, oEmbed 404: "Thyroid - anatomy", "Dysrhythmias"). They ride in on
+   questions imported from the module sims, so they're dropped here: a question whose video is gone falls back to its
+   alt, else shows none. */
+const GONE = new Set(['XlqKNaebMJc', 'FkGF-at5WtM']);
+let nGone = 0;
+for (const q of questions) if (q.vid) {
+  if (q.vid.alt && GONE.has(q.vid.alt.id)) { delete q.vid.alt; nGone++; }
+  if (GONE.has(q.vid.id)) { const { alt } = q.vid; nGone++; if (alt) q.vid = alt; else delete q.vid; }
+}
+console.log(`taken-down videos: ${nGone} links dropped`);
 /* video reach is a stat, not a sentence: the template reads these so the home
    screen can never quote a count the bank has moved past */
 const reached = new Set();
