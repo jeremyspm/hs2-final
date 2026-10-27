@@ -9,7 +9,7 @@
   --warn:hsl(38 92% 55%); --border:hsl(222 27% 19%); --radius:.625rem;
   --dur:200ms; --ease:cubic-bezier(.4,0,.2,1);
   --tool:#2563eb;
-  --bg:color-mix(in srgb,var(--tool) 7%,var(--bg0));
+  --bg:color-mix(in srgb,var(--tool) 3%,var(--bg0));
   --tool-deep:color-mix(in srgb,var(--tool) 72%,#000);
   --primary:color-mix(in srgb,var(--tool) 70%,#fff);
 }
@@ -26,15 +26,12 @@ a{color:var(--primary)}
 button,input,textarea,select{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--primary);outline-offset:2px}
 
-/* ── header: the paper's colour, solid ── */
-header{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:10px;padding:10px 14px;color:#fff;
-  background:linear-gradient(100deg,var(--tool-deep),color-mix(in srgb,var(--tool) 88%,#000));
-  box-shadow:0 4px 18px -8px color-mix(in srgb,var(--tool) 60%,transparent)}
+/* ── header: plain, the paper's colour as a line under it ── */
+header{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:10px;padding:10px 14px;
+  background:var(--bg);border-bottom:2px solid var(--tool)}
 header h1{font-size:1rem;margin:0;flex:1;font-weight:700;letter-spacing:-.01em}
-header .d{color:rgb(255 255 255 / .85);font-size:.8rem;white-space:nowrap}
+header .d{color:var(--muted-fg);font-size:.8rem;white-space:nowrap}
 header .back{text-decoration:none;white-space:nowrap}
-header .btn{color:#fff;border-color:rgb(255 255 255 / .3);background:rgb(255 255 255 / .1)}
-header .btn:hover{background:rgb(255 255 255 / .2)}
 @media(max-width:560px){
   header{display:grid;grid-template-columns:auto minmax(0,1fr);grid-auto-columns:auto;gap:0 8px;padding:8px 12px}
   header .back{grid-area:1/1/span 2/2}
@@ -65,18 +62,13 @@ footer{max-width:720px;margin:0 auto;padding:0 18px 30px;color:var(--muted-fg);f
 .muted{color:var(--muted-fg)}
 .small{font-size:.82rem;line-height:1.45}
 
-/* ── the banner: the tool's name in giant type on the paper's colour ── */
-.idcard{position:relative;overflow:hidden;display:flex;align-items:center;margin:0 0 12px;padding:20px 22px;border-radius:18px;color:#fff;
-  background:radial-gradient(90% 130% at 100% 0%,rgb(255 255 255 / .2),transparent 60%),
-    linear-gradient(135deg,color-mix(in srgb,var(--tool) 94%,#fff),var(--tool-deep));
-  box-shadow:0 14px 34px -16px color-mix(in srgb,var(--tool) 80%,transparent)}
-.idic{position:absolute;right:-8px;bottom:-30px;font-size:7.5rem;line-height:1;opacity:.22;transform:rotate(-14deg);pointer-events:none}
-.idtx{position:relative;min-width:0}
-.idtx small{display:block;font-size:.72rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgb(255 255 255 / .86)}
-.idtx b{display:block;font-size:clamp(2.1rem,7vw,3.4rem);line-height:.95;margin:6px 0 8px;font-weight:900;letter-spacing:-.03em;text-transform:uppercase}
-.idtx>span{display:block;font-size:.88rem;color:rgb(255 255 255 / .9);line-height:1.35}
-.idtx .idwhen{display:inline-flex;margin-top:12px;padding:5px 12px;border-radius:999px;background:rgb(255 255 255 / .18);
-  border:1px solid rgb(255 255 255 / .32);font-size:.8rem;font-weight:700;color:#fff}
+/* ── the title: the tool's name, plainly ── */
+.idcard{margin:4px 2px 14px}
+.idic{display:none}
+.idtx small{display:block;font-size:.75rem;font-weight:600;color:var(--muted-fg)}
+.idtx b{display:block;font-size:1.45rem;line-height:1.2;margin:2px 0 4px;font-weight:750;letter-spacing:-.01em}
+.idtx>span{display:block;font-size:.88rem;color:var(--muted-fg);line-height:1.4}
+.idtx .idwhen{display:inline-block;margin-top:6px;font-size:.8rem;font-weight:650;color:var(--primary)}
 
 /* ── today: the pace to finish every piece by the day before the exam ── */
 .today{background:color-mix(in srgb,var(--primary) 12%,var(--card));border-color:color-mix(in srgb,var(--primary) 45%,transparent)}
@@ -211,11 +203,6 @@ b.miss{color:var(--danger);text-decoration:underline wavy;text-decoration-thickn
 .tools{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 0}
 
 @media(max-width:560px){
-  .idcard{padding:14px 16px;margin-bottom:10px;border-radius:14px}
-  .idic{font-size:5.5rem;bottom:-20px}
-  .idtx b{font-size:2.1rem;margin:4px 0 6px}
-  .idtx>span{font-size:.8rem}
-  .idtx .idwhen{margin-top:8px;font-size:.76rem}
   .lrow{padding:7px 10px;margin-bottom:6px}
   .lic{flex-basis:36px;height:36px}
   .nums{gap:16px}

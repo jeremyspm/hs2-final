@@ -67,7 +67,7 @@ function home(){
    ?'Every piece is in. From here it’s reviews: clear the due ones each day.'
    :met?`Today’s <b>${p.target}</b> are done. Reviews keep them; more new pieces put you ahead.`
    :`<b>${p.target} new a day</b> meets all ${s.total} by Tue 3 Nov.${p.left<s.total?` ${p.left} still to meet.`:''}`;
- mount(`<div class="idcard"><span class="idic" aria-hidden="true">🧠</span><span class="idtx"><small>Health Science 2 · 722.541</small><b>Learn the cases</b><span>Her 10 starred cases · read it, type it, it comes back</span>${n>=0?`<span class="idwhen">${n===0?'Your sitting is today':`${n} day${n===1?'':'s'} to your sitting · 4 Nov`}</span>`:''}</span></div>
+ mount(`<div class="idcard"><span class="idic" aria-hidden="true">🧠</span><span class="idtx"><small>Health Science 2 · 722.541</small><b>Write the cases</b><span>Her 10 starred cases · read it, type it, it comes back</span>${n>=0?`<span class="idwhen">${n===0?'Your sitting is today':`${n} day${n===1?'':'s'} to your sitting · 4 Nov`}</span>`:''}</span></div>
  <div class="card today"><div class="k">Today</div>
   <div class="nums"><div><strong>${p.done}<i>/${p.target}</i></strong><span>new pieces</span></div><div><strong>${s.due}</strong><span>back for review</span></div><div><strong>${s.retained}<i>/${s.total}</i></strong><span>solid (${SOLID} days)</span></div></div>
   <div class="bar"><i style="width:${p.target?Math.min(100,100*p.done/p.target):100}%"></i></div>

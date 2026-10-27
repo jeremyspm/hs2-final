@@ -17,7 +17,9 @@ Long answers unlock a complete-answer check after their pieces have been recalle
 **Second pass, same day** (the asks: "it looks so GPT coded, I want it estate looking", and "shouldn't it all be
 typed?"):
 - **The Paper Sim's skin.** `rep.css` uses template.html's tokens (dark default, `data-theme=light`, theme shared via
-  `hs2f.theme`), the HS2-blue header bar, the giant-name banner and the sim's rows; each case wears its system's colour.
+  `hs2f.theme`), the header, the title and the sim's rows; each case wears its system's colour. (27 Oct, later: the
+  HS2-blue header bar and the giant-name banner went, "the CSS is way too much": a blue line under a plain header, a
+  plain title. The page is **Write the cases** now, and its back link goes to the hub's Write side.)
 - **Typed, and marked by the page.** No ticking on trust. A new piece is read, then every **bold** key word becomes a
   blank to type (`2 · Type the key words`, the supported attempt). When it comes back it is written out whole and
   `markFacts` counts a point when all its key words are in the answer (`termFound`: forgiving on endings, plurals and

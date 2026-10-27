@@ -38,19 +38,13 @@ header .back{text-decoration:none;white-space:nowrap}
   header .btn{grid-row:1/span 2;padding:8px 10px;min-width:40px}
 }
 /* ── the paper's colour (15 Oct 2026: "it should SCREAM Test 3, not look like INP"). --tool is the PAPER's colour,
-   the same one jeremyspm.github.io uses (HS2 blue, INP green, Pharm purple), set from TOOL at load. The header bar
-   wears it solid, the page a soft tint (--bg is mixed from --bg0), buttons and links take it as --primary, and the
-   home banner says the tool's name in giant type. ── */
-:root{--bg:color-mix(in srgb,var(--tool,var(--bg0)) 7%,var(--bg0));
+   the same one jeremyspm.github.io uses (HS2 blue, INP green, Pharm purple), set from TOOL at load. 27 Oct: toned
+   down ("the CSS is way too much"): a line under the header, a faint page tint, buttons and links as --primary. ── */
+:root{--bg:color-mix(in srgb,var(--tool,var(--bg0)) 3%,var(--bg0));
   --tool-deep:color-mix(in srgb,var(--tool,#4f46e5) 72%,#000);
   --primary:color-mix(in srgb,var(--tool,hsl(218 91% 64%)) 70%,#fff)}
 :root[data-theme=light]{--primary:color-mix(in srgb,var(--tool,hsl(218 91% 64%)) 88%,#000)}
-header{background:linear-gradient(100deg,var(--tool-deep),color-mix(in srgb,var(--tool,#4f46e5) 88%,#000));color:#fff;
-  border-bottom:0;box-shadow:0 4px 18px -8px color-mix(in srgb,var(--tool,#4f46e5) 60%,transparent)}
-header h1{color:#fff;letter-spacing:-.01em}
-header .d,header a.d{color:rgb(255 255 255 / .85)}
-header .btn{color:#fff;border-color:rgb(255 255 255 / .3);background:rgb(255 255 255 / .1)}
-header .btn:hover{background:rgb(255 255 255 / .2)}
+header{border-bottom:2px solid var(--tool,var(--border))}
 main{max-width:720px;margin:0 auto;padding:14px 14px 90px}
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
   padding:14px;margin:0 0 12px}
@@ -290,26 +284,15 @@ a{color:var(--primary)}
 .lmore>summary::before{content:'▸';transition:transform var(--dur) var(--ease)}
 .lmore[open]>summary::before{transform:rotate(90deg)}
 .lmore[open]>summary{margin-bottom:4px}
-/* the tool's own name (26 Sep 2026; loud since 15 Oct): four Paper Sims share one layout, so the home banner says
-   which one this is in giant type on the paper's colour, with the tool's emoji as a watermark and the countdown. */
-.idcard{position:relative;overflow:hidden;display:flex;align-items:center;margin:0 0 14px;padding:20px 22px;border-radius:18px;color:#fff;
-  background:radial-gradient(90% 130% at 100% 0%,rgb(255 255 255 / .2),transparent 60%),
-    linear-gradient(135deg,color-mix(in srgb,var(--tool) 94%,#fff),var(--tool-deep));
-  box-shadow:0 14px 34px -16px color-mix(in srgb,var(--tool) 80%,transparent)}
-.idic{position:absolute;right:-8px;bottom:-30px;font-size:7.5rem;line-height:1;opacity:.22;transform:rotate(-14deg);pointer-events:none}
-.idtx{position:relative;min-width:0}
-.idtx small{display:block;font-size:.72rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgb(255 255 255 / .86)}
-.idtx b{display:block;font-size:clamp(2.3rem,7vw,3.4rem);line-height:.95;margin:6px 0 8px;font-weight:900;letter-spacing:-.03em;text-transform:uppercase}
-.idtx>span{display:block;font-size:.88rem;color:rgb(255 255 255 / .9);line-height:1.35}
-.idtx .idwhen{display:inline-flex;margin-top:12px;padding:5px 12px;border-radius:999px;background:rgb(255 255 255 / .18);
-  border:1px solid rgb(255 255 255 / .32);font-size:.8rem;font-weight:700;color:#fff}
+/* the tool's own name (26 Sep 2026): a plain title block since 27 Oct, no banner, no watermark */
+.idcard{margin:4px 2px 14px}
+.idic{display:none}
+.idtx small{display:block;font-size:.75rem;font-weight:600;color:var(--muted-fg)}
+.idtx b{display:block;font-size:1.45rem;line-height:1.2;margin:2px 0 4px;font-weight:750;letter-spacing:-.01em}
+.idtx>span{display:block;font-size:.88rem;color:var(--muted-fg);line-height:1.4}
+.idtx .idwhen{display:inline-block;margin-top:6px;font-size:.8rem;font-weight:650;color:var(--primary)}
 /* phone: the banner and the rows tighten so home still fits one 375x812 screen as near as it can */
 @media(max-width:560px){
-  .idcard{padding:14px 16px;margin-bottom:10px;border-radius:14px}
-  .idic{font-size:5.5rem;bottom:-20px}
-  .idtx b{font-size:2.1rem;margin:4px 0 6px}
-  .idtx>span{font-size:.8rem}
-  .idtx .idwhen{margin-top:8px;font-size:.76rem}
   .lrow{padding:6px 12px;margin-bottom:5px}
   .lic{flex-basis:36px;height:36px}
   .lsec{margin:8px 4px 4px}
@@ -709,7 +692,7 @@ const REPQS = () => ALLCASE().filter(q=>q.type!=='essay');
 function repScreen(){
   const P=REPQS(), seen=P.filter(q=>S.seen[q.id]).length, nm=P.filter(q=>S.miss[q.id]).length;
   return `<div class="card">
-    <p class="lead"><b>${P.length}</b> questions on the ten cases that mark themselves the moment you answer, ${seen} seen: her case questions in closed form, her revision deck and the case quizzes. The written ones are in <a href="rep.html">Learn the cases</a>.</p>
+    <p class="lead"><b>${P.length}</b> questions on the ten cases that mark themselves the moment you answer, ${seen} seen: her case questions in closed form, her revision deck and the case quizzes. The written ones are in <a href="rep.html">Write the cases</a>.</p>
     <button class="btn primary wide" data-go="rep" data-learn="1">⚡ Rep all ${P.length} · least-seen and misses first</button>
     <button class="btn wide" data-go="miss" data-learn="1" ${Object.keys(S.miss).length?'':'disabled'}>Redo my misses${nm?` · ${nm} from here`:''}</button>
     ${KHQ.length?`<button class="btn ghost wide" data-go="kh" data-learn="1">🎮 Her exam revision Kahoot · ${KHQ.length} · lower yield, after these</button>`:''}
