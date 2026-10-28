@@ -40,14 +40,17 @@ typed?"):
   dropped or extra letter in short words, word endings by suffix (not by a shared start, which had let glycogen
   pass for glycogenesis), a three-word term may miss one word. `OPPOSITES` (hyper/hypo, intra/inter, af/ef,
   ilium/ileum, inhibin/inhibit …), numbers and genotypes stay exact; `rep.check.mjs` lists both sides.
-- **Written questions only.** 111 pieces: her case questions and the compiled answers first, then her revision deck's
+- **Written questions only.** 117 pieces: her case questions and the compiled answers first, then her revision deck's
   written ones. The 81 that mark themselves (MCQ, T/F, matching, blanks) are the sim's `#rep` screen (⚡ Rep
   questions, `REPQS` in template.html), which the hub's HS2 Final Rep tab opens. The mini mock test was culled the
   same day; `#mock` is the full 130-minute sitting only.
 - **A pace.** Home shows today's new pieces against `pace()`: new a day to have met every piece by Tue 3 Nov.
 
 The build derives its coverage from the existing core and mock pool: **155 original questions**, plus **nine
-compiled study answers** (eight held questions and the workbook's male-pill research prompt). Sources and
+compiled study answers** (eight held questions and the workbook's male-pill research prompt), plus **four more**
+from student tutors' recall of a past HS2 final (28 Oct: insulin's daily high and low, Depo Provera's three
+effects, the male accessory glands, the three cone types). Their own model answers were checked against hers and
+not used where they disagree (their Harris I-2 and Anderson II-3 genotypes contradict the figures). Sources and
 authorship are labelled on every supplement. All original short-answer fact lines are retained; the levodopa
 BBB line is explicitly corrected to amino-acid transport while the original key remains in the source panel.
 The Harris and Anderson pedigrees are the workbook's original figures, with independently worked solutions.
