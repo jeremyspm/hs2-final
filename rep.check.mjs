@@ -79,4 +79,14 @@ const harris=possibilities({'II1':['I1','I2'],'II2':['I1','I2'],'II3':['I1','I2'
 assert.deepEqual(harris,{I1:[0,1],I2:[2],I3:[1],I4:[1],II1:[1],II2:[1],II3:[1],II4:[1],II5:[2],II6:[2],II7:[0,1],III1:[0,1],III2:[2]});
 const anderson=possibilities({'II2':['I1','I2'],'II3':['I1','I2'],'II5':['I1','I2'],'III1':['II1','II2'],'III2':['II1','II2'],'III3':['II3','II4'],'III4':['II3','II4'],'III5':['II5','II6'],'III6':['II5','II6']},{I1:false,I2:true,II1:false,II2:false,II3:true,II4:false,II5:true,II6:false,III1:false,III2:false,III3:true,III4:true,III5:true,III6:false},true);
 assert.deepEqual(anderson,{I1:[0],I2:[1],II1:[0],II2:[0],II3:[1],II4:[0],II5:[1],II6:[0],III1:[0],III2:[0],III3:[1],III4:[1],III5:[1],III6:[0]});
+// Her starred questions are high priority (29 Oct 2026): written case questions only, none labelled "not starred", and a
+// fresh queue deals every starred piece before any other (a whole answer waits on its pieces), as reviews put a due starred piece first.
+const starQ=d.questions.filter(q=>q.starred);
+assert.ok(starQ.length>=55&&starQ.every(q=>q.short&&!/not starred/i.test(q.source)),'starred = her starred written questions');
+assert.ok(d.questions.filter(q=>/not starred/i.test(q.source||'')).every(q=>!q.starred),'yellow-case extras are not starred');
+{const s=fresh(),seen=[];let u,t=at,k=0;while(k++<2500&&(u=selectNext(units,s,t))){const neu=!s.items[u.id]?.seen;if(neu&&u.kind!=='whole')seen.push(u.star);record(u,s,u.kind==='closed'?[true]:u.facts.map(()=>true),{now:t,supported:neu&&u.kind!=='whole'});t+=1000;}
+ assert.ok(seen.indexOf(false)>0&&!seen.slice(seen.indexOf(false)).includes(true),'every new starred piece is dealt before any other');}
+{const [a,b]=[units.find(u=>u.star&&u.kind==='part'),units.find(u=>!u.star&&u.kind==='part')],s=fresh();
+ s.items[b.id]={seen:1,due:at-2000,after:0};s.items[a.id]={seen:1,due:at-1000,after:0};
+ assert.equal(selectNext(units,s,at).id,a.id,'a due starred piece comes before an older unstarred one');}
 console.log(`ok: ${d.questions.length} questions; ${d.facts} mapped fact lines; ${units.length} exercises including complete checks; ${n-1} first-day simulated attempts; both pedigree solutions verified`);

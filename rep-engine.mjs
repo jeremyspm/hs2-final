@@ -12,17 +12,19 @@ export function makeUnits(questions){
    const facts=q.short.groups.flatMap((g,gi)=>g.facts.map((f,fi)=>({...f,group:g.q,key:`${q.id}:${gi}:${fi}`})));
    // Keep short complete answers together; longer answers are rebuilt in pieces first.
    const chunks=[];if(facts.length<=5)chunks.push(facts);else for(let i=0;i<facts.length;i+=4)chunks.push(facts.slice(i,i+4));
-   chunks.forEach((part,i)=>units.push({id:`${q.id}:part:${i}`,qid:q.id,caseId:q.caseId,kind:'part',facts:part,part:i+1,parts:chunks.length}));
-   if(chunks.length>1)units.push({id:`${q.id}:whole`,qid:q.id,caseId:q.caseId,kind:'whole',facts,requires:chunks.map((_,i)=>`${q.id}:part:${i}`),chunkSizes:chunks.map(c=>c.length)});
-  }else units.push({id:q.id+':closed',qid:q.id,caseId:q.caseId,kind:'closed',facts:[]});
+   chunks.forEach((part,i)=>units.push({id:`${q.id}:part:${i}`,qid:q.id,caseId:q.caseId,star:!!q.starred,kind:'part',facts:part,part:i+1,parts:chunks.length}));
+   if(chunks.length>1)units.push({id:`${q.id}:whole`,qid:q.id,caseId:q.caseId,star:!!q.starred,kind:'whole',facts,requires:chunks.map((_,i)=>`${q.id}:part:${i}`),chunkSizes:chunks.map(c=>c.length)});
+  }else units.push({id:q.id+':closed',qid:q.id,caseId:q.caseId,star:!!q.starred,kind:'closed',facts:[]});
  }
  return units;
 }
+// 29 Oct 2026: her starred questions are high priority, so a starred piece goes first in every queue.
+export const byStar=(a,b)=>Number(!a.star)-Number(!b.star);
 export function ready(u,s){return !u.requires||u.requires.every(id=>(s.items[id]?.wins||0)>0);}
 export function selectNext(units,s,now=Date.now(),caseId='all'){
  const pool=units.filter(u=>(caseId==='all'||u.caseId===caseId)&&ready(u,s));
- const due=pool.filter(u=>s.items[u.id]?.seen&&s.items[u.id].due<=now&&(s.items[u.id].after||0)<=s.turn).sort((a,b)=>s.items[a.id].due-s.items[b.id].due);
- const fresh=pool.filter(u=>!s.items[u.id]?.seen);
+ const due=pool.filter(u=>s.items[u.id]?.seen&&s.items[u.id].due<=now&&(s.items[u.id].after||0)<=s.turn).sort((a,b)=>byStar(a,b)||s.items[a.id].due-s.items[b.id].due);
+ const fresh=pool.filter(u=>!s.items[u.id]?.seen).sort(byStar);
  // Due first, as in Anki (27 Oct 2026, drilled): a piece waiting on its next hit comes back as soon as three other
  // pieces have passed (the `after` gate), and new pieces fill the gaps. Locked days leave the queue until their date,
  // so new learning is never starved for long.

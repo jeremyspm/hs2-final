@@ -1,4 +1,4 @@
-import {makeUnits,selectNext,record,snapshot,ready,keyTerms,markFacts,termFound,pace,DAY_HITS,SOLID} from './rep-engine.mjs?v=20261027g';
+import {makeUnits,selectNext,record,snapshot,ready,byStar,keyTerms,markFacts,termFound,pace,DAY_HITS,SOLID} from './rep-engine.mjs?v=20261029s';
 /* Learn the cases (27 Oct 2026). Everything is typed and marked by the page, never ticked on trust, and only ever key
    words, never sentences: a new piece climbs a ladder of hidden key words, then comes back a few pieces later for its key
    words from memory (see "the ladder" below). Written questions only: the ones that mark themselves (MCQ, matching,
@@ -60,7 +60,7 @@ function persist(){state.active={...run};save();}
 
 /* ── home ── */
 function home(){
- run=null;const U=units(),s=snapshot(U,state),p=pace(U,state,Date.now(),LAST),n=daysTo(EXAM);
+ run=null;const U=units(),s=snapshot(U,state),st=snapshot(U.filter(u=>u.star),state),p=pace(U,state,Date.now(),LAST),n=daysTo(EXAM);
  const active=state.active&&U.some(u=>u.id===state.active.id);
  const met=p.done>=p.target;
  const paceLine=p.left===0
@@ -74,6 +74,7 @@ function home(){
   <p class="pace">${paceLine}</p>
   ${btn('begin',active?'Carry on where you stopped':'Start a round of 12')}
  </div>
+ <div class="card starnote"><b>★ Starred questions are high priority.</b> Inside each starred case, the questions she starred herself are the ones to know first. They come first here, new and in review, and wear a ★ tag. <span class="muted">${st.seen}/${st.total} starred pieces met · ${st.retained} solid.</span></div>
  <p class="small muted">Her written questions on the cases. The ones that mark themselves (multiple choice, matching, blanks) are in <a href="./#rep">⚡ Rep questions</a>.</p>
  <div class="lsec">The ten cases</div>
  ${D.cases.map(c=>{const sub=U.filter(u=>u.caseId===c.id),v=snapshot(sub,state);return `<button class="lrow${v.seen===v.total?' done':''}" data-case="${c.id}" style="--cc:${CC[c.id]}"><span class="lic">${c.id.slice(1)}</span><span class="ltx"><b>${esc(caseTitle(c))}</b><small>${v.seen}/${v.total} met · ${v.retained} solid${v.due?` · ${v.due} back`:''}</small><span class="bar"><i style="width:${v.total?100*v.seen/v.total:0}%"></i></span></span><span class="lch">›</span></button>`}).join('')}
@@ -88,7 +89,7 @@ function home(){
  </details>`);
  $('#begin').onclick=()=>{sessionCount=0;if(active){run={...state.active};render()}else{state.filter='all';save();next()}};
  document.querySelectorAll('[data-case]').forEach(b=>b.onclick=()=>{state.filter=b.dataset.case;state.active=null;save();sessionCount=0;next()});
- $('#reviewOnly').onclick=()=>{const pool=U.filter(u=>ready(u,state)&&state.items[u.id]?.seen&&state.items[u.id].due<=Date.now()).sort((a,b)=>state.items[a.id].due-state.items[b.id].due);sessionCount=0;if(pool.length)open(pool[0]);else info('Nothing due yet','Pieces come back a few turns after a miss, and a day or more after you get them from memory. Meet new pieces for now.');};
+ $('#reviewOnly').onclick=()=>{const pool=U.filter(u=>ready(u,state)&&state.items[u.id]?.seen&&state.items[u.id].due<=Date.now()).sort((a,b)=>byStar(a,b)||state.items[a.id].due-state.items[b.id].due);sessionCount=0;if(pool.length)open(pool[0]);else info('Nothing due yet','Pieces come back a few turns after a miss, and a day or more after you get them from memory. Meet new pieces for now.');};
  $('#export').onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='hs2-recall-progress.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
  $('#import').onclick=()=>$('#importFile').click();
  $('#importFile').onchange=async e=>{try{const x=JSON.parse(await e.target.files[0].text());if(x.version!==1||!x.items||!x.facts||!Number.isFinite(x.turn))throw Error('Unsupported progress file');for(const u of ALL){const incoming=x.items[u.id],old=state.items[u.id];if(incoming&&Number.isFinite(incoming.last)&&(!old||incoming.last>old.last))state.items[u.id]=incoming;}for(const [k,v]of Object.entries(x.facts))if(v&&Number.isFinite(v.last)&&(!state.facts[k]||v.last>state.facts[k].last))state.facts[k]=v;state.turn=Math.max(state.turn,x.turn);state.active=null;save();home()}catch{alert('Could not read that progress file. Your existing progress was kept.')}};
@@ -118,7 +119,7 @@ function intro(u){const c=caseOf(u.caseId);
 function shell(u,q,step,body,back=!!state.items[u.id]?.seen){
  const kind=u.kind==='whole'?'Whole answer':u.parts>1?`Piece ${u.part} of ${u.parts}`:'';
  mount(`<div class="topline">${btn('pause','‹ Cases','ghost sm')}<div class="pips" aria-label="${sessionCount} of ${ROUND} this round">${Array.from({length:ROUND},(_,i)=>`<i class="${i<sessionCount?'on':''}"></i>`).join('')}</div></div>
- <div class="card piece" style="--cc:${CC[u.caseId]||'var(--muted-fg)'}"><div class="where"><span class="tag">${esc(caseName(u.caseId))}</span>${kind?`<span class="tag plain">${kind}</span>`:''}${back?'<span class="tag back">Back again</span>':''}${u.core?'':'<span class="tag plain">Revision deck</span>'}</div>
+ <div class="card piece" style="--cc:${CC[u.caseId]||'var(--muted-fg)'}"><div class="where"><span class="tag">${esc(caseName(u.caseId))}</span>${u.star?'<span class="tag star">★ Starred · high priority</span>':''}${kind?`<span class="tag plain">${kind}</span>`:''}${back?'<span class="tag back">Back again</span>':''}${u.core?'':'<span class="tag plain">Revision deck</span>'}</div>
  <h2>${esc(title(q))}</h2><p class="step">${step}</p>${body}</div>`);
  $('#pause').onclick=()=>{if(run)persist();home()};
 }

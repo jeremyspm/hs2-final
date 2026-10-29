@@ -24,9 +24,14 @@ for(const q of questions){
  if(['Does BGL leave the normal range?','Overnight and the morning'].includes(q.short?.title))q.imgs=['wb26-bgl-day.png'];
  if(['Why the hormones change','Pregnancy and the hormone graph'].includes(q.short?.title))q.imgs=['wb26-cycle.png'];
 }
-// The first pass follows the booklet, with its original questions before extra revision.
+/* 29 Oct 2026: her STARRED questions inside the starred cases are the high-priority ones. Starred = a written question
+   of her case (mod 'cases') not labelled "not starred" (the yellow-case extras), or a compiled answer to one of her held
+   starred questions (case 8's held bursitis compare is unstarred, per content/cases.js). */
+const UNSTARRED_HELD=new Set(['c8:0']);
+for(const q of questions)q.starred=!!q.short&&!/not starred/i.test(q.source||'')&&(q.mod==='cases'&&!q.supplement||/:\d+$/.test(q.heldKey||'')&&!UNSTARRED_HELD.has(q.heldKey));
+// The first pass deals her starred questions first, then follows the booklet, its original questions before extra revision.
 const order=new Map(cases.map((c,i)=>[c.id,i]));
-questions.sort((a,b)=>(Number(a.mod!=='cases'&&!a.supplement)-Number(b.mod!=='cases'&&!b.supplement))||(order.get(a.caseId)-order.get(b.caseId))||Number(!a.short)-Number(!b.short));
+questions.sort((a,b)=>(Number(!a.starred)-Number(!b.starred))||(Number(a.mod!=='cases'&&!a.supplement)-Number(b.mod!=='cases'&&!b.supplement))||(order.get(a.caseId)-order.get(b.caseId))||Number(!a.short)-Number(!b.short));
 // Keep the old key available in the source panel; do not drill an overbroad BBB rule.
 const ld=questions.find(q=>q.short?.title==='Why levodopa, not dopamine');
 if(ld){ld.short=structuredClone(ld.short);ld.short.groups[0].facts[1]={...ld.short.groups[0].facts[1],t:'**Levodopa** uses an **amino-acid transporter** to cross the blood–brain barrier.',fix:'Clarifies the old key: lipid solubility is not the only route across. Source: NCBI Basic Neurochemistry, Blood–Brain Barrier, https://www.ncbi.nlm.nih.gov/books/NBK28180/'};}
@@ -43,4 +48,4 @@ const d={version:1,cases,questions,originalCount:ids.size,facts:questions.reduce
 const json=JSON.stringify(d).replace(/<\//g,'<\\/');
 const out=fs.readFileSync(path.join(root,'rep.template.html'),'utf8').replace('/*@REP_DATA@*/',()=>json);
 fs.writeFileSync(path.join(root,'rep.html'),out);
-console.log(`rep.html: ${questions.length} source questions, ${d.facts} written fact lines, ${assets.size} figures, ${cases.reduce((n,c)=>n+c.held.length,0)} unresolved questions`);
+console.log(`rep.html: ${questions.length} source questions, ${d.facts} written fact lines, ${questions.filter(q=>q.starred).length} starred, ${assets.size} figures, ${cases.reduce((n,c)=>n+c.held.length,0)} unresolved questions`);
